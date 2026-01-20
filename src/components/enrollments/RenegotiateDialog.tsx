@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { renegotiateInstallments } from "@/lib/purchases/enrollment-actions";
 
@@ -27,7 +27,6 @@ export function RenegotiateDialog({
     const [loading, setLoading] = useState(false);
     const [newCount, setNewCount] = useState(1);
     const [startDate, setStartDate] = useState("");
-    const { toast } = useToast();
 
     const totalAmount = selectedInstallments.reduce((acc, curr) => acc + curr.amount_cents, 0);
 
@@ -51,14 +50,15 @@ export function RenegotiateDialog({
                 newInstallments
             );
 
-            toast({ title: "Success", description: "Installments renegotiated." });
+            toast.success("Installments renegotiated.");
             setOpen(false);
         } catch (e) {
-            toast({ title: "Error", description: "Renegotiation failed.", variant: "destructive" });
+            toast.error("Renegotiation failed.");
         } finally {
             setLoading(false);
         }
     };
+    // ...
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

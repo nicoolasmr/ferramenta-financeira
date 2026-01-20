@@ -9,19 +9,44 @@ import { revalidatePath } from "next/cache";
  - Creates new installments from provided list
  - Logs audit
 */
+// ... (Top of file stays same)
+
+/*
+ renegotiateInstallments Action
+ - Marks old installments as 'renegotiated'
+ - Creates new installments from provided list
+ - Logs audit
+*/
 export async function renegotiateInstallments(
     orgId: string,
     enrollmentId: string,
     projectId: string,
     oldInstallmentIds: string[],
-    newInstallmentsData: any[] // Should be typed strictly in real app
+    newInstallmentsData: any[]
 ) {
-    const supabase = createClient();
-    const user = (await supabase.auth.getUser()).data.user;
+    const supabase = await createClient(); // Fixed await
+    console.info(`[Action:Renegotiate] Start - Enrollment: ${enrollmentId}, Project: ${projectId}`);
 
+    const user = (await supabase.auth.getUser()).data.user;
     if (!user) throw new Error("Unauthorized");
 
-    // 1. Mark old as renegotiated
+    // 1. Idempotency & Validation
+    const { data: targets, error: fetchError } = await supabase
+        .from("installments")
+        .select("id, status")
+        .in("id", oldInstallmentIds)
+        .eq("org_id", orgId);
+
+    if (fetchError || !targets) throw new Error("Failed to fetch installments for validation");
+
+    const alreadyProcessed = targets.filter(t => ['paid', 'renegotiated'].includes(t.status));
+    if (alreadyProcessed.length > 0) {
+        console.warn(`[Action:Renegotiate] Blocked - Installments already processed: ${alreadyProcessed.map(i => i.id).join(', ')}`);
+        // We can return a specific error or throw.
+        throw new Error("Some installments are already paid or renegotiated. Please refresh.");
+    }
+
+    // 2. Mark old as renegotiated
     const { error: updateError } = await supabase
         .from("installments")
         .update({ status: "renegotiated" })
@@ -30,7 +55,7 @@ export async function renegotiateInstallments(
 
     if (updateError) throw new Error("Failed to update old installments");
 
-    // 2. Insert new installments
+    // 3. Insert new installments
     const { error: insertError } = await supabase
         .from("installments")
         .insert(newInstallmentsData.map(inst => ({
@@ -41,7 +66,9 @@ export async function renegotiateInstallments(
 
     if (insertError) throw new Error("Failed to create new installments");
 
-    // 3. Audit Log
+    console.info(`[Action:Renegotiate] Success - Created ${newInstallmentsData.length} new installments.`);
+
+    // 4. Audit Log
     await supabase.from("audit_logs").insert({
         org_id: orgId,
         entity: "enrollment",
@@ -53,6 +80,7 @@ export async function renegotiateInstallments(
 
     revalidatePath(`/app/enrollments/${enrollmentId}`);
     revalidatePath(`/app/projects/${projectId}/dashboard`);
+    return { success: true };
 }
 
 export async function markInstallmentPaid(
@@ -63,9 +91,27 @@ export async function markInstallmentPaid(
     method: string,
     receiptPath?: string
 ) {
-    const supabase = createClient();
+    const supabase = await createClient(); // Fixed await
+    console.info(`[Action:MarkPaid] Start - Installment: ${installmentId}`);
+
     const user = (await supabase.auth.getUser()).data.user;
 
+    // 1. Idempotency Check
+    const { data: current, error: fetchError } = await supabase
+        .from("installments")
+        .select("status")
+        .eq("id", installmentId)
+        .eq("org_id", orgId)
+        .single();
+
+    if (fetchError || !current) throw new Error("Installment not found");
+
+    if (current.status === 'paid') {
+        console.warn(`[Action:MarkPaid] Idempotent skip - Already paid.`);
+        return { success: true, message: "Already paid" };
+    }
+
+    // 2. Update
     const { error } = await supabase
         .from("installments")
         .update({
@@ -79,6 +125,8 @@ export async function markInstallmentPaid(
 
     if (error) throw error;
 
+    console.info(`[Action:MarkPaid] Success - Marked ${installmentId} as paid.`);
+
     await supabase.from("audit_logs").insert({
         org_id: orgId,
         entity: "installment",
@@ -89,4 +137,5 @@ export async function markInstallmentPaid(
     });
 
     revalidatePath(`/app/enrollments/${enrollmentId}`);
+    return { success: true };
 }

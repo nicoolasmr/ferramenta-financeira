@@ -40,6 +40,18 @@ Sensitive actions are recorded in `audit_logs` via database triggers or applicat
 
 ## Portal Security
 The Client Portal (`/portal`) is strictly isolated from the main App (`/app`).
-- **Access Control**: Validated via RLS and Server Component logic. Only users with `client_viewer` role in `project_members` can access.
 - **PII Masking**: If `projects.settings.mask_pii` is set to `true`, customer names and emails are redacted in the portal view to protect privacy.
+
+## Storage Security
+The `documents` bucket follows strict path ownership: `{org_id}/{project_id}/{enrollment_id}/{filename}`.
+- **Upload**: Restricted to Org Members. Client Viewers cannot upload.
+- **Download**:
+    - Org Members: Allowed.
+    - Client Viewers: Allowed ONLY if `projects.settings.portal_can_download_docs` is NOT false.
+- **Policies**: Implemented in `20260122000000_patch_v2_storage.sql` using a security definer function.
+
+## Audit Log Integrity
+- **Immutability**: `UPDATE` and `DELETE` operations are revoked at the database level.
+- **Access**: Only `Owner` and `Admin` roles can `SELECT` from `audit_logs`. Portal users (Client Viewers) have zero access to logs.
+
 

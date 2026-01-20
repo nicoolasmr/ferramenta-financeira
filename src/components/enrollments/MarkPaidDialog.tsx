@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { markInstallmentPaid } from "@/lib/purchases/enrollment-actions";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export function MarkPaidDialog({
@@ -27,20 +27,20 @@ export function MarkPaidDialog({
     const [loading, setLoading] = useState(false);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [method, setMethod] = useState("pix");
-    const { toast } = useToast();
 
     const handleConfirm = async () => {
         setLoading(true);
         try {
             await markInstallmentPaid(orgId, installmentId, enrollmentId, new Date(date), method);
-            toast({ title: "Success", description: "Payment marked successfully." });
+            toast.success("Payment marked successfully.");
             setOpen(false);
         } catch (e) {
-            toast({ title: "Error", description: "Failed to mark payment.", variant: "destructive" });
+            toast.error("Failed to mark payment.");
         } finally {
             setLoading(false);
         }
     };
+    // ... rest
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
