@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock_key_for_build', {
     typescript: true,
 });
 
