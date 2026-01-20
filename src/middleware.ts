@@ -8,10 +8,26 @@ export async function middleware(request: NextRequest) {
         },
     })
 
-    // Fixed typo here: constsupabase -> const supabase
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    // Safety Check: If env vars are missing (e.g. during build or missing .env), skip Supabase logic
+    // This prevents "MIDDLEWARE_INVOCATION_FAILED" 500 errors.
+    if (!supabaseUrl || !supabaseKey) {
+        // If visiting a protected route without env vars, we can't authenticate.
+        // For strictness, you might want to error, but for resilience, we let it pass (or redirect to error).
+        // Here we'll just log and continue, assuming the app might handle the missing auth later or it's a public route.
+        // However, if it's /app, we should probably redirect to login or show an error.
+        if (request.nextUrl.pathname.startsWith('/app') || request.nextUrl.pathname.startsWith('/ops')) {
+            console.error("Middleware: Missing Supabase URL/Key. Redirecting to login.");
+            return NextResponse.redirect(new URL('/login?error=missing_env', request.url));
+        }
+        return response;
+    }
+
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        supabaseUrl,
+        supabaseKey,
         {
             cookies: {
                 get(name: string) {
@@ -66,17 +82,12 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // Note: detailed RBAC (like preventing client_viewer from /app) is best handled 
-    // by RLS in Server Components or Layouts, as Middleware shouldn't query the DB directly.
-    // If user is just 'client_viewer', their RLS will return 0 rows for /app data, showing empty state or errors.
-
-    // Redirect / to /app/dashboard if logged in, else /login
+    // Redirect / to /app if logged in, else /login (or keep on landing page /)
     if (request.nextUrl.pathname === '/') {
         if (user) {
             return NextResponse.redirect(new URL('/app', request.url))
-        } else {
-            return NextResponse.redirect(new URL('/login', request.url))
         }
+        // If not logged in, stay on Landing Page (/) - Do NOT redirect to /login
     }
 
     return response
