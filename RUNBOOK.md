@@ -27,6 +27,27 @@
 4.  Update Docs.
 
 ## 3. Security Rotation
--   Rotate `STRIPE_WEBHOOK_SECRET` quarterly.
--   Rotate `SUPABASE_SERVICE_ROLE_KEY` if leaked.
 -   Re-encrypt integration configs if `ENCRYPTION_KEY_BASE64` changes (requires downtime script).
+
+## 4. Ops & Support Procedures
+
+### Impersonation
+**Purpose**: Access user account to debug issues.
+**Action**:
+1.  Navigate to `/ops/support/impersonate`.
+2.  Enter User Email.
+3.  Audit Log is automatically generated in `audit_logs` table.
+
+### Data Exports
+**Purpose**: Provide raw data to users upon request or for analysis.
+**Action**:
+1.  Navigate to `/app/exports`.
+2.  Select "Customers" or "Payments".
+3.  CSV is generated on-fly from Read Replica.
+
+### Sync Engine
+**Purpose**: Reprocess stuck events.
+**Action**:
+1.  Go to `/ops/webhooks`.
+2.  Click "Run Sync" to process pending events.
+3.  Click "Replay" on specific failed events.
