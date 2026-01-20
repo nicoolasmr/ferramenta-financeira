@@ -23,6 +23,21 @@ export function Sidebar() {
             icon: LayoutDashboard,
         },
         {
+            href: "/app/projects",
+            label: "Projects",
+            icon: ShoppingCart, // Keeping icon as is for now, or use relevant project icon
+        },
+        {
+            href: "/app/integrations",
+            label: "Integrations",
+            icon: Settings,
+        },
+        {
+            href: "/app/billing",
+            label: "Billing",
+            icon: CreditCard,
+        },
+        {
             href: "/app/sales",
             label: "Sales",
             icon: ShoppingCart,

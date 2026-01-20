@@ -1,25 +1,29 @@
-# Stripe Integration
+# Stripe Integration Guide
 
-## Configuração
+## Overview
+RevenueOS uses Stripe for two purposes:
+1.  **SaaS Billing**: Subscribing Organization to RevenueOS plans.
+2.  **Platform Integration**: Syncing client sales/payments into RevenueOS dashboards.
 
-1. Acesse o dashboard do Stripe (Developer > Keys).
-2. Obtenha **Publishable Key** e **Secret Key**.
-3. Configure o **Webhook Endpoint**:
-   - URL: `https://seu-dominio.com/api/webhooks/stripe`
-   - Eventos necessários:
-     - `checkout.session.completed` (Vendas)
-     - `charge.refunded` (Reembolsos)
-     - `charge.dispute.created` (Chargebacks)
+## Configuration
+1.  Go to `https://dashboard.stripe.com/apikeys`.
+2.  Get `Publishable Key` and `Secret Key`.
+3.  Go to `https://dashboard.stripe.com/webhooks`.
+4.  Add endpoint: `https://[YOUR_DOMAIN]/api/webhooks/stripe`.
+5.  Select events:
+    -   `checkout.session.completed`
+    -   `customer.subscription.updated`
+    -   `customer.subscription.deleted`
+    -   `invoice.payment_succeeded` (for installments)
+6.  Copy `Signing Secret` (whsec_...).
 
-## Como testar (Sandbox)
-1. Use o Stripe CLI:
-   ```bash
-   stripe listen --forward-to localhost:3000/api/webhooks/stripe
-   ```
-2. Trigger um evento:
-   ```bash
-   stripe trigger checkout.session.completed
-   ```
+## RevenueOS Setup
+1.  Navigate to `/app/integrations/stripe`.
+2.  (Optional) Enter `Account ID` if using Connect.
+3.  Save configuration.
 
-## Logs
-Verifique os logs de recebimento em `/ops` ou na tabela `external_events`.
+## Testing
+```bash
+stripe trigger checkout.session.completed
+```
+Check `/app/integrations/stripe` logs tab.

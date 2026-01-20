@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, Users, LayoutDashboard, Share2, ShoppingCart, Settings2, Sparkles } from "lucide-react";
+import { ArrowLeft, Settings, Users, LayoutDashboard, Share2, ShoppingCart, Settings2, Sparkles, Package, Calendar } from "lucide-react";
 
 export default function ProjectLayout({
     children,
@@ -19,6 +19,8 @@ export default function ProjectLayout({
         { name: "Dashboard", href: `/app/projects/${projectId}/dashboard`, icon: LayoutDashboard },
         { name: "Enrollments", href: `/app/projects/${projectId}/enrollments`, icon: Users },
         { name: "Orders", href: `/app/projects/${projectId}/orders`, icon: ShoppingCart },
+        { name: "Products", href: `/app/projects/${projectId}/products`, icon: Package },
+        { name: "Calendar", href: `/app/projects/${projectId}/calendar`, icon: Calendar },
         { name: "Integrations", href: `/app/projects/${projectId}/integrations`, icon: Settings2 },
         { name: "AI Analyst", href: `/app/projects/${projectId}/ai`, icon: Sparkles },
         { name: "Settings", href: `/app/projects/${projectId}/settings`, icon: Settings },

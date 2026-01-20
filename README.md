@@ -1,58 +1,55 @@
-# 🚀 RevenueOS
+# 🚀 RevenueOS v2.0 (SaaS Edition)
 
-> **A Complete Financial Operating System for Digital Businesses.**
-> Manage Payments, Projects, Enrollments, and Financial Health in one place.
+> **The Financial Operating System for Modern SaaS.**
+> Unified Billing, AI Analysis, and Multi-Provider Integrations in one platform.
 
-![RevenueOS Banner](https://img.shields.io/badge/RevenueOS-v1.2-blueviolet?style=for-the-badge&logo=rocket)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)
-![Stack](https://img.shields.io/badge/Stack-Next.js%20%7C%20Supabase%20%7C%20Tailwind-blue?style=for-the-badge)
+![RevenueOS Banner](https://img.shields.io/badge/RevenueOS-SaaS_Core-blueviolet?style=for-the-badge&logo=rocket)
+![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)
+![Stack](https://img.shields.io/badge/Stack-Next.js_15_%7C_Supabase_%7C_Tailwind-blue?style=for-the-badge)
 
 ---
 
 ## 🌟 Overview
 
-**RevenueOS** is a specialized financial tool designed for service-based businesses, mentorships, and high-ticket sales. It goes beyond simple payment tracking by integrating **Project Management**, **Enrollment Cycles**, and **Automated Financial Intelligence**.
+**RevenueOS** has evolved into a complete B2B SaaS platform. It enables digital businesses (Course Creators, Agencies, SaaS) to:
 
-It solves the chaos of spreadsheets by providing a single source of truth for:
-*   **Sales & Receivables**: Ensure every cent sold is collected.
-*   **Student/Client Lifecycles**: Track onboarding, active status, and churn.
-*   **Financial Health**: Real-time dashboards with "Sold vs. Received" and "Overdue" metrics.
-
----
-
-## ✨ Key Features
-
-### 🏢 **Multi-Tenancy & Security**
-*   **Organization-Based**: Complete isolation of data per organization.
-*   **RBAC (Role-Based Access Control)**: Granular roles (`Owner`, `Admin`, `Member`, `Client Viewer`).
-*   **RLS (Row Level Security)**: Enterprise-grade security enforced at the database layer.
-
-### 💰 **Smart Payments & Scheduling**
-*   **Flexible Plans**: Support for complex structures (Entry + Installments).
-*   **Automated Scheduling**: Engines for `Fixed Day`, `Days After Entry`, and custom dates.
-*   **Overdue Logic**: Deterministic statuses with configurable grace periods.
-*   **Renegotiation**: Non-destructive flows to refinance overdue payments without losing data history.
-
-### 🎓 **Projects & Enrollments**
-*   **Cycle Management**: Track Start/End dates, Contracts, and Onboarding status.
-*   **Financial Profile**: Per-student financial summary (Total, Paid, Open, At Risk).
-*   **Client Portal**: Secure, read-only dashboard for clients to view their own progress and financial standing (with PII masking).
-
-### 📊 **Observability**
-*   **Audit Logging**: Traceable history for sensitive actions (Renegotiations, Payments).
-*   **Financial Views**: Server-side SQL views for fast, consistent reporting.
+1.  **Unify Revenue Streams**: Sync sales from **Stripe**, **Hotmart**, and **Asaas** into a single dashboard.
+2.  **Automate Operations**: Trigger webhooks, process enrollments, and manage subscriptions automatically.
+3.  **Leverage AI**: Use the built-in **AI Analyst** to query financial health and predict cash flow.
+4.  **Manage Projects**: Track high-ticket sales, installments, and churn per project.
 
 ---
 
-## 🛠 Tech Stack
+## ✨ Key Modules
 
-Built with a modern, performant, and type-safe stack:
+### 🤖 **AI & Intelligence**
+*   **Global Command Center**: A "God Mode" view of total volume, received revenue, and overdue risk across all projects.
+*   **AI Analyst** (`/app/projects/[id]/ai`): A conversational interface to ask "How is my churn this month?" or "Draft a payment reminder".
+*   **Sales Wizard**: Chat-based bot to quickly register new manual sales/enrollments.
 
-*   **Frontend**: [Next.js 15](https://nextjs.org/) (App Directory), [React 19](https://react.dev/)
-*   **Styling**: [Tailwind CSS](https://tailwindcss.com/), [Shadcn/UI](https://ui.shadcn.com/)
-*   **Backend / DB**: [Supabase](https://supabase.com/) (PostgreSQL + Auth + Realtime)
-*   **Language**: [TypeScript](https://www.typescriptlang.org/)
-*   **Forms**: React Hook Form + Zod
+### � **SaaS Billing & Subscriptions**
+*   **Native Stripe Integration**: Subscribe to RevenueOS plans (Starter, Pro, Agency) directly within the app.
+*   **Usage Metering**: Track API calls, active students, and storage for metered billing.
+*   **Entitlements Engine**: Robust feature gating (RBAC + Plan Limits) enforcing access control.
+
+### 🔌 **Integration Gateway**
+*   **Universal Webhook Receiver**: Single endpoint (`/api/webhooks/[provider]`) to ingest events from any provider.
+*   **Sync Engine**: Normalizes data from Stripe, Hotmart, and Asaas into a canonical `external_events` format.
+*   **Dead Letter Queue (DLQ)**: Visual interface (`/ops/dlq`) to inspect and replay failed events.
+
+### 🏢 **Multi-Tenancy Core**
+*   **Organizations**: Strict data isolation via Row-Level Security (RLS).
+*   **Project Hub**: Granular management of Products, Orders, and Installments per project.
+*   **Scheduling Engine**: Flexible payment scheduling (Fixed Date, Relative, Custom).
+
+---
+
+## 🛠 Tech Stack (v2.0)
+
+*   **Frontend**: Next.js 15 (App Router), React 19, TailwindCSS, Shadcn/UI.
+*   **Backend**: Supabase (Postgres), Typescript Server Actions.
+*   **Security**: RLS Policies, Supabase Auth, Encrypted Credentials (Vault).
+*   **AI**: OpenAI API (Mocked for MVP) integrated into UI components.
 
 ---
 
@@ -60,7 +57,6 @@ Built with a modern, performant, and type-safe stack:
 
 ### Prerequisites
 *   Node.js 20+
-*   npm / yarn / pnpm
 *   Supabase Project
 
 ### Installation
@@ -77,48 +73,32 @@ Built with a modern, performant, and type-safe stack:
     ```
 
 3.  **Environment Setup**
-    Copy `.env.example` to `.env.local` and fill in your keys:
+    Copy `.env.example` to `.env.local` and configure:
     ```bash
-    cp .env.example .env.local
+    NEXT_PUBLIC_SUPABASE_URL=your_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
+    STRIPE_SECRET_KEY=sk_test_...
     ```
-    Required keys:
-    *   `NEXT_PUBLIC_SUPABASE_URL`
-    *   `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-    *   `SUPABASE_SERVICE_ROLE_KEY` (for admin scripts only)
 
-4.  **Database Setup**
-    Run the migrations in your Supabase SQL Editor in this order:
-    1.  `supabase/migrations/20260120120000_initial_schema.sql` (Core)
-    2.  `supabase/migrations/20260120150000_projects_module.sql` (Projects)
-    3.  `supabase/migrations/20260121000000_patch_security.sql` (Security & Fixes)
+4.  **Database Setup (SaaS Core)**
+    Run the migrations in order:
+    1.  `supabase/migrations/20260120120000_initial_schema.sql`
+    2.  `supabase/migrations/20260120150000_projects_module.sql`
+    3.  `supabase/migrations/20260125000000_saas_core.sql` (The big one!)
 
 5.  **Run Development Server**
     ```bash
     npm run dev
     ```
-    Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ---
 
 ## 📚 Documentation
 
-Detailed documentation is available in the project root:
-
-*   [**SECURITY.md**](./SECURITY.md): RBAC, RLS, and Portal Security.
-*   [**OPS.md**](./OPS.md): Daily operations, webhooks, and manual procedures.
-*   [**PAYMENTS_SCHEDULING.md**](./PAYMENTS_SCHEDULING.md): Deep dive into the installment calculation engine.
-*   [**DB_SCHEMA.md**](./DB_SCHEMA.md): Database diagrams and relationship details.
+*   [**SECURITY.md**](./SECURITY.md): Compliance, RLS, and Encryption details.
+*   [**OPS.md**](./OPS.md): Operator manual for managing the generic integration gateway.
+*   [**PAYMENTS_SCHEDULING.md**](./PAYMENTS_SCHEDULING.md): Logic behind installment generation.
 
 ---
 
-## 🤝 Contributing
-
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'feat: Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
-
----
-
-> **RevenueOS** — Empowering Financial Clarity.
+> **RevenueOS** — Built by Antigravity.
