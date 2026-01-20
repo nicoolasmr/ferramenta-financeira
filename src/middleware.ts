@@ -57,12 +57,18 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Protect /app and /ops routes
-    if (request.nextUrl.pathname.startsWith('/app') || request.nextUrl.pathname.startsWith('/ops')) {
+    // Protect /app, /ops, and /portal routes
+    if (request.nextUrl.pathname.startsWith('/app') ||
+        request.nextUrl.pathname.startsWith('/ops') ||
+        request.nextUrl.pathname.startsWith('/portal')) {
         if (!user) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
     }
+
+    // Note: detailed RBAC (like preventing client_viewer from /app) is best handled 
+    // by RLS in Server Components or Layouts, as Middleware shouldn't query the DB directly.
+    // If user is just 'client_viewer', their RLS will return 0 rows for /app data, showing empty state or errors.
 
     // Redirect / to /app/dashboard if logged in, else /login
     if (request.nextUrl.pathname === '/') {

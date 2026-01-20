@@ -9,7 +9,7 @@ import { notFound, redirect } from "next/navigation";
 export default async function ClientPortalPage(props: { params: Promise<{ projectId: string }> }) {
     const params = await props.params;
     const projectId = params.projectId;
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // 1. Fetch Project & Settings (RLS applies)
     const { data: project, error: projError } = await supabase
