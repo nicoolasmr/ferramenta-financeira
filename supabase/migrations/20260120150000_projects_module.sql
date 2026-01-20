@@ -179,8 +179,9 @@ CREATE POLICY "Manage installments" ON public.installments
   );
 
 -- Indexes for performance
-CREATE INDEX idx_projects_org ON public.projects(org_id);
-CREATE INDEX idx_enrollments_project ON public.enrollments(project_id);
-CREATE INDEX idx_enrollments_customer ON public.enrollments(customer_id);
-CREATE INDEX idx_installments_plan ON public.installments(plan_id);
-CREATE INDEX idx_installments_due_date ON public.installments(due_date);
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_projects_org ON public.projects(org_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_project ON public.enrollments(project_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_customer ON public.enrollments(customer_id);
+CREATE INDEX IF NOT EXISTS idx_installments_plan ON public.installments(plan_id);
+CREATE INDEX IF NOT EXISTS idx_installments_due_date ON public.installments(due_date);
