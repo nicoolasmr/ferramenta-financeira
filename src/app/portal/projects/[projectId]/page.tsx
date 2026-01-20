@@ -1,43 +1,76 @@
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Lock, TrendingUp, DollarSign, Users } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { useParams } from "next/navigation";
+import { Lock, TrendingUp, DollarSign, Users, AlertTriangle } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { notFound, redirect } from "next/navigation";
 
-// Mock Data (matches Project Dashboard roughly)
-const data = {
-    projectName: "Mentoria Q1 2026",
-    sales: "R$ 120.000,00",
-    received: "R$ 45.000,00",
-    collectedPct: 37.5,
-    adimplencia: "98.2%",
-    students: [
-        { name: "A. Smith", status: "Active", paid: "50%", atRisk: false },
-        { name: "B. Jones", status: "Active", paid: "10%", atRisk: false },
-        { name: "C. Brown", status: "Active", paid: "20%", atRisk: true },
-        // ...
-    ]
-};
+export default async function ClientPortalPage(props: { params: Promise<{ projectId: string }> }) {
+    const params = await props.params;
+    const projectId = params.projectId;
+    const supabase = createClient();
 
-export default function ClientPortalPage() {
-    const params = useParams();
-    const projectId = params.projectId as string;
+    // 1. Fetch Project & Settings (RLS applies)
+    const { data: project, error: projError } = await supabase
+        .from("projects")
+        .select("name, settings")
+        .eq("id", projectId)
+        .single();
+
+    if (projError || !project) {
+        // RLS hidden or invalid ID
+        return (
+            <div className="flex h-screen items-center justify-center flex-col gap-4">
+                <Lock className="h-12 w-12 text-muted-foreground" />
+                <h1 className="text-xl font-bold">Resricted Access</h1>
+                <p>You do not have permission to view this portal.</p>
+                <Button asChild><a href="/auth/login">Login</a></Button>
+            </div>
+        );
+    }
+
+    const maskPII = project.settings?.mask_pii;
+
+    // 2. Fetch Financial Stats (from View)
+    const { data: stats } = await supabase
+        .from("project_financials_view")
+        .select("*")
+        .eq("project_id", projectId)
+        .single();
+
+    // Fallbacks if view empty (e.g. no enrollments yet)
+    const sales = stats?.total_sold || 0;
+    const received = stats?.total_received || 0;
+    const collectedPct = sales > 0 ? Math.round((received / sales) * 100) : 0;
+
+    // 3. Fetch Students (RLS applies)
+    // We need calculation for "Paid %" and "At Risk".
+    // For MVP portal, let's fetch enrollments with Plans -> Installments.
+    const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select(`
+            id,
+            status,
+            customer:customers(name, email),
+            payment_plans(
+                id,
+                total_amount_cents,
+                installments(status, amount_cents)
+            )
+        `)
+        .eq("project_id", projectId);
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
-            {/* Portal Header */}
             <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="bg-primary/10 p-2 rounded-lg">
                         <TrendingUp className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="font-bold text-lg">{data.projectName}</h1>
-                        <p className="text-xs text-muted-foreground">Client Portal</p>
+                        <h1 className="font-bold text-lg">{project.name}</h1>
+                        <p className="text-xs text-muted-foreground">Client Portal (Secure)</p>
                     </div>
                 </div>
                 <Button variant="ghost" disabled>
@@ -47,6 +80,7 @@ export default function ClientPortalPage() {
             </header>
 
             <main className="p-6 max-w-7xl mx-auto w-full flex flex-col gap-6">
+                {/* Stats Grid */}
                 <div className="grid gap-4 md:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -54,7 +88,9 @@ export default function ClientPortalPage() {
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{data.sales}</div>
+                            <div className="text-2xl font-bold">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(sales / 100)}
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -63,44 +99,65 @@ export default function ClientPortalPage() {
                             <TrendingUp className="h-4 w-4 text-green-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-green-600">{data.received}</div>
-                            <p className="text-xs text-muted-foreground">{data.collectedPct}% collected</p>
+                            <div className="text-2xl font-bold text-green-600">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(received / 100)}
+                            </div>
+                            <p className="text-xs text-muted-foreground">{collectedPct}% collected</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Adimplência</CardTitle>
+                            <CardTitle className="text-sm font-medium">Students</CardTitle>
                             <Users className="h-4 w-4 text-blue-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{data.adimplencia}</div>
+                            <div className="text-2xl font-bold">{enrollments?.length || 0}</div>
                         </CardContent>
                     </Card>
                 </div>
 
+                {/* Students List */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Students Overview</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {data.students.map((st, i) => (
-                                <div key={i} className="flex items-center justify-between border-b last:border-0 pb-4 last:pb-0">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarFallback>{st.name.slice(0, 1)}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-medium text-sm">{st.name}</p>
-                                            <p className="text-xs text-muted-foreground">{st.status}</p>
+                            {!enrollments || enrollments.length === 0 ? (
+                                <p className="text-muted-foreground text-sm">No students enrolled.</p>
+                            ) : enrollments.map((enr: any) => {
+                                // Calculate Paid %
+                                const plan = enr.payment_plans?.[0];
+                                const total = plan?.total_amount_cents || 0;
+                                const paid = plan?.installments
+                                    ?.filter((i: any) => i.status === 'paid')
+                                    .reduce((acc: number, cur: any) => acc + cur.amount_cents, 0) || 0;
+                                const percent = total > 0 ? Math.round((paid / total) * 100) : 0;
+                                const hasOverdue = plan?.installments?.some((i: any) => i.status === 'overdue');
+
+                                // Masking PII
+                                const displayName = maskPII
+                                    ? `${enr.customer?.name?.charAt(0)}. (Redacted)`
+                                    : enr.customer?.name || "Unknown";
+
+                                return (
+                                    <div key={enr.id} className="flex items-center justify-between border-b last:border-0 pb-4 last:pb-0">
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <p className="font-medium text-sm">{displayName}</p>
+                                                <p className="text-xs text-muted-foreground capitalize">{enr.status}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-sm font-medium">{percent}% Paid</div>
+                                            {hasOverdue && <Badge variant="destructive">Late Payment</Badge>}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-sm font-medium">{st.paid} Paid</div>
-                                        {st.atRisk && <Badge variant="destructive">Late Payment</Badge>}
-                                    </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     </CardContent>
                 </Card>
@@ -108,3 +165,4 @@ export default function ClientPortalPage() {
         </div>
     );
 }
+

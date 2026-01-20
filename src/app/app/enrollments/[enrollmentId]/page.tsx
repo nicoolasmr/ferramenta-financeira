@@ -16,6 +16,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { MarkPaidDialog } from "@/components/enrollments/MarkPaidDialog";
+import { RenegotiateDialog } from "@/components/enrollments/RenegotiateDialog";
 
 export default function EnrollmentProfilePage() {
     const params = useParams();
@@ -29,9 +31,9 @@ export default function EnrollmentProfilePage() {
         status: "Active",
         financial: { total: "R$ 10.000,00", paid: "R$ 5.000,00", open: "R$ 5.000,00", overdue: "R$ 0,00" },
         installments: [
-            { number: 1, amount: "R$ 5.000,00", due: "2026-01-01", status: "paid", paidAt: "2026-01-01" },
-            { number: 2, amount: "R$ 1.000,00", due: "2026-02-01", status: "pending", paidAt: null },
-            { number: 3, amount: "R$ 1.000,00", due: "2026-03-01", status: "pending", paidAt: null },
+            { id: "inst_1", number: 1, amountNumeric: 500000, amount: "R$ 5.000,00", due: "2026-01-01", status: "paid", paidAt: "2026-01-01" },
+            { id: "inst_2", number: 2, amountNumeric: 100000, amount: "R$ 1.000,00", due: "2026-02-01", status: "pending", paidAt: null },
+            { id: "inst_3", number: 3, amountNumeric: 100000, amount: "R$ 1.000,00", due: "2026-03-01", status: "pending", paidAt: null },
         ]
     };
 
@@ -172,17 +174,21 @@ export default function EnrollmentProfilePage() {
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                             {inst.status !== 'paid' && (
-                                                                <DropdownMenuItem className="text-green-600 cursor-pointer">
-                                                                    <CheckCircle className="mr-2 h-4 w-4" /> Mark as Paid
-                                                                </DropdownMenuItem>
+                                                                <MarkPaidDialog orgId="org-1" installmentId={inst.id} enrollmentId={enrollmentId} amount={inst.amountNumeric}>
+                                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-green-600 cursor-pointer">
+                                                                        <CheckCircle className="mr-2 h-4 w-4" /> Mark as Paid
+                                                                    </DropdownMenuItem>
+                                                                </MarkPaidDialog>
                                                             )}
                                                             <DropdownMenuItem>
                                                                 <CalendarDays className="mr-2 h-4 w-4" /> Change Due Date
                                                             </DropdownMenuItem>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className="text-orange-600 cursor-pointer">
-                                                                <DollarSign className="mr-2 h-4 w-4" /> Renegotiate
-                                                            </DropdownMenuItem>
+                                                            <RenegotiateDialog orgId="org-1" enrollmentId={enrollmentId} projectId="proj-1" selectedInstallments={[inst]}>
+                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-orange-600 cursor-pointer">
+                                                                    <DollarSign className="mr-2 h-4 w-4" /> Renegotiate
+                                                                </DropdownMenuItem>
+                                                            </RenegotiateDialog>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </div>
