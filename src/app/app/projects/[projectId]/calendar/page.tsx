@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
 export default function ProjectCalendarPage({ params }: { params: { projectId: string } }) {
