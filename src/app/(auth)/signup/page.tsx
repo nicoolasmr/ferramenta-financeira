@@ -45,6 +45,10 @@ export default function SignupPage() {
                             <Label htmlFor="password">Password</Label>
                             <Input id="password" name="password" type="password" required />
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword">Confirm Password</Label>
+                            <Input id="confirmPassword" name="confirmPassword" type="password" required />
+                        </div>
                         {state?.error && (
                             <div className="text-red-500 text-sm">{state.error}</div>
                         )}

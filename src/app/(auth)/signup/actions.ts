@@ -7,9 +7,16 @@ import { createClient } from "@/lib/supabase/server";
 export async function signup(prevState: any, formData: FormData) {
     const supabase = await createClient();
 
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    if (password !== confirmPassword) {
+        return { error: "Passwords do not match." };
+    }
+
     const data = {
         email: formData.get("email") as string,
-        password: formData.get("password") as string,
+        password: password,
         options: {
             data: {
                 full_name: formData.get("full_name") as string,
