@@ -64,3 +64,10 @@ If critical failure occurs:
    - If SQL migration caused issues, policies can be dropped manually.
    - `DROP POLICY "Org Members can upload documents" ON storage.objects;`
    - `DROP POLICY "Users can download documents" ON storage.objects;`
+
+### AI Copilot Operations
+- **Usage**: Use for rapid enrollment entry and "What If" scenarios.
+- **Roles**: Only `owner` and `member` can access `/app/copilot`.
+- **Logs**: Monitor `audit_logs` for `action: create_enrollment_plan` to see AI-generated entries.
+- **Import**: Max 500 rows per batch recommended. Code handles timeouts but UI may lag on massive files.
+

@@ -10,6 +10,7 @@ import {
     Settings,
     LayoutDashboard,
     ShoppingCart,
+    Sparkles,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -35,6 +36,11 @@ export function Sidebar() {
             href: "/app/payments",
             label: "Payments",
             icon: CreditCard,
+        },
+        {
+            href: "/app/copilot",
+            label: "Copilot",
+            icon: Sparkles,
         },
     ];
 
