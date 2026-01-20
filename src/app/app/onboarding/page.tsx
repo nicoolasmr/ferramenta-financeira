@@ -39,7 +39,7 @@ export default function OnboardingPage() {
                         {step === 3 && "Create your First Project"}
                     </CardTitle>
                     <CardDescription>
-                        Let's get your workspace ready for business.
+                        Let&apos;s get your workspace ready for business.
                     </CardDescription>
                 </CardHeader>
 
