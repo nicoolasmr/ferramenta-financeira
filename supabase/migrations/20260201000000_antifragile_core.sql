@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS public.providers_catalog (
 );
 
 ALTER TABLE public.providers_catalog ENABLE ROW LEVEL SECURITY;
+
+-- Drop policy if exists to avoid duplicate error
+DROP POLICY IF EXISTS "Public read catalog" ON public.providers_catalog;
 CREATE POLICY "Public read catalog" ON public.providers_catalog FOR SELECT USING (true);
 
 -- Seed Initial Catalog
@@ -41,6 +44,9 @@ CREATE TABLE IF NOT EXISTS public.state_anomalies (
 );
 
 ALTER TABLE public.state_anomalies ENABLE ROW LEVEL SECURITY;
+
+-- Drop policy if exists to avoid duplicate error
+DROP POLICY IF EXISTS "Org admins view anomalies" ON public.state_anomalies;
 CREATE POLICY "Org admins view anomalies" ON public.state_anomalies 
     FOR SELECT USING (org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid()));
 
