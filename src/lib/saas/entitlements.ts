@@ -9,7 +9,14 @@ export async function hasFeature(orgId: string, featureKey: string): Promise<boo
 
     // 2. Fallback: Check Plan directly (if entitlements not synced yet)
     const { data: sub } = await supabase.from("subscriptions").select("plan_id, plans(features)").eq("org_id", orgId).single();
-    if (sub?.plans?.features?.includes(featureKey)) return true;
+
+    // Safety check for array vs object return from joined resource
+    const plan = Array.isArray(sub?.plans) ? sub?.plans[0] : sub?.plans;
+
+    // Safely cast to any to avoid strict type checks on jsonb field
+    const features = (plan as any)?.features;
+
+    if (Array.isArray(features) && features.includes(featureKey)) return true;
 
     return false;
 }
