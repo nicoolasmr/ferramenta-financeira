@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: revenue-os
+  labels:
+    app: revenue-os
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: revenue-os
+  template:
+    metadata:
+      labels:
+        app: revenue-os
+    spec:
+      containers:
+      - name: revenue-os
+        image: revenue-os:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: revenue-os-secrets
+              key: NEXT_PUBLIC_SUPABASE_URL
+        - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+          valueFrom:
+            secretKeyRef:
+              name: revenue-os-secrets
+              key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: revenue-os-service
+spec:
+  selector:
+    app: revenue-os
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
