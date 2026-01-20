@@ -115,12 +115,14 @@ ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS after_state JSONB;
 
 -- Projects
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view projects in their org" ON public.projects;
 CREATE POLICY "Users can view projects in their org" ON public.projects
   FOR SELECT USING (
     org_id IN (
       SELECT m.org_id FROM public.memberships m WHERE m.user_id = auth.uid()
     )
   );
+DROP POLICY IF EXISTS "Admins/Owners can manage projects" ON public.projects;
 CREATE POLICY "Admins/Owners can manage projects" ON public.projects
   FOR ALL USING (
     org_id IN (
@@ -131,6 +133,7 @@ CREATE POLICY "Admins/Owners can manage projects" ON public.projects
 
 -- Project Members
 ALTER TABLE public.project_members ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "View project members" ON public.project_members;
 CREATE POLICY "View project members" ON public.project_members
   FOR SELECT USING (
     org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid())
@@ -138,10 +141,12 @@ CREATE POLICY "View project members" ON public.project_members
 
 -- Enrollments
 ALTER TABLE public.enrollments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "View enrollments in org" ON public.enrollments;
 CREATE POLICY "View enrollments in org" ON public.enrollments
   FOR SELECT USING (
     org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid())
   );
+DROP POLICY IF EXISTS "Manage enrollments" ON public.enrollments;
 CREATE POLICY "Manage enrollments" ON public.enrollments
   FOR ALL USING (
     org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid() AND role IN ('owner', 'admin'))
@@ -149,10 +154,12 @@ CREATE POLICY "Manage enrollments" ON public.enrollments
 
 -- Payment Plans
 ALTER TABLE public.payment_plans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "View plans" ON public.payment_plans;
 CREATE POLICY "View plans" ON public.payment_plans
   FOR SELECT USING (
-     org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid())
+      org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid())
   );
+DROP POLICY IF EXISTS "Manage plans" ON public.payment_plans;
 CREATE POLICY "Manage plans" ON public.payment_plans
   FOR ALL USING (
     org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid() AND role IN ('owner', 'admin'))
@@ -160,10 +167,12 @@ CREATE POLICY "Manage plans" ON public.payment_plans
 
 -- Installments
 ALTER TABLE public.installments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "View installments" ON public.installments;
 CREATE POLICY "View installments" ON public.installments
   FOR SELECT USING (
-     org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid())
+      org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid())
   );
+DROP POLICY IF EXISTS "Manage installments" ON public.installments;
 CREATE POLICY "Manage installments" ON public.installments
   FOR ALL USING (
     org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid() AND role IN ('owner', 'admin'))
