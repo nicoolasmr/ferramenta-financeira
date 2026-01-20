@@ -48,3 +48,15 @@ To ensure the total sum matches exactly:
 ## Reference Implementation
 
 See `src/lib/scheduling/engine.ts`.
+
+## Overdue & Grace Period
+- **Grace Days**: Configured in `payment_plans` (JSONB `schedule_rule`). Default is 0.
+- **Logic**: An installment is overdue if `Today > Due Date + Grace Days` and status is not 'paid'.
+- **Utility**: `calculateInstallmentStatus(installment, graceDays)` in `src/lib/scheduling/utils.ts`.
+
+## Renegotiation
+Renegotiation is handled non-destructively:
+1.  **Mark Old**: Existing pending installments are marked as `renegotiated` (status).
+2.  **Create New**: New installments are generated based on the new agreement.
+3.  **Financials**: `renegotiated` items are excluded from "Open" headers to prevent double-counting.
+

@@ -37,3 +37,9 @@ Sensitive actions are recorded in `audit_logs` via database triggers or applicat
     - Refund creation.
     - Integration config change.
     - User removal.
+
+## Portal Security
+The Client Portal (`/portal`) is strictly isolated from the main App (`/app`).
+- **Access Control**: Validated via RLS and Server Component logic. Only users with `client_viewer` role in `project_members` can access.
+- **PII Masking**: If `projects.settings.mask_pii` is set to `true`, customer names and emails are redacted in the portal view to protect privacy.
+
