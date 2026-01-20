@@ -2,14 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Disable ESLint and TypeScript checks during builds
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Empty turbopack config to enable Turbopack
-  turbopack: {},
+  // Force Webpack by NOT including turbopack config
+  // and using experimental flag to disable Turbopack
+  experimental: {
+    // @ts-ignore - this disables Turbopack
+    turbo: false,
+  },
 };
 
 export default nextConfig;
