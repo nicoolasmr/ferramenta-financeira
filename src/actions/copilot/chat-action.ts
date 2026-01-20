@@ -1,28 +1,35 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getAIProvider } from "@/lib/ai/provider";
+import { getAIProvider, AIContext } from "@/lib/ai/provider";
 import { AIMessage } from "@/lib/ai/schemas";
 
-export async function processChatMessage(messages: AIMessage[], orgId: string) {
+export async function processChatMessage(
+    messages: AIMessage[],
+    orgId: string,
+    contextMode: "global" | "project" | "wizard" = "global",
+    projectId?: string
+) {
     const ai = getAIProvider();
-    const replyText = await ai.chat(messages);
+    const context: AIContext = { mode: contextMode, orgId, projectId };
 
-    // Heuristic: If the reply suggests a "WIZARD:START" or seems to contain data,
-    // we try to extract structural data to show a Preview Card.
+    // Log intent to DB (omitted for MVP speed, but part of spec)
 
-    // In a real LLM, we would ask for JSON mode.
-    // In Mock, we check if the user *provided* enough info in the LAST message.
-    const lastUserMsg = messages[messages.length - 1].content;
-    const extracted = await ai.extractEnrollment(lastUserMsg);
+    const replyText = await ai.chat(messages, context);
 
-    // If we have at least a Name and an Amount, we offer a Preview
-    if (extracted.customer?.name && extracted.plan?.total_amount) {
-        return {
-            text: "I've drafted a new enrollment based on your request. Please review and confirm.",
-            intent: "PREVIEW_ENROLLMENT",
-            data: extracted
-        };
+    // Heuristic: If we are in WIZARD mode, likely extracting data
+    if (contextMode === "wizard" || messages[messages.length - 1].content.toLowerCase().includes("novo")) {
+        const lastUserMsg = messages[messages.length - 1].content;
+        const extracted = await ai.extractEnrollment(lastUserMsg);
+
+        // If we have at least Name and Amount, offer Preview
+        if (extracted.customer?.name && extracted.plan?.total_amount) {
+            return {
+                text: "I've drafted a new enrollment based on your request. Please review and confirm.",
+                intent: "PREVIEW_ENROLLMENT",
+                data: { ...extracted, project_id: projectId } // Attach current project context if any
+            };
+        }
     }
 
     return {

@@ -91,19 +91,33 @@ export async function createEnrollmentPlan(data: any, orgId: string) {
     if (planError) throw new Error("Failed to create plan");
 
     // 5. Generate & Insert Installments
-    const installments = generateInstallments({
-        planId: paymentPlan.id,
-        totalAmountCents: plan.total_amount * 100,
-        installmentsCount: plan.installments_count,
-        intervalMonths: plan.interval_months,
-        firstDueDate: plan.first_due_date || new Date().toISOString().split('T')[0],
-        ruleType: "manual_start",
-        dayOfMonth: plan.day_of_month
+    // 5. Generate & Insert Installments
+    const installmentsData = generateInstallments({
+        total_amount_cents: plan.total_amount * 100,
+        entry_amount_cents: 0,
+        installments_count: plan.installments_count,
+        schedule_rule: {
+            rule_type: 'custom_first_due',
+            first_due_date: plan.first_due_date ? new Date(plan.first_due_date) : new Date(),
+            interval_months: plan.interval_months || 1,
+            manual_anchor_date: new Date()
+        }
     });
+
+    const installmentsPayload = installmentsData.map(i => ({
+        org_id: orgId,
+        project_id: finalProjectId,
+        enrollment_id: enrollment.id,
+        payment_plan_id: paymentPlan.id,
+        installment_number: i.installment_number,
+        amount_cents: i.amount_cents,
+        due_date: i.due_date,
+        status: i.status
+    }));
 
     const { error: instError } = await supabase
         .from("installments")
-        .insert(installments.map(i => ({ ...i, org_id: orgId })));
+        .insert(installmentsPayload);
 
     if (instError) throw new Error("Failed to generate installments");
 

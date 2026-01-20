@@ -61,16 +61,32 @@ export async function processBulkImport(rows: ImportRow[], orgId: string, projec
             if (!plan) throw new Error("Failed plan");
 
             // 4. Installments
-            const installments = generateInstallments({
-                planId: plan.id,
-                totalAmountCents: amountCents,
-                installmentsCount: row.installments,
-                intervalMonths: 1,
-                firstDueDate: new Date().toISOString().split('T')[0],
-                ruleType: "manual_start"
+            // 4. Installments
+            const installmentsData = generateInstallments({
+                total_amount_cents: amountCents,
+                entry_amount_cents: 0,
+                installments_count: row.installments,
+                schedule_rule: {
+                    rule_type: 'days_after_entry',
+                    days_after: 30,
+                    interval_months: 1,
+                    anchor: 'manual_date',
+                    manual_anchor_date: new Date()
+                }
             });
 
-            await supabase.from("installments").insert(installments.map(i => ({ ...i, org_id: orgId })));
+            const installmentsPayload = installmentsData.map(i => ({
+                org_id: orgId,
+                project_id: projectId,
+                enrollment_id: enroll.id,
+                payment_plan_id: plan.id,
+                installment_number: i.installment_number,
+                amount_cents: i.amount_cents,
+                due_date: i.due_date,
+                status: i.status
+            }));
+
+            await supabase.from("installments").insert(installmentsPayload);
 
             processed++;
         } catch (e) {
