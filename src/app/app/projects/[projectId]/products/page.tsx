@@ -8,7 +8,13 @@ import { getProjectProducts } from "@/actions/projects/products-actions"; // Nee
 // import { CreateProductDialog } from "./create-product-dialog"; // Placeholder
 
 export default function ProjectProductsPage({ params }: { params: { projectId: string } }) {
-    const [products, setProducts] = useState<any[]>([]);
+    type ProductSummary = {
+        id: string;
+        name: string;
+        price_cents: number;
+    };
+
+    const [products, setProducts] = useState<ProductSummary[]>([]);
 
     useEffect(() => {
         getProjectProducts(params.projectId).then(setProducts);

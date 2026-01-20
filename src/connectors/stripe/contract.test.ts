@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import Stripe from 'stripe';
 import { normalize } from './normalize';
 
 describe('Stripe Connector Contract', () => {
@@ -23,7 +24,7 @@ describe('Stripe Connector Contract', () => {
             }
         };
 
-        const events = normalize(payload as any);
+        const events = normalize(payload as Stripe.Event);
 
         expect(events).toHaveLength(1);
         const event = events[0];
@@ -52,7 +53,7 @@ describe('Stripe Connector Contract', () => {
             }
         };
 
-        const events = normalize(payload as any);
+        const events = normalize(payload as Stripe.Event);
         expect(events).toHaveLength(1);
         expect(events[0].canonical_type).toBe('payment.confirmed');
         expect(events[0].payload.amount_cents).toBe(5000);

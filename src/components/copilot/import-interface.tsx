@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, CheckCircle, FileUp, Loader2, Upload } from "lucide-react";
 import { parseCSV } from "@/lib/import/csv";
-import { validateImportData, ImportRow } from "@/lib/import/mapping";
+import { validateImportData, ImportRow, ValidationError } from "@/lib/import/mapping";
 import { processBulkImport } from "@/actions/copilot/bulk-import";
 import { toast } from "sonner";
 import {
@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 
 export function ImportInterface() {
     const [csvText, setCsvText] = useState("");
-    const [previewData, setPreviewData] = useState<{ valid: ImportRow[], errors: any[] } | null>(null);
+    const [previewData, setPreviewData] = useState<{ valid: ImportRow[]; errors: ValidationError[] } | null>(null);
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState<"input" | "preview" | "done">("input");
     const [stats, setStats] = useState({ processed: 0, failed: 0 });

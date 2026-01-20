@@ -27,19 +27,19 @@ async function verifyPatchLogic() {
 
     // TEST 1: Basic Overdue (No Grace)
     const inst1: MockInstallment = { id: '1', due_date: pastDate, amount_cents: 1000, status: 'pending', paid_at: null };
-    const status1 = calculateInstallmentStatus(inst1 as any, 0);
+    const status1 = calculateInstallmentStatus(inst1, 0);
     runTest("Past Due (0 Grace) should be overdue", status1 === 'overdue');
 
     // TEST 2: Grace Period (Within Grace)
     // Due 10 days ago, Grace 15 days -> Should be PENDING
     const inst2: MockInstallment = { id: '2', due_date: pastDate, amount_cents: 1000, status: 'pending', paid_at: null };
-    const status2 = calculateInstallmentStatus(inst2 as any, 15);
+    const status2 = calculateInstallmentStatus(inst2, 15);
     runTest("Past Due (Within 15d Grace) should be pending", status2 === 'pending');
 
     // TEST 3: Grace Period (Exceeded)
     // Due 10 days ago, Grace 5 days -> Should be OVERDUE
     const inst3: MockInstallment = { id: '3', due_date: pastDate, amount_cents: 1000, status: 'pending', paid_at: null };
-    const status3 = calculateInstallmentStatus(inst3 as any, 5);
+    const status3 = calculateInstallmentStatus(inst3, 5);
     runTest("Past Due (Exceeded 5d Grace) should be overdue", status3 === 'overdue');
 
     // TEST 4: Renegotiated Logic (Visual Only - Logic is backend)

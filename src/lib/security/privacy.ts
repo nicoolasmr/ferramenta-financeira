@@ -17,7 +17,7 @@ export function maskPhone(phone: string): string {
     return phone.replace(/.(?=.{4})/g, "*");
 }
 
-export function shouldMaskPII(orgSettings: any): boolean {
+export function shouldMaskPII(orgSettings: unknown): boolean {
     // If we had a settings table synced to client, we'd check it here.
     // For now, we default to false unless strictly required.
     // Or check an env var.

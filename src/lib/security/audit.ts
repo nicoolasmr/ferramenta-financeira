@@ -11,7 +11,7 @@ export async function logAuditEvent(
     orgId: string,
     actorUserId: string,
     action: AuditAction,
-    details: any
+    details: Record<string, unknown> | string
 ) {
     const supabase = await createClient();
 

@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export async function signup(prevState: any, formData: FormData) {
+type SignupState = { error?: string } | undefined;
+
+export async function signup(prevState: SignupState, formData: FormData) {
     try {
         const supabase = await createClient();
 
@@ -48,7 +50,7 @@ export async function signup(prevState: any, formData: FormData) {
         // If email confirmation is enabled, we'd show a message.
         // For now, assuming auto-confirm or dev mode.
         return { message: "Account created successfully! Check your email to confirm." };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Unexpected signup error:", error);
         return { error: "An unexpected error occurred. Please check your internet connection and try again." };
     }

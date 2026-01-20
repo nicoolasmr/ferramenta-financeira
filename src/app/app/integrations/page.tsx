@@ -96,7 +96,7 @@ export default async function IntegrationsPage() {
                     <p className="font-semibold mb-1">Webhook Configuration</p>
                     <p>
                         Configuring an integration will generate a unique Webhook URL
-                        that you must add to the provider's settings to receive events (Sales, Refunds, Chargebacks).
+                        that you must add to the provider&apos;s settings to receive events (Sales, Refunds, Chargebacks).
                     </p>
                 </div>
             </div>

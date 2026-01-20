@@ -16,7 +16,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ type: st
     if (!membership) return new NextResponse("No Org Found", { status: 403 });
 
     let query;
-    let filename = `${type}-${new Date().toISOString().split('T')[0]}.csv`;
+    const filename = `${type}-${new Date().toISOString().split('T')[0]}.csv`;
 
     // Define permissible exports
     if (type === 'payments') {

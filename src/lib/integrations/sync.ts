@@ -6,6 +6,23 @@ export type SyncResult = {
     errors: string[];
 };
 
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+type ExternalEventRecord = {
+    id: string;
+    provider: string;
+    org_id: string;
+    event_type: string;
+    payload_json: Record<string, unknown>;
+};
+
+type StripeCheckoutPayload = {
+    id?: string;
+    payment_intent?: string;
+    amount_total?: number;
+    customer_details?: { email?: string };
+};
+
 export async function processIntegrationEvents(provider: string, orgId: string): Promise<SyncResult> {
     const supabase = await createClient();
     const result: SyncResult = { processed: 0, failed: 0, errors: [] };
@@ -36,22 +53,23 @@ export async function processIntegrationEvents(provider: string, orgId: string):
             }).eq("id", event.id);
 
             result.processed++;
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : "Unknown error";
             // Mark as failed
             await supabase.from("external_events").update({
                 status: "failed",
-                error_text: e.message
+                error_text: message
             }).eq("id", event.id);
 
             result.failed++;
-            result.errors.push(`Event ${event.id}: ${e.message}`);
+            result.errors.push(`Event ${event.id}: ${message}`);
         }
     }
 
     return result;
 }
 
-async function processSingleEvent(event: any, supabase: any) {
+async function processSingleEvent(event: ExternalEventRecord, supabase: SupabaseClient) {
     const payload = event.payload_json;
     const type = event.event_type;
 
@@ -68,11 +86,12 @@ async function processSingleEvent(event: any, supabase: any) {
     // Add other providers...
 }
 
-async function handleStripeSale(payload: any, orgId: string, supabase: any) {
+async function handleStripeSale(payload: Record<string, unknown>, orgId: string, supabase: SupabaseClient) {
     // Logic: Find/Create Customer -> Create Order -> Create Payment
     // For MVP, simplistic mapping
-    const customerEmail = payload.customer_details?.email;
-    const amountTotal = payload.amount_total; // cents
+    const stripePayload = payload as StripeCheckoutPayload;
+    const customerEmail = stripePayload.customer_details?.email;
+    const amountTotal = stripePayload.amount_total ?? 0; // cents
 
     if (!customerEmail) throw new Error("No email in payload");
 
@@ -92,7 +111,7 @@ async function handleStripeSale(payload: any, orgId: string, supabase: any) {
         org_id: orgId,
         customer_id: customer.id,
         source: "stripe_webhook",
-        external_id: payload.id,
+        external_id: stripePayload.id,
         status: "paid",
         gross_amount_cents: amountTotal,
         net_amount_cents: amountTotal, // simplified
@@ -108,7 +127,7 @@ async function handleStripeSale(payload: any, orgId: string, supabase: any) {
         gateway: "stripe",
         status: "paid",
         amount_cents: amountTotal,
-        external_id: payload.payment_intent,
+        external_id: stripePayload.payment_intent,
         paid_at: new Date().toISOString()
     });
 }

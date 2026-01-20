@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
     // In real world, check 'ops' role. For MVP, allowing authenticated users.
 
-    const body = await req.json();
+    const body = await req.json() as { orgId?: string; provider?: string; eventId?: string };
     const { orgId, provider, eventId } = body;
 
     if (!orgId || !provider || !eventId) {
@@ -21,7 +21,8 @@ export async function POST(req: Request) {
     try {
         const result = await processExternalEvent(orgId, provider, eventId);
         return NextResponse.json(result);
-    } catch (e: any) {
-        return new NextResponse(e.message, { status: 500 });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Unknown error";
+        return new NextResponse(message, { status: 500 });
     }
 }

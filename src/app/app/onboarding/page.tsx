@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,9 @@ export default function OnboardingPage() {
     });
 
     const handleNext = () => setStep(s => s + 1);
-    const handleChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -39,11 +41,11 @@ export default function OnboardingPage() {
                         {step === 3 && "Create your First Project"}
                     </CardTitle>
                     <CardDescription>
-                        Let's get your workspace ready for business.
+                        Let&apos;s get your workspace ready for business.
                     </CardDescription>
                 </CardHeader>
 
-                <form action={completeOnboarding as any}>
+                <form action={completeOnboarding}>
                     <CardContent className="space-y-4">
                         {step === 1 && (
                             <div className="space-y-4">

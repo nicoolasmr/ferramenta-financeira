@@ -52,7 +52,7 @@ export default function LoginPage() {
                     </CardFooter>
                 </form>
                 <div className="mt-4 text-center text-sm pb-6">
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link href="/signup" className="underline">
                         Sign up
                     </Link>

@@ -30,7 +30,13 @@ export async function getProjectProducts(projectId: string) {
     return products || [];
 }
 
-export async function createProduct(data: any, projectId: string) {
+type ProductInput = {
+    name: string;
+    price_cents: number;
+    type?: string;
+};
+
+export async function createProduct(data: ProductInput, projectId: string) {
     const supabase = await createClient();
     const { data: project } = await supabase.from("projects").select("org_id").eq("id", projectId).single();
     if (!project) throw new Error("Project not found");

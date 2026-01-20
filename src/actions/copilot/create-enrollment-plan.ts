@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { generateInstallments } from "@/lib/scheduling/engine";
 import { AIEnrollmentSchema } from "@/lib/ai/schemas";
 
-export async function createEnrollmentPlan(data: any, orgId: string) {
+export async function createEnrollmentPlan(data: unknown, orgId: string) {
     const supabase = await createClient();
     const user = (await supabase.auth.getUser()).data.user;
 

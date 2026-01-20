@@ -20,7 +20,7 @@ export function RenegotiateDialog({
     orgId: string,
     enrollmentId: string,
     projectId: string,
-    selectedInstallments: any[],
+    selectedInstallments: Array<{ id: string; amount_cents: number; plan_id: string }>,
     children: React.ReactNode
 }) {
     const [open, setOpen] = useState(false);

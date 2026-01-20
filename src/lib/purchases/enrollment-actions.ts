@@ -22,7 +22,7 @@ export async function renegotiateInstallments(
     enrollmentId: string,
     projectId: string,
     oldInstallmentIds: string[],
-    newInstallmentsData: any[]
+    newInstallmentsData: Array<Record<string, unknown>>
 ) {
     const supabase = await createClient(); // Fixed await
     console.info(`[Action:Renegotiate] Start - Enrollment: ${enrollmentId}, Project: ${projectId}`);

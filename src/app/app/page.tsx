@@ -7,8 +7,21 @@ import { BarChart3, TrendingUp, AlertCircle, CheckCircle2, DollarSign } from "lu
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CommandCenterPage() {
-    const [financials, setFinancials] = useState<any>(null);
-    const [projects, setProjects] = useState<any[]>([]);
+    type Financials = {
+        total_volume_cents: number;
+        total_received_cents: number;
+        total_overdue_cents: number;
+        total_open_cents: number;
+    };
+
+    type ProjectSummary = {
+        id: string;
+        name: string;
+        enrollments: Array<{ count: number }>;
+    };
+
+    const [financials, setFinancials] = useState<Financials | null>(null);
+    const [projects, setProjects] = useState<ProjectSummary[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -106,7 +119,7 @@ export default function CommandCenterPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {projects.map((proj: any) => (
+                            {projects.map((proj) => (
                                 <div key={proj.id} className="flex items-center">
                                     <div className="ml-4 space-y-1">
                                         <p className="text-sm font-medium leading-none">{proj.name}</p>

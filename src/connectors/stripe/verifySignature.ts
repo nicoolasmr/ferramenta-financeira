@@ -16,7 +16,8 @@ export async function verifySignature(req: NextRequest, body: string): Promise<S
             process.env.STRIPE_WEBHOOK_SECRET!
         );
         return { isValid: true };
-    } catch (err: any) {
-        return { isValid: false, reason: err.message };
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        return { isValid: false, reason: message };
     }
 }

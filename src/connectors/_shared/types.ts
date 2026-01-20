@@ -30,8 +30,8 @@ export interface CanonicalPayload {
         unit_price_cents: number;
     }>;
     created_at: string; // ISO 8601
-    metadata?: Record<string, any>;
-    raw_payload?: any; // Ensure we can trace back
+    metadata?: Record<string, unknown>;
+    raw_payload?: unknown; // Ensure we can trace back
 }
 
 export interface CanonicalEvent {

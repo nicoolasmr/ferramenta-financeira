@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getConnector } from "@/connectors/registry";
 import { applyEvent } from "@/lib/integrations/applier";
+import { CanonicalEvent } from "@/connectors/_shared/types";
 
 export async function processExternalEvent(orgId: string, provider: string, externalEventId: string) {
     const supabase = await createClient();
@@ -19,13 +20,14 @@ export async function processExternalEvent(orgId: string, provider: string, exte
     const connector = getConnector(provider);
     if (!connector) throw new Error("Provider not supported");
 
-    let canonicalEvents = [];
+    let canonicalEvents: CanonicalEvent[] = [];
     try {
         // We pass empty headers as we might not have original headers stored or needed for normalize logic mostly (except signature)
         // Ideally we should store headers if needed for normalize, but usually body is enough.
         canonicalEvents = connector.normalize(raw.payload_json, new Headers());
-    } catch (e: any) {
-        throw new Error(`Normalization failed: ${e.message}`);
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Unknown error";
+        throw new Error(`Normalization failed: ${message}`);
     }
 
     // 3. Apply (Idempotent)

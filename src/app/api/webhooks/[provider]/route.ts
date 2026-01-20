@@ -1,11 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getConnector } from "@/connectors/registry";
 import { applyEvent } from "@/lib/integrations/applier";
 import { CanonicalEvent } from "@/connectors/_shared/types";
 import { generateCanonicalHash } from "@/connectors/_shared/idempotency";
 
-export async function POST(req: Request, props: { params: Promise<{ provider: string }> }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ provider: string }> }) {
     const params = await props.params;
     const provider = params.provider;
 
@@ -15,7 +15,7 @@ export async function POST(req: Request, props: { params: Promise<{ provider: st
     }
 
     const bodyText = await req.text();
-    const { isValid, reason } = await connector.verifySignature(req as any, bodyText);
+    const { isValid, reason } = await connector.verifySignature(req, bodyText);
 
     if (!isValid) {
         console.warn(`Webhook Signature Failed [${provider}]: ${reason}`);
@@ -40,7 +40,7 @@ export async function POST(req: Request, props: { params: Promise<{ provider: st
     let canonicalEvents: CanonicalEvent[] = [];
     try {
         canonicalEvents = connector.normalize(bodyJson, req.headers);
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error(`Normalization Error [${provider}]:`, err);
     }
 

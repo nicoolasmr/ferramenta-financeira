@@ -3,7 +3,7 @@ import { CanonicalEvent, SignatureVerificationResult } from './types';
 
 export interface Connector {
     verifySignature(req: NextRequest, body: string): Promise<SignatureVerificationResult>;
-    normalize(body: any, headers?: Headers): CanonicalEvent[];
+    normalize(body: unknown, headers?: Headers): CanonicalEvent[];
     // Apply is usually logic that touches the DB, so it might be separate or part of the class
 }
 

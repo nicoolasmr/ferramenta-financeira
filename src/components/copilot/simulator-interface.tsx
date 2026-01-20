@@ -12,7 +12,14 @@ import { toast } from "sonner";
 export function SimulatorInterface() {
     const [rate, setRate] = useState([10]); // 10%
     const [delay, setDelay] = useState([15]); // 15 days
-    const [result, setResult] = useState<any>(null);
+    type SimulationResult = {
+        baseline: number;
+        lost: number;
+        delayed: number;
+        simulated: number;
+    };
+
+    const [result, setResult] = useState<SimulationResult | null>(null);
     const [loading, setLoading] = useState(false);
 
     const handleRun = async () => {
@@ -67,7 +74,7 @@ export function SimulatorInterface() {
                                 className="w-full"
                             />
                         </div>
-                        <p className="text-xs text-muted-foreground">Average days late for "Pending" payments.</p>
+                        <p className="text-xs text-muted-foreground">Average days late for &quot;Pending&quot; payments.</p>
                     </div>
 
                     <Button onClick={handleRun} disabled={loading} className="w-full">

@@ -14,6 +14,31 @@ const TABLES = {
     PAYMENTS_PER_ORDER: 1, // Mostly 1, some 2
 };
 
+type OrgSeed = {
+    id: string;
+    name: string;
+    slug: string;
+};
+
+type ProductSeed = {
+    id: string;
+    org_id: string;
+    price: number;
+};
+
+type CustomerSeed = {
+    id: string;
+    org_id: string;
+    email: string;
+};
+
+type OrderItemSeed = {
+    product_id: string;
+    qty: number;
+    unit_price: number;
+    discount: number;
+};
+
 function generateUUID() {
     return faker.string.uuid();
 }
@@ -28,7 +53,7 @@ function main() {
     console.log('BEGIN;');
 
     // 1. Create Orgs
-    const orgs: any[] = [];
+    const orgs: OrgSeed[] = [];
     for (let i = 0; i < TABLES.ORGS; i++) {
         const id = generateUUID();
         const name = faker.company.name();
@@ -38,7 +63,7 @@ function main() {
     }
 
     // 2. Create Products
-    const products: any[] = [];
+    const products: ProductSeed[] = [];
     for (const org of orgs) {
         for (let i = 0; i < TABLES.PRODUCTS_PER_ORG; i++) {
             const id = generateUUID();
@@ -50,7 +75,7 @@ function main() {
     }
 
     // 3. Create Customers
-    const customers: any[] = [];
+    const customers: CustomerSeed[] = [];
     for (const org of orgs) {
         for (let i = 0; i < TABLES.CUSTOMERS_PER_ORG; i++) {
             const id = generateUUID();
@@ -84,7 +109,7 @@ function main() {
 
             // Create Order first (we update amounts later ideally, but for SQL insert we need it now)
             // Let's generate items first in memory
-            const items = [];
+            const items: OrderItemSeed[] = [];
             for (let k = 0; k < numItems; k++) {
                 const product = faker.helpers.arrayElement(orgProducts);
                 const qty = faker.number.int({ min: 1, max: 2 });
