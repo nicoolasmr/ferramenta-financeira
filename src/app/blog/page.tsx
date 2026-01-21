@@ -26,7 +26,10 @@ export default function BlogIndex({ searchParams }: { searchParams: { category?:
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
             <header className="bg-slate-900 text-white py-20">
-                <div className="container mx-auto px-4 max-w-6xl text-center">
+                <div className="container mx-auto px-4 max-w-6xl text-center relative">
+                    <Link href="/" className="absolute left-4 top-0 text-slate-400 hover:text-white text-sm font-bold tracking-wider">
+                        ← REVENUEOS
+                    </Link>
                     <h1 className="text-4xl font-bold mb-4">Blog RevenueOS</h1>
                     <p className="text-xl text-slate-300 max-w-2xl mx-auto">
                         Insights táticos sobre gestão de receita, inadimplência e operações financeiras para SaaS B2B.

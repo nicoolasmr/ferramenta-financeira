@@ -79,10 +79,11 @@ export default async function BlogPost({ params }: { params: { slug: string } })
             {/* Header */}
             <div className="bg-slate-50 border-b border-slate-200 py-16">
                 <div className="container mx-auto px-4 max-w-3xl">
-                    <Link href="/blog" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 mb-8 transition-colors">
-                        <ChevronLeft className="w-4 h-4 mr-1" />
-                        Voltar para o blog
-                    </Link>
+                    <div className="flex items-center gap-4 text-sm font-medium text-slate-500 mb-8">
+                        <Link href="/" className="hover:text-slate-900 transition-colors">Home</Link>
+                        <span className="text-slate-300">/</span>
+                        <Link href="/blog" className="hover:text-slate-900 transition-colors">Blog</Link>
+                    </div>
                     <div className="flex gap-4 items-center mb-6">
                         <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
                             {post.frontmatter.category}
@@ -109,8 +110,8 @@ export default async function BlogPost({ params }: { params: { slug: string } })
             </div>
 
             {/* Content */}
-            <div className="container mx-auto px-4 max-w-3xl py-12">
-                <div className="prose prose-slate prose-lg max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-xl">
+            <div className="container mx-auto px-4 max-w-3xl py-16">
+                <div className="prose prose-slate prose-xl max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-headings:tracking-tight prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-2xl prose-img:shadow-lg prose-p:leading-loose prose-li:leading-loose">
                     <MDXRemote source={post.content} components={components} />
                 </div>
 

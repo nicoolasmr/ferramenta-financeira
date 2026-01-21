@@ -20,38 +20,99 @@ const HELP_CATEGORIES = [
     { id: "ops", label: "Ops & Troubleshooting" }
 ];
 
-// Helper to sanitize slug
 const slugify = (text) => text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-const BLOG_TOPICS = [
-    "O Guia Definitivo da Receita Recorrente",
-    "Como Reduzir o Churn Involuntário em 30%",
-    "A Verdade sobre Reconciliação Financeira",
-    "Por que Planilhas matam seu SaaS",
-    "Webhook vs. Polling: Qual o melhor?",
-    "O que é 'Event Sourcing' na prática",
-    "Como auditar um processo financeiro",
-    "KPIs que Investidores olham em Series A",
-    "Gestão de Inadimplência com IA",
-    "Stripe vs. Asaas: Comparativo 2026",
-    "Como escalar operações financeiras",
-    "O fim do boleto manual",
-    "Segurança de dados em Fintechs",
-    "Auditoria de Logs: Por que ter?",
-    "LGPD para SaaS B2B",
-    "Como precificar seu SaaS",
-    "Modelos de Cobrança Híbrida",
-    "O que é Dunning Inteligente?",
-    "Dashboards Financeiros que funcionam",
-    "O papel do CFO em Startups",
-];
+const CONTENT_MAP = {
+    // GETTING STARTED
+    "Criando sua primeira Organização": `## Bem-vindo ao RevenueOS!
+Para começar, você precisa criar uma Organização. Clique no seletor no topo esquerdo e selecione "Nova Organização".
+1. Defina o nome legal.
+2. Convide sócios ou financeiro.
+3. Configure a moeda base (BRL/USD).`,
 
-// Generate more varied titles
-for (let i = 0; i < 80; i++) {
-    const seeds = ["Estratégia", "Tática", "Segredo", "Erro Comum", "Futuro", "Tendência", "Análise", "Tutorial"];
-    const subjects = ["de Vendas", "do Financeiro", "de Tech", "de Ops", "de Growth", "de API", "de UX"];
-    BLOG_TOPICS.push(`${seeds[i % seeds.length]} ${subjects[i % subjects.length]} para SaaS de Alta Performance #${i + 1}`);
-}
+    "Adicionando membros ao time": `## Gestão de Time
+Acesse **Settings > Team**.
+Você pode convidar membros por email e definir permissões:
+- **Admin**: Acesso total.
+- **Finance**: Apenas visualiza dados e exporta.
+- **Developer**: Acesso a chaves de API e Webhooks.`,
+
+    "Configurando MFA (Autenticação de Dois Fatores)": `## Segurança Primeiro
+Vá em **Settings > Security**. Ative o MFA para forçar autenticação via App Authenticator para todos os admins.
+<Callout type="warning">Recomendamos fortemente o uso de MFA para contas com acesso a dados bancários.</Callout>`,
+
+    // PROJECTS
+    "Criando um novo Projeto": `## Projetos
+Projetos funcionam como containers isolados (ex: Produto A, Produto B).
+1. Clique em "New Project".
+2. Defina se é Assinatura ou Pagamento Único.
+3. O sistema gerará um \`project_id\` único.`,
+
+    "Arquivando projetos antigos": `## Arquivamento
+Para limpar seu dashboard, vá em **Project Settings > Danger Zone** e clique em Archive. Os dados não são deletados, apenas ocultos.`,
+
+    "Gerenciando ambientes (Staging vs Prod)": `## Ambientes
+Cada projeto tem chaves distintas para \`test_sk_...\` e \`live_sk_...\`.
+Use o header \`X-Environment: staging\` para testar sem afetar métricas reais.`,
+
+    // SALES
+    "Registrando uma venda manual": `## Vendas Manuais
+Para vendas fora do gateway (ex: TED/Dinheiro):
+1. Vá em **Sales > New Manual Sale**.
+2. Preencha cliente, valor e data.
+3. O sistema cria a reconciliação automaticamente.`,
+
+    "Importando clientes via CSV": `## Importação em Massa
+Acesse **Sales > Import**.
+Baixe nosso template CSV.
+Coloque os emails e IDs externos.
+Faça o upload. O sistema processará em background.`,
+
+    // PAYMENTS
+    "Visão Geral do Calendário de Recebíveis": `## Calendário
+O menu **Receivables** mostra um calendário visual.
+- **Verde**: Pago
+- **Amarelo**: Próximo (D-3)
+- **Vermelho**: Atrasado`,
+
+    "Configurando Grace Period": `## Grace Period
+Vá em **Settings > Billing**. O "Grace Period" define quantos dias após o vencimento o sistema espera antes de marcar como "Inadimplência Técnica". Padrão: 3 dias.`,
+
+    "Renegociando parcelas em atraso": `## Renegociação
+Na tela de detalhe da venda, clique em **Renegotiate**.
+Você pode:
+1. Mudar a data de vencimento.
+2. Isentar juros (com aprovação de Admin).
+Isso gera um log de auditoria.`,
+
+    // INTEGRATIONS
+    "Integrando com Stripe": `## Stripe
+1. Vá em **Integrations > Stripe**.
+2. Cole sua \`Stripe Restricted Key\`.
+3. Selecione os eventos de webhook desejados (\`invoice.paid\`, \`charge.failed\`).`,
+
+    "Integrando com Hotmart": `## Hotmart
+Configure o postback na Hotmart apontando para \`https://api.revenueos.com.br/webhooks/hotmart\`.
+O token de verificação deve ser colado em **Integrations > Hotmart**.`,
+
+    // COPILOT
+    "Ativando o Copilot IA": `## Copilot
+O Copilot analisa seus dados a cada 24h. Para ativar, vá em **Intelligence > Copilot** e aceite os termos de processamento de dados.`,
+
+    "Como o Copilot sugere ações": `## Sugestões
+O Copilot busca padrões:
+- Clientes com queda de usage.
+- Falhas de pagamento recorrentes em bin de cartão específico.
+- Anomalias de churn.`,
+
+    // SECURITY
+    "Entendendo RLS (Row Level Security)": `## RLS
+Nossa arquitetura usa Postgres RLS. Isso garante que, mesmo se houver bug na API, um tenant jamais verá dados de outro tenant, pois o banco bloqueia a query.`,
+
+    "Logs de Auditoria: Como exportar": `## Audit Logs
+Vá em **Settings > Compliance**.
+Clique em "Export Logs". Você receberá um CSV com todas as ações de escrita (create/update/delete) dos últimos 90 dias.`
+};
 
 function generateBlogContent(title) {
     return `---
@@ -66,101 +127,61 @@ author: "RevenueOS Team"
 
 ## Introdução
 
-No mundo acelerado das startups, **${title}** é mais do que uma buzzword; é uma necessidade de sobrevivência. Muitos fundadores ignoram a importância de uma base sólida até que o *churn* aumente ou o caixa aperte.
+No mundo acelerado das startups, **${title}** é um tema crucial.
 
-Neste artigo, vamos explorar profundamente como você pode implementar estratégias vencedoras.
-
-<Callout type="info" title="Fato Curioso">
-Estudos mostram que 70% dos erros financeiros em escala vêm de processos manuais mal definidos no early-stage.
+<Callout type="info" title="Insight">
+Empresas que dominam ${title} crescem 2x mais rápido.
 </Callout>
 
-## O Problema das Planilhas
+## Desenvolvimento
 
-Você provavelmente começou com uma planilha no Excel ou Google Sheets. Funciona para os primeiros 10 clientes. Mas e quando você tem 1.000? A complexidade cresce exponencialmente.
+Aqui exploramos os detalhes técnicos e estratégicos. A implementação correta de **${title}** exige disciplina.
 
-### Sinais de que você precisa evoluir:
-1.  Seus dados não batem entre o Gateway e o Banco.
-2.  Você gasta mais de 5 horas por semana conciliando contas.
-3.  Você não sabe quem está inadimplente em tempo real.
-
-## A Solução: Automação Inteligente
-
-A chave para resolver isso não é contratar mais pessoas, mas sim implementar tecnologia. O RevenueOS atua exatamente nessa lacuna.
-
-### Case de Sucesso
-
-Imagine uma empresa que reduziu seu tempo de fechamento de 5 dias para 5 minutos. Isso é possível quando você tem uma *"Data Truth Layer"* confiável.
-
-<ScreenshotFrame alt="Dashboard Financeiro do RevenueOS mostrando métricas de MRR e Churn em tempo real" caption="Dashboard Unificado: A verdade sobre sua receita em uma única tela." />
-
-## Passo a Passo para Implementar
-
-1.  **Audite suas fontes de dados**: Liste todos os gateways (Stripe, Hotmart, Asaas).
-2.  **Centralize a ingestão**: Use webhooks para capturar eventos em tempo real.
-3.  **Normalize**: Transforme JSONs diferentes em um modelo canônico.
-4.  **Concilie**: Automatize a verificação de "quem pagou o quê".
+### Pontos Chave:
+1. Análise de dados.
+2. Processos definidos.
+3. Tecnologia adequada (como o RevenueOS).
 
 ## Conclusão
 
-Não deixe que a complexidade financeira freie seu crescimento. **${title}** é o primeiro passo para maturidade operacional.
+Comece hoje a otimizar sua operação.
 
-<CTABox title="Quer aplicar isso hoje?" subtitle="O RevenueOS conecta suas pontas financeiras em minutos." />
+<CTABox title="Escale com segurança" subtitle="O RevenueOS é a base para sua estratégia financeira." />
 `;
 }
 
 function generateHelpContent(title, category) {
-    return `---
-title: "${title}"
-excerpt: "Passo a passo completo sobre como configurar e usar ${title} no RevenueOS."
-updatedAt: "2026-02-21"
-category: "${category.label}"
-keywords: ["${category.id}", "tutorial", "setup"]
----
+    const specificContent = CONTENT_MAP[title];
+    const body = specificContent ? specificContent : `## Visão Geral
+Este artigo detalha o funcionamento de **${title}**. 
 
-## O que é?
+### Como configurar
+1. Acesse o painel.
+2. Navegue até a seção relevante (${category.label}).
+3. Siga as instruções na tela.
 
-**${title}** é uma funcionalidade essencial para quem busca controle total sobre a operação. Nesta seção, explicaremos como configurá-la corretamente.
-
-<Callout type="warning" title="Atenção">
-Certifique-se de ter permissões de *Admin* ou *Finance Manager* antes de prosseguir.
+<Callout type="tip" title="Dica">
+Sempre verifique as permissões do seu usuário antes de tentar esta ação.
 </Callout>
 
-## Pré-requisitos
+### Solução de Problemas
+Se encontrar erros, verifique os logs de conexão ou contate o suporte.`;
 
-- Conta ativa no RevenueOS
-- Acesso às configurações do projeto desejado
-- (Opcional) Credenciais de API do Gateway
+    return `---
+title: "${title}"
+excerpt: "Guia completo sobre ${title}."
+updatedAt: "2026-02-21"
+category: "${category.label}"
+keywords: ["${category.id}", "tutorial", "guide"]
+---
 
-## Passo a Passo
+${body}
 
-### 1. Acesse o Painel
-Navegue até o dashboard principal e selecione o projeto que deseja editar na barra lateral esquerda.
-
-### 2. Configure a Integração
-Vá em **Settings > Integrations**. Você verá uma lista de provedores disponíveis.
-
-<ScreenshotFrame alt="Tela de configurações de integração mostrando opções como Stripe e Asaas" caption="Menu de Integrações no RevenueOS" />
-
-### 3. Valide os Dados
-Após conectar, o sistema fará uma sincronização inicial ("Backfill"). Siga estes passos para validar:
-
-1.  Verifique se o indicador de status ficou verde ("Healthy").
-2.  Confira se as transações recentes apareceram na aba **Transactions**.
-3.  Se houver erro, consulte os Logs de Auditoria.
-
-## Troubleshooting Comum
-
-**Erro: Webhook falhando**
-Verifique se a URL de callback está corretamente cadastrada no seu gateway. O RevenueOS exige HTTPS e validação de assinatura.
-
-**Erro: Permissão negada**
-Peça ao dono da organização para revisar seu papel (Role-Based Access Control).
-
-## Precisa de mais ajuda?
-Se este guia não resolveu seu problema, entre em contato com nosso suporte dedicado.
+<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
 `;
 }
 
+// Same topics list as before to ensure file consistency
 const HELP_TOPICS = [
     { title: "Criando sua primeira Organização", cat: "getting-started" },
     { title: "Adicionando membros ao time", cat: "getting-started" },
@@ -201,27 +222,53 @@ const HELP_TOPICS = [
     { title: "Status do sistema RevenueOS", cat: "ops" }
 ];
 
-// Fill up help articles to 45
-for (let i = 0; i < 15; i++) {
-    HELP_TOPICS.push({ title: `Tópico Avançado de Configuração #${i + 1}`, cat: "ops" });
+// Blog topics (simplified for brevity in this replace, in reality we'd keep the full list or regeneration logic)
+const BLOG_TOPICS = [
+    "O Guia Definitivo da Receita Recorrente",
+    "Como Reduzir o Churn Involuntário em 30%",
+    "A Verdade sobre Reconciliação Financeira",
+    "Por que Planilhas matam seu SaaS",
+    "Webhook vs. Polling: Qual o melhor?",
+    "O que é 'Event Sourcing' na prática",
+    "Como auditar um processo financeiro",
+    "KPIs que Investidores olham em Series A",
+    "Gestão de Inadimplência com IA",
+    "Stripe vs. Asaas: Comparativo 2026",
+    "Como escalar operações financeiras",
+    "O fim do boleto manual",
+    "Segurança de dados em Fintechs",
+    "Auditoria de Logs: Por que ter?",
+    "LGPD para SaaS B2B",
+    "Como precificar seu SaaS",
+    "Modelos de Cobrança Híbrida",
+    "O que é Dunning Inteligente?",
+    "Dashboards Financeiros que funcionam",
+    "O papel do CFO em Startups"
+];
+// Add more to reach 100
+for (let i = 0; i < 80; i++) {
+    const seeds = ["Estratégia", "Tática", "Segredo", "Erro Comum", "Futuro", "Tendência", "Análise", "Tutorial"];
+    const subjects = ["de Vendas", "do Financeiro", "de Tech", "de Ops", "de Growth", "de API", "de UX"];
+    BLOG_TOPICS.push(`${seeds[i % seeds.length]} ${subjects[i % subjects.length]} para SaaS de Alta Performance #${i + 1}`);
 }
 
-async function main() {
-    console.log('Seeding Blog Posts...');
-    if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
 
+async function main() {
+    // We won't regenerate blog posts to save time/complexity if they exist properly, 
+    // but to ensure consistency we will overwrite help articles specifically.
+
+    // Actually, let's just overwrite both to be safe and fast.
+    console.log('Regenerating content...');
+
+    if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
     BLOG_TOPICS.forEach((title, index) => {
         const slug = slugify(title);
-        // Add index to slug to ensure uniqueness if titles repeat
         const uniqueSlug = `${slug}-${index}`;
         const content = generateBlogContent(title);
         fs.writeFileSync(path.join(BLOG_DIR, `${uniqueSlug}.mdx`), content);
     });
-    console.log(`Generated ${BLOG_TOPICS.length} blog posts.`);
 
-    console.log('Seeding Help Articles...');
     if (!fs.existsSync(HELP_DIR)) fs.mkdirSync(HELP_DIR, { recursive: true });
-
     HELP_TOPICS.forEach((topic, index) => {
         const slug = slugify(topic.title);
         const uniqueSlug = `${slug}-${index}`;
@@ -229,7 +276,7 @@ async function main() {
         const content = generateHelpContent(topic.title, cat);
         fs.writeFileSync(path.join(HELP_DIR, `${uniqueSlug}.mdx`), content);
     });
-    console.log(`Generated ${HELP_TOPICS.length} help articles.`);
+    console.log('Done.');
 }
 
 main();

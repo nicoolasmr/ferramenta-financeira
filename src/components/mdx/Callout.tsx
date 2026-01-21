@@ -19,11 +19,11 @@ export function Callout({ type = "info", title, children }: { type?: "info" | "s
     const style = styles[type];
 
     return (
-        <div className={`my-6 p-4 rounded-lg border flex gap-4 ${style}`}>
-            <Icon className="w-5 h-5 shrink-0 mt-0.5 opacity-80" />
+        <div className={`my-8 p-6 rounded-xl border-l-4 shadow-sm flex gap-4 ${style}`}>
+            <Icon className="w-6 h-6 shrink-0 mt-1" />
             <div>
-                {title && <h4 className="font-bold mb-1">{title}</h4>}
-                <div className="text-sm leading-relaxed opacity-90">
+                {title && <h4 className="font-bold text-lg mb-2">{title}</h4>}
+                <div className="text-base leading-relaxed opacity-90">
                     {children}
                 </div>
             </div>

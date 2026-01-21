@@ -45,9 +45,9 @@ export default async function HelpArticle({ params }: { params: { slug: string }
             <header className="bg-white border-b border-slate-200 py-10">
                 <div className="container mx-auto px-4 max-w-4xl">
                     <nav className="flex items-center text-sm text-slate-500 mb-6">
-                        <Link href="/ajuda" className="hover:text-blue-600 flex items-center transition-colors">
-                            <ChevronLeft className="w-4 h-4 mr-1" /> Central de Ajuda
-                        </Link>
+                        <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+                        <span className="mx-2">/</span>
+                        <Link href="/ajuda" className="hover:text-blue-600 transition-colors">Central de Ajuda</Link>
                         <span className="mx-2">/</span>
                         <span className="text-slate-900 font-medium">{doc.frontmatter.category}</span>
                     </nav>
