@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { landingContent } from "@/content/landingContent";
-import { ArrowRight, CheckCircle2, Menu } from "lucide-react";
+import { ArrowRight, CheckCircle2, Menu, Zap } from "lucide-react";
 
 export const metadata = {
     title: "RevenueOS - O Sistema Operacional Financeiro para SaaS Moderno",
