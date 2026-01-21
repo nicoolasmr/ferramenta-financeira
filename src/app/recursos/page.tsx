@@ -39,8 +39,11 @@ export default function ResourceCenter() {
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
             {/* Hero */}
-            <div className="bg-slate-900 text-white py-20 px-4">
+            <div className="bg-slate-900 text-white py-20 px-4 relative">
                 <div className="container mx-auto max-w-6xl">
+                    <Link href="/" className="absolute left-4 top-8 text-slate-500 hover:text-white transition-colors text-sm font-bold tracking-wider">
+                        ← REVENUEOS
+                    </Link>
                     <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Resource Center</h1>
                     <p className="text-xl text-slate-400 max-w-2xl mb-8">
                         A biblioteca definitiva para operadores financeiros.
@@ -98,7 +101,7 @@ export default function ResourceCenter() {
                                 <article className={`h-full bg-white p-6 rounded-xl border border-slate-200 transition-all hover:shadow-lg hover:border-blue-300 flex flex-col ${res.featured ? 'md:col-span-2 bg-gradient-to-br from-white to-blue-50/50' : ''}`}>
                                     <div className="flex items-center justify-between mb-4">
                                         <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wide ${res.type === 'Report' ? 'bg-purple-100 text-purple-700' :
-                                                res.type === 'Guide' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+                                            res.type === 'Guide' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
                                             }`}>
                                             {res.type}
                                         </span>

@@ -25,8 +25,14 @@ export default async function HelpCenter({ searchParams }: { searchParams: { cat
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
             {/* SEARCH HERO */}
-            <div className="bg-slate-900 text-white py-20 text-center">
+            <div className="bg-slate-900 text-white py-20 text-center relative">
                 <div className="container mx-auto px-4 max-w-3xl">
+                    {!selectedCategory && (
+                        <Link href="/" className="absolute left-4 md:left-8 top-8 text-slate-500 hover:text-white transition-colors text-sm font-bold tracking-wider">
+                            ← REVENUEOS
+                        </Link>
+                    )}
+
                     <h1 className="text-3xl font-bold mb-6">
                         {selectedCategory ? `${selectedCategory.label}` : "Como podemos ajudar?"}
                     </h1>
@@ -35,12 +41,6 @@ export default async function HelpCenter({ searchParams }: { searchParams: { cat
                     {selectedCategory && (
                         <Link href="/ajuda" className="text-slate-400 hover:text-white text-sm mb-4 inline-block">
                             &larr; Voltar para todas as categorias
-                        </Link>
-                    )}
-
-                    {!selectedCategory && (
-                        <Link href="/" className="absolute left-4 top-8 text-slate-500 hover:text-white transition-colors text-sm font-bold tracking-wider">
-                            ← REVENUEOS
                         </Link>
                     )}
 

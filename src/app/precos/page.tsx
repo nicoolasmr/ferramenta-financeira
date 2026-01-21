@@ -14,8 +14,11 @@ export default function PricingPage() {
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
             {/* HERO */}
-            <header className="bg-slate-900 text-white py-24 text-center">
+            <header className="bg-slate-900 text-white py-24 text-center relative">
                 <div className="container mx-auto px-4 max-w-4xl">
+                    <Link href="/" className="absolute left-4 top-8 text-slate-500 hover:text-white transition-colors text-sm font-bold tracking-wider">
+                        ← REVENUEOS
+                    </Link>
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">Investimento que se paga no primeiro mês</h1>
                     <p className="text-xl text-slate-300 max-w-2xl mx-auto">
                         Pare de perder dinheiro com inadimplência invisível. Escolha o plano que se adapta ao seu volume.
