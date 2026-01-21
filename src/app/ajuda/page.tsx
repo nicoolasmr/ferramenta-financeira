@@ -39,6 +39,12 @@ export default async function HelpCenter({ searchParams }: { searchParams: { cat
                     )}
 
                     {!selectedCategory && (
+                        <Link href="/" className="absolute left-4 top-8 text-slate-500 hover:text-white transition-colors text-sm font-bold tracking-wider">
+                            ← REVENUEOS
+                        </Link>
+                    )}
+
+                    {!selectedCategory && (
                         <div className="relative max-w-xl mx-auto">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <Search className="h-5 w-5 text-slate-400" />

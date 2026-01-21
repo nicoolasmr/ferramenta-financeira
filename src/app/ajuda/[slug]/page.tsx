@@ -4,11 +4,13 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-// Components
+// Components for MDX
+import { CTABox } from "@/components/mdx/CTABox";
 import { Callout } from "@/components/mdx/Callout";
 import { ScreenshotFrame } from "@/components/mdx/ScreenshotFrame";
 
 const components = {
+    CTABox,
     Callout,
     ScreenshotFrame
 };
@@ -59,7 +61,7 @@ export default async function HelpArticle({ params }: { params: { slug: string }
 
             {/* Content */}
             <div className="container mx-auto px-4 max-w-4xl mt-12 bg-white p-10 rounded-2xl shadow-sm border border-slate-200">
-                <div className="prose prose-slate prose-blue max-w-none">
+                <div className="prose prose-slate prose-blue max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-blue-600">
                     <MDXRemote source={doc.content} components={components} />
                 </div>
 

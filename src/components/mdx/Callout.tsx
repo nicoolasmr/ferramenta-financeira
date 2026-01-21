@@ -1,21 +1,27 @@
-import { AlertCircle, CheckCircle2, Info, XCircle } from "lucide-react";
+import { Info, AlertTriangle, CheckCircle, Lightbulb } from "lucide-react";
+import { ReactNode } from "react";
 
-export function Callout({ type = "info", title, children }: { type?: "info" | "success" | "warning" | "error", title?: string, children: React.ReactNode }) {
-    const styles = {
-        info: "bg-blue-50 border-blue-200 text-blue-900 icon-blue-500",
-        success: "bg-emerald-50 border-emerald-200 text-emerald-900 icon-emerald-500",
-        warning: "bg-amber-50 border-amber-200 text-amber-900 icon-amber-500",
-        error: "bg-red-50 border-red-200 text-red-900 icon-red-500"
-    };
+const styles = {
+    info: "bg-blue-50 border-blue-200 text-blue-900",
+    warning: "bg-amber-50 border-amber-200 text-amber-900",
+    success: "bg-emerald-50 border-emerald-200 text-emerald-900",
+    tip: "bg-violet-50 border-violet-200 text-violet-900"
+};
 
-    const icons = {
+type CalloutProps = {
+    type?: keyof typeof styles;
+    title?: string;
+    children: ReactNode;
+};
+
+export function Callout({ type = "info", title, children }: CalloutProps) {
+    const Icon = {
         info: Info,
-        success: CheckCircle2,
-        warning: AlertCircle,
-        error: XCircle
-    };
+        warning: AlertTriangle,
+        success: CheckCircle,
+        tip: Lightbulb
+    }[type];
 
-    const Icon = icons[type];
     const style = styles[type];
 
     return (
