@@ -8,26 +8,26 @@ import Link from "next/link";
 const FEATURES = [
     {
         id: "dashboard",
-        label: "Portfolio Dashboard",
+        label: "Dashboard de Receita",
         icon: LayoutDashboard,
-        title: "Visibilidade Total",
-        description: "Acompanhe MRR, Churn e Inadimplência em tempo real, consolidado de todas as fontes.",
+        title: "Visibilidade Total do Portfólio",
+        description: "Acompanhe MRR, Churn e Inadimplência em tempo real, consolidado de todas as fontes de pagamento.",
         color: "bg-blue-600"
     },
     {
         id: "reconciliation",
-        label: "Reconciliação (Delta)",
+        label: "Reconciliação Automática",
         icon: Wallet,
-        title: "Zero Discrepância",
-        description: "Bata cada centavo entre Stripe, Banco e ERP. Identifique taxas ocultas e revenue leakage.",
+        title: "Zero Discrepâncias Financeiras",
+        description: "Bata cada centavo entre gateway, banco e ERP. Identifique taxas ocultas e vazamento de receita.",
         color: "bg-emerald-600"
     },
     {
         id: "integration",
-        label: "Integrations Health",
+        label: "Saúde das Integrações",
         icon: Cloud,
-        title: "Ops Monitoring",
-        description: "Monitore a saúde dos seus webhooks. Replay automático de eventos falhos.",
+        title: "Monitoramento em Tempo Real",
+        description: "Monitore a saúde dos seus webhooks e APIs. Replay automático de eventos com falha.",
         color: "bg-purple-600"
     }
 ];
@@ -98,59 +98,70 @@ export function ProductTour() {
                                 </div>
                             </div>
 
-                            {/* Screen Content - Simulated High-Fi UI */}
+                            {/* Screen Content - Real Professional UI */}
                             <div className="bg-slate-50 w-full h-full rounded text-slate-900 p-6 overflow-hidden relative">
                                 {activeTab === 0 && (
                                     <div className="space-y-4 animate-in fade-in zoom-in duration-300">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h2 className="text-2xl font-bold">Dashboard</h2>
-                                            <div className="bg-white border rounded px-3 py-1 text-sm text-slate-500">Last 30 days</div>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-2xl font-bold">Visão Geral do Portfólio</h2>
+                                            <div className="bg-white border rounded-lg px-3 py-1.5 text-sm text-slate-600 font-medium">Últimos 30 dias</div>
                                         </div>
                                         <div className="grid grid-cols-3 gap-4">
                                             <div className="bg-white p-4 rounded-xl border shadow-sm">
-                                                <div className="text-slate-500 text-xs mb-1">MRR</div>
-                                                <div className="text-2xl font-bold">R$ 1.2M</div>
+                                                <div className="text-slate-500 text-xs mb-1 uppercase font-semibold">MRR (Outubro)</div>
+                                                <div className="text-2xl font-bold text-slate-900">R$ 482.390</div>
+                                                <div className="text-xs text-emerald-600 mt-1">↑ 12% vs mês anterior</div>
                                             </div>
                                             <div className="bg-white p-4 rounded-xl border shadow-sm">
-                                                <div className="text-slate-500 text-xs mb-1">Net Revenue</div>
-                                                <div className="text-2xl font-bold">R$ 1.05M</div>
+                                                <div className="text-slate-500 text-xs mb-1 uppercase font-semibold">Net Revenue</div>
+                                                <div className="text-2xl font-bold text-slate-900">R$ 450.012</div>
+                                                <div className="text-xs text-slate-500 mt-1">Após taxas e impostos</div>
                                             </div>
                                             <div className="bg-white p-4 rounded-xl border shadow-sm">
-                                                <div className="text-slate-500 text-xs mb-1">Churn Rate</div>
-                                                <div className="text-2xl font-bold text-red-500">2.1%</div>
+                                                <div className="text-slate-500 text-xs mb-1 uppercase font-semibold">Inadimplência</div>
+                                                <div className="text-2xl font-bold text-amber-600">0.8%</div>
+                                                <div className="text-xs text-emerald-600 mt-1">↓ 0.3% vs média</div>
                                             </div>
                                         </div>
-                                        <div className="bg-white p-4 rounded-xl border shadow-sm h-48 flex items-end gap-2 pb-2 px-2">
-                                            {/* Fake Chart */}
-                                            {[40, 60, 45, 70, 80, 75, 90, 85, 95, 100].map((h, i) => (
-                                                <div key={i} className="flex-1 bg-blue-500 rounded-sm hover:bg-blue-600 transition-colors" style={{ height: `${h}%` }}></div>
+                                        <div className="bg-white p-4 rounded-xl border shadow-sm h-48 flex items-end gap-1.5 pb-2 px-2">
+                                            {/* Realistic Chart */}
+                                            {[65, 70, 68, 75, 80, 78, 85, 88, 92, 95, 93, 100].map((h, i) => (
+                                                <div key={i} className="flex-1 bg-gradient-to-t from-blue-500 to-blue-400 rounded-sm hover:from-blue-600 hover:to-blue-500 transition-all cursor-pointer" style={{ height: `${h}%` }}></div>
                                             ))}
                                         </div>
+                                        <div className="text-xs text-slate-500 text-center">Evolução do MRR - Jan a Dez 2026</div>
                                     </div>
                                 )}
 
                                 {activeTab === 1 && (
                                     <div className="space-y-4 animate-in fade-in zoom-in duration-300">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h2 className="text-2xl font-bold">Recon Audit</h2>
-                                            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">Auto-Fix</Button>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-2xl font-bold">Auditoria de Reconciliação</h2>
+                                            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Corrigir Automaticamente</Button>
                                         </div>
-                                        <div className="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-lg text-sm mb-4">
-                                            <strong>4 Discrepâncias</strong> encontradas entre Stripe e Banco Itaú.
+                                        <div className="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-lg text-sm mb-4 flex items-start gap-3">
+                                            <div className="w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0">!</div>
+                                            <div>
+                                                <strong>3 Discrepâncias Detectadas</strong> entre Stripe e Banco Itaú. Total de R$ 47,50 não reconciliado.
+                                            </div>
                                         </div>
-                                        <div className="bg-white border rounded-lg shadow-sm">
-                                            {[1, 2, 3].map(row => (
-                                                <div key={row} className="border-b last:border-0 p-4 flex justify-between items-center bg-white">
+                                        <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+                                            {[
+                                                { id: "TXN-9847", desc: "Assinatura Premium - Cliente #2847", valor: "R$ 197,00", diff: "- R$ 19,70", tipo: "Taxa Gateway", status: "pending" },
+                                                { id: "TXN-9848", desc: "Upgrade Plano Pro - Cliente #1923", valor: "R$ 397,00", diff: "- R$ 15,88", tipo: "IOF não contabilizado", status: "pending" },
+                                                { id: "TXN-9849", desc: "Renovação Anual - Cliente #5612", valor: "R$ 1.188,00", diff: "- R$ 11,92", tipo: "Diferença cambial", status: "pending" },
+                                            ].map((row, i) => (
+                                                <div key={i} className="border-b last:border-0 p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center font-mono text-xs text-slate-500">TX</div>
+                                                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center font-mono text-xs text-slate-600 font-semibold">{row.id.split('-')[1]}</div>
                                                         <div>
-                                                            <div className="font-bold text-sm">Transfer #{9000 + row}</div>
-                                                            <div className="text-xs text-slate-500">Today, 10:23 AM</div>
+                                                            <div className="font-semibold text-sm text-slate-900">{row.desc}</div>
+                                                            <div className="text-xs text-slate-500 mt-0.5">Hoje, 14:{20 + i}h • {row.valor}</div>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="font-bold text-red-600">- R$ 15,00</div>
-                                                        <div className="text-xs bg-red-100 text-red-700 px-1 py-0.5 rounded inline-block">Fee Mismatch</div>
+                                                        <div className="font-bold text-red-600">{row.diff}</div>
+                                                        <div className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full inline-block mt-1 font-medium">{row.tipo}</div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -160,26 +171,34 @@ export function ProductTour() {
 
                                 {activeTab === 2 && (
                                     <div className="space-y-4 animate-in fade-in zoom-in duration-300">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h2 className="text-2xl font-bold">Integration Health</h2>
-                                            <div className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded font-bold uppercase">All Systems Operational</div>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-2xl font-bold">Status das Integrações</h2>
+                                            <div className="bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-bold uppercase tracking-wide">Todos os Sistemas Operacionais</div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="bg-white p-4 rounded-xl border shadow-sm border-l-4 border-l-purple-500">
-                                                <div className="font-bold flex justify-between">Stripe <span className="text-emerald-500">99.9%</span></div>
-                                                <div className="text-xs text-slate-500 mt-2">Latency: 240ms</div>
+                                                <div className="font-bold flex justify-between items-center">
+                                                    <span className="text-slate-900">Stripe</span>
+                                                    <span className="text-emerald-600 text-lg">99.9%</span>
+                                                </div>
+                                                <div className="text-xs text-slate-500 mt-2">Latência média: 240ms</div>
+                                                <div className="text-xs text-slate-400 mt-1">Último evento: há 2 segundos</div>
                                             </div>
                                             <div className="bg-white p-4 rounded-xl border shadow-sm border-l-4 border-l-orange-500">
-                                                <div className="font-bold flex justify-between">Hotmart <span className="text-emerald-500">99.5%</span></div>
-                                                <div className="text-xs text-slate-500 mt-2">Latency: 410ms</div>
+                                                <div className="font-bold flex justify-between items-center">
+                                                    <span className="text-slate-900">Hotmart</span>
+                                                    <span className="text-emerald-600 text-lg">99.5%</span>
+                                                </div>
+                                                <div className="text-xs text-slate-500 mt-2">Latência média: 410ms</div>
+                                                <div className="text-xs text-slate-400 mt-1">Último evento: há 5 segundos</div>
                                             </div>
                                         </div>
-                                        <div className="bg-slate-900 text-green-400 font-mono text-xs p-4 rounded-xl mt-4 h-32 overflow-hidden">
-                                            <div>&gt; listening for webhooks...</div>
-                                            <div>&gt; [2026-02-21 15:00:01] event received: invoice.paid</div>
-                                            <div>&gt; [2026-02-21 15:00:02] processing reconciliation rule #42</div>
-                                            <div>&gt; [2026-02-21 15:00:02] match confirmed. ledger updated.</div>
-                                            <div className="animate-pulse">&gt; _</div>
+                                        <div className="bg-slate-900 text-green-400 font-mono text-xs p-4 rounded-xl mt-4 h-32 overflow-hidden leading-relaxed">
+                                            <div className="opacity-70">&gt; monitorando webhooks em tempo real...</div>
+                                            <div className="mt-1">&gt; [2026-02-21 15:00:01] evento recebido: invoice.paid</div>
+                                            <div>&gt; [2026-02-21 15:00:02] processando regra de reconciliação #42</div>
+                                            <div>&gt; [2026-02-21 15:00:02] match confirmado. ledger atualizado.</div>
+                                            <div className="animate-pulse mt-1">&gt; _</div>
                                         </div>
                                     </div>
                                 )}
