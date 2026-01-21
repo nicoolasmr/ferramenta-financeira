@@ -45,17 +45,32 @@ export default function BlogIndex({ searchParams }: { searchParams: { category?:
                             <h3 className="font-bold text-slate-900 mb-4 uppercase tracking-wider text-sm">Categorias</h3>
                             <ul className="space-y-2">
                                 <li>
-                                    <Link href="/blog" className="block text-slate-600 hover:text-blue-600 font-medium bg-slate-100/50 px-3 py-2 rounded-lg">
+                                    <Link
+                                        href="/blog"
+                                        className={`block font-medium px-4 py-3 rounded-lg transition-all ${!searchParams.category
+                                                ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                                                : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                                            }`}
+                                    >
                                         Todas
                                     </Link>
                                 </li>
-                                {CATEGORIES.map(cat => (
-                                    <li key={cat}>
-                                        <Link href={`/blog?category=${encodeURIComponent(cat)}`} className="block text-slate-600 hover:text-blue-600 transition-colors px-3 py-2">
-                                            {cat}
-                                        </Link>
-                                    </li>
-                                ))}
+                                {CATEGORIES.map(cat => {
+                                    const isActive = searchParams.category === cat;
+                                    return (
+                                        <li key={cat}>
+                                            <Link
+                                                href={`/blog?category=${encodeURIComponent(cat)}`}
+                                                className={`block font-medium px-4 py-3 rounded-lg transition-all ${isActive
+                                                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                                                        : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                                                    }`}
+                                            >
+                                                {cat}
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                         <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
