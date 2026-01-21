@@ -18,15 +18,15 @@ export const landingContent = {
     nav: {
         logo: "RevenueOS",
         links: [
-            { label: "Produto", href: "#produto" },
-            { label: "Integrações", href: "#integracoes" },
-            { label: "IA Copilot", href: "#ia" },
-            { label: "Segurança", href: "#seguranca" },
-            { label: "Preços", href: "#precos" },
+            { label: "Produto", href: "/#produto" },
+            { label: "Integrações", href: "/#integracoes" },
+            { label: "IA Copilot", href: "/#ia" },
+            { label: "Segurança", href: "/#seguranca" },
+            { label: "Preços", href: "/precos" },
             { label: "Blog", href: "/blog" },
             { label: "Ajuda", href: "/ajuda" },
         ],
-        ctaPrimary: { label: "Começar grátis", href: "/signup" },
+        ctaPrimary: { label: "Comece agora", href: "/precos" },
         ctaSecondary: { label: "Agendar demo", href: "/demo" }, // Placeholder link
     },
     hero: {
@@ -37,7 +37,7 @@ export const landingContent = {
             "Reconciliação: por que o número bate (raw → normalized → aplicado)",
             "Copilot determinístico: Top 3 ações da semana (GPT opcional)"
         ],
-        ctaPrimary: { label: "Começar grátis", href: "/signup" },
+        ctaPrimary: { label: "Comece agora", href: "/precos" },
         ctaSecondary: { label: "Ver demo", href: "#demo" },
         dashboardImage: "/dashboard-preview.png"
     },
@@ -185,8 +185,8 @@ export const landingContent = {
                 desc: "Para quem está validando.",
                 price: "R$ 397",
                 period: "/mês",
-                cta: "Começar grátis",
-                ctaLink: "/signup",
+                cta: "Comece agora",
+                ctaLink: "/precos",
                 ctaVariant: "outline",
                 features: ["1 Projeto", "Até 1.000 eventos/mês", "Dashboards financeiros", "Suporte por Email"]
             },
@@ -195,8 +195,8 @@ export const landingContent = {
                 desc: "Para operações em escala.",
                 price: "R$ 697",
                 period: "/mês",
-                cta: "Agendar demo",
-                ctaLink: "/demo",
+                cta: "Comece agora",
+                ctaLink: "/precos",
                 ctaVariant: "primary", // Custom logic needed
                 highlight: "Recomendado",
                 features: ["Projetos Ilimitados", "Até 10.000 eventos/mês", "IA Copilot Completa", "Portal do Cliente", "Reconciliação Avançada", "Suporte Prioritário"]
@@ -206,8 +206,8 @@ export const landingContent = {
                 desc: "Volume massivo e White-label.",
                 price: "Sob Consulta",
                 period: "",
-                cta: "Falar com Especialista",
-                ctaLink: "/contact",
+                cta: "Comece agora",
+                ctaLink: "/precos",
                 ctaVariant: "outline",
                 features: ["Eventos Ilimitados", "White-label (Custom)", "SLA & Suporte Dedicado", "Compliance Avançado", "Gerente de Conta"]
             }
