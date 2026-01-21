@@ -137,7 +137,7 @@ export default function LandingPage() {
                             {/* Logos using text/style approximations for reliability */}
                             <div className="text-2xl font-bold tracking-tighter text-[#635BFF]">stripe</div>
                             <img src="/hotmart-logo.png" alt="Hotmart" className="h-8 object-contain" />
-                            <img src="/asaas-logo.png" alt="Asaas" className="h-8 object-contain rounded" />
+                            <img src="/asaas-logo.svg" alt="Asaas" className="h-8 object-contain" />
                             <div className="text-xl font-bold text-slate-700">kiwify</div>
                             <div className="text-xl font-bold text-slate-700">eduzz</div>
                         </div>
@@ -364,7 +364,7 @@ export default function LandingPage() {
                             {/* Asaas */}
                             <div className="bg-white p-8 rounded-xl border shadow-sm flex flex-col items-center hover:shadow-lg transition-all hover:-translate-y-1">
                                 <div className="h-16 w-full flex items-center justify-center mb-6">
-                                    <img src="/asaas-logo.png" alt="Asaas" className="h-12 object-contain rounded" />
+                                    <img src="/asaas-logo.svg" alt="Asaas" className="h-12 object-contain" />
                                 </div>
                                 <h3 className="text-xl font-bold text-slate-900 mb-4">Asaas</h3>
                                 <div className="flex gap-2 flex-wrap justify-center">
