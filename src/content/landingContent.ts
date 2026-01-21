@@ -142,7 +142,7 @@ export const landingContent = {
             },
             {
                 name: "Hotmart",
-                logo: "/hotmart-logo.svg",
+                logo: "/hotmart-logo.png",
                 tags: ["Vendas", "Comissões", "Cancelamento"],
                 isImage: true
             },
