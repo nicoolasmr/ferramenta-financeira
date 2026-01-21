@@ -323,6 +323,33 @@ export default function LandingPage() {
                     </div>
                 </section>
 
+                {/* SECURITY */}
+                <section id="seguranca" className="py-24 bg-slate-50 border-y border-slate-200">
+                    <div className="container mx-auto max-w-5xl px-4">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl mb-4">
+                                {landingContent.security.title}
+                            </h2>
+                            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                                {landingContent.security.subtitle}
+                            </p>
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-8">
+                            {landingContent.security.cards.map((card, i) => (
+                                <div key={i} className="flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                                    <div className="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mb-6">
+                                        <card.icon className="h-6 w-6" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-3">{card.title}</h3>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        {card.description}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
                 {/* PRICING */}
                 <section id="precos" className="py-24 bg-white">
                     <div className="container mx-auto max-w-6xl px-4">

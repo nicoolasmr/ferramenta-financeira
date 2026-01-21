@@ -230,6 +230,15 @@ export const landingContent = {
             { q: "Como funciona o acesso do meu cliente no portal?", a: "Você gera um link seguro (magic link) e ele acessa uma área restrita para ver faturas em aberto, 2ª via e extrato de pagamentos." }
         ]
     },
+    security: {
+        title: "Segurança de nível bancário",
+        subtitle: "Proteção total para seus dados e conformidade para sua operação.",
+        cards: [
+            { icon: ShieldCheck, title: "Row-Level Security (RLS)", description: "Isolamento absoluto de dados. Mesmo em nível de banco de dados, um tenant nunca acessa dados de outro." },
+            { icon: Lock, title: "Criptografia & PII", description: "Dados sensíveis são criptografados em repouso e em trânsito. Conformidade total com LGPD." },
+            { icon: Globe, title: "Audit Logs Imutáveis", description: "Cada ação no sistema gera um rastro de auditoria permanente. Saiba exatamente quem fez o quê." }
+        ]
+    },
     finalCta: {
         headline: "Você não precisa vender mais. Precisa receber melhor.",
         sub: "Se hoje você depende de planilha e 'sensação', a próxima inadimplência vai te lembrar.",
