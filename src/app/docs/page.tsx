@@ -21,7 +21,7 @@ export default function ApiDocs() {
                         Integre o RevenueOS ao seu produto em minutos. RESTful, webhooks tipados e SDKs prontos para produção.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Link href="#">
+                        <Link href="/docs/guides/api-reference">
                             <Button size="lg" className="bg-blue-600 hover:bg-blue-700">Ver Referência Completa</Button>
                         </Link>
                     </div>
@@ -37,7 +37,7 @@ export default function ApiDocs() {
                         </div>
                         <h3 className="text-xl font-bold mb-3">Guias Rápidos</h3>
                         <p className="text-slate-500 mb-6">Tutoriais passo a passo para autenticação, criação de clientes e assinaturas.</p>
-                        <Link href="#" className="text-blue-600 font-medium hover:underline">Ler Guias &rarr;</Link>
+                        <Link href="/docs/guides/quickstart" className="text-blue-600 font-medium hover:underline">Ler Guias &rarr;</Link>
                     </div>
 
                     <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
@@ -46,7 +46,7 @@ export default function ApiDocs() {
                         </div>
                         <h3 className="text-xl font-bold mb-3">Referência API</h3>
                         <p className="text-slate-500 mb-6">Endpoints, parâmetros, códigos de erro e exemplos de response JSON.</p>
-                        <Link href="#" className="text-blue-600 font-medium hover:underline">Explorar Endpoints &rarr;</Link>
+                        <Link href="/docs/guides/api-reference" className="text-blue-600 font-medium hover:underline">Explorar Endpoints &rarr;</Link>
                     </div>
 
                     <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
@@ -55,7 +55,7 @@ export default function ApiDocs() {
                         </div>
                         <h3 className="text-xl font-bold mb-3">SDKs & Libraries</h3>
                         <p className="text-slate-500 mb-6">Bibliotecas oficiais para Node.js, Python, Ruby e PHP.</p>
-                        <Link href="#" className="text-blue-600 font-medium hover:underline">Ver SDKs &rarr;</Link>
+                        <Link href="/docs/guides/sdks" className="text-blue-600 font-medium hover:underline">Ver SDKs &rarr;</Link>
                     </div>
                 </div>
             </div>
