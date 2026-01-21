@@ -1,24 +1,30 @@
 ---
 title: "Rotacionando chaves de API"
-excerpt: "Guia completo sobre Rotacionando chaves de API."
+excerpt: "Guia técnico detalhado sobre Rotacionando chaves de API, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Integrações"
-keywords: ["integrations", "tutorial", "guide"]
+keywords: ["integrations", "tutorial", "guide", "docs"]
 ---
 
 ## Visão Geral
-Este artigo detalha o funcionamento de **Rotacionando chaves de API**. 
+Este artigo detalha procedimentos oficiais sobre **Rotacionando chaves de API**. 
 
-### Como configurar
-1. Acesse o painel.
-2. Navegue até a seção relevante (Integrações).
-3. Siga as instruções na tela.
+### Pré-requisitos
+- Conta ativa no RevenueOS com permissão de Admin ou Editor.
+- Acesso à internet estável.
 
-<Callout type="tip" title="Dica">
-Sempre verifique as permissões do seu usuário antes de tentar esta ação.
+### Como configurar passo a passo
+1. Acesse o **Dashboard Principal**.
+2. No menu lateral, localize a seção **Integrações**.
+3. Selecione a opção **Rotacionando chaves de API**.
+4. Siga o wizard de configuração na tela.
+
+<Callout type="tip" title="Melhor Prática">
+Recomendamos realizar esta configuração em um ambiente de Staging (Teste) antes de aplicar em Produção.
 </Callout>
 
-### Solução de Problemas
-Se encontrar erros, verifique os logs de conexão ou contate o suporte.
+### Solução de Problemas Comuns
+- **Erro 403 (Forbidden)**: Verifique se seu usuário tem a role necessária.
+- **Timeouts**: Se a operação demorar mais de 30s, tente novamente mais tarde.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

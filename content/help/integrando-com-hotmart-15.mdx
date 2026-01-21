@@ -1,13 +1,21 @@
 ---
 title: "Integrando com Hotmart"
-excerpt: "Guia completo sobre Integrando com Hotmart."
+excerpt: "Guia técnico detalhado sobre Integrando com Hotmart, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Integrações"
-keywords: ["integrations", "tutorial", "guide"]
+keywords: ["integrations", "tutorial", "guide", "docs"]
 ---
 
-## Hotmart
-Configure o postback na Hotmart apontando para `https://api.revenueos.com.br/webhooks/hotmart`.
-O token de verificação deve ser colado em **Integrations > Hotmart**.
+## Conexão Hotmart
+Ideal para infoprodutos. Importamos automaticamente vendas e reembolsos.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Passo a Passo
+1. No painel Hotmart, vá em **Ferramentas > Webhook (API)**.
+2. Adicione uma nova configuração.
+3. Nome: "RevenueOS".
+4. URL: `https://api.revenueos.com.br/webhooks/hotmart`.
+5. Selecione os eventos: "Compra Aprovada", "Reembolso", "Cancelamento".
+6. Copie o "Hottok" (Token de verificação).
+7. Cole o token no RevenueOS em **Integrations > Hotmart**.
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

@@ -1,16 +1,33 @@
 ---
 title: "Adicionando membros ao time"
-excerpt: "Guia completo sobre Adicionando membros ao time."
+excerpt: "Guia técnico detalhado sobre Adicionando membros ao time, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Começando"
-keywords: ["getting-started", "tutorial", "guide"]
+keywords: ["getting-started", "tutorial", "guide", "docs"]
 ---
 
-## Gestão de Time
-Acesse **Settings > Team**.
-Você pode convidar membros por email e definir permissões:
-- **Admin**: Acesso total.
-- **Finance**: Apenas visualiza dados e exporta.
-- **Developer**: Acesso a chaves de API e Webhooks.
+## Gestão de Permissões (RBAC)
+O RevenueOS possui um sistema granular de controle de acesso. Seguir o princípio do "privilégio mínimo" é essencial para segurança.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Níveis de Acesso
+
+| Role | Descrição |
+|------|-----------|
+| **Owner** | Acesso total, pode deletar a conta e transferir propriedade. |
+| **Admin** | Pode gerenciar configurações, chaves de API e Webhooks. |
+| **Developer** | Acesso às ferramentas de dev e logs, sem acesso a dados bancários sensíveis. |
+| **Finance** | Acesso apenas a relatórios, extratos e dashboards (Read-only em configs). |
+| **Support** | Pode visualizar dados de clientes para atendimento, sem poder exportar em massa. |
+
+## Como Adicionar
+1. Navegue até **Settings > Team**.
+2. Clique no botão azul **"Invite Member"**.
+3. Digite o e-mail corporativo.
+4. Selecione a Role inicial.
+5. O usuário receberá um link mágico para definir a senha.
+
+<Callout type="warning">
+Membros com acesso "Finance" ou superior exigem MFA ativado obrigatoriamente.
+</Callout>
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

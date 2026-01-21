@@ -1,12 +1,23 @@
 ---
 title: "Configurando Grace Period"
-excerpt: "Guia completo sobre Configurando Grace Period."
+excerpt: "Guia técnico detalhado sobre Configurando Grace Period, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Pagamentos & Recebíveis"
-keywords: ["payments", "tutorial", "guide"]
+keywords: ["payments", "tutorial", "guide", "docs"]
 ---
 
-## Grace Period
-Vá em **Settings > Billing**. O "Grace Period" define quantos dias após o vencimento o sistema espera antes de marcar como "Inadimplência Técnica". Padrão: 3 dias.
+## O que é Grace Period?
+É o "período de carência" entre o vencimento da fatura e o bloqueio do serviço.
+Muitos pagamentos corporativos levam 2-3 dias para compensar. Bloquear um cliente grande por delay bancário é um erro fatal.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Configuração
+1. Vá em **Settings > Billing Rules**.
+2. Localize **"Dunning & Grace Period"**.
+3. Defina os dias:
+   - **Soft Grace**: 3 dias (apenas lembretes gentis por email).
+   - **Hard Suspension**: 7 dias (bloqueio de acesso ao software).
+   - **Churn/Cancellation**: 30 dias (cancelamento do contrato).
+
+O RevenueOS respeita essa lógica automaticamente nos webhooks de status de assinatura.
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

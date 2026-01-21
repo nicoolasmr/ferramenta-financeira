@@ -22,96 +22,265 @@ const HELP_CATEGORIES = [
 
 const slugify = (text) => text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-const CONTENT_MAP = {
+const HELP_CONTENT_MAP = {
     // GETTING STARTED
-    "Criando sua primeira Organização": `## Bem-vindo ao RevenueOS!
-Para começar, você precisa criar uma Organização. Clique no seletor no topo esquerdo e selecione "Nova Organização".
-1. Defina o nome legal.
-2. Convide sócios ou financeiro.
-3. Configure a moeda base (BRL/USD).`,
+    "Criando sua primeira Organização": `## O que é uma Organização?
+A Organização é a entidade legal (CNPJ/Company) dentro do RevenueOS. É o nível mais alto de hierarquia.
+Todos os seus projetos, membros e faturas pertencem a uma organização.
 
-    "Adicionando membros ao time": `## Gestão de Time
-Acesse **Settings > Team**.
-Você pode convidar membros por email e definir permissões:
-- **Admin**: Acesso total.
-- **Finance**: Apenas visualiza dados e exporta.
-- **Developer**: Acesso a chaves de API e Webhooks.`,
+## Passo a Passo
 
-    "Configurando MFA (Autenticação de Dois Fatores)": `## Segurança Primeiro
-Vá em **Settings > Security**. Ative o MFA para forçar autenticação via App Authenticator para todos os admins.
-<Callout type="warning">Recomendamos fortemente o uso de MFA para contas com acesso a dados bancários.</Callout>`,
+### 1. Cadastro Inicial
+Ao fazer login pela primeira vez em \`app.revenueos.com\`, você será redirecionado para o wizard de onboarding.
+Clique em **"Criar Nova Organização"**.
+
+### 2. Dados Legais
+Preencha os dados fiscais:
+- **Razão Social**: O nome que aparecerá nas notas fiscais (se usar nosso emissor).
+- **CNPJ/Tax ID**: Para validação de compliance.
+- **Endereço Fiscal**: Obrigatório para cálculo de impostos.
+
+### 3. Convite de Sócios
+Você pode adicionar outros Owners neste momento. Eles terão acesso total (root) à conta.
+
+<Callout type="info" title="Dica">
+Se você tem múltiplas empresas (Holdings), crie uma organização separada para cada CNPJ para manter a contabilidade limpa.
+</Callout>`,
+
+    "Adicionando membros ao time": `## Gestão de Permissões (RBAC)
+O RevenueOS possui um sistema granular de controle de acesso. Seguir o princípio do "privilégio mínimo" é essencial para segurança.
+
+## Níveis de Acesso
+
+| Role | Descrição |
+|------|-----------|
+| **Owner** | Acesso total, pode deletar a conta e transferir propriedade. |
+| **Admin** | Pode gerenciar configurações, chaves de API e Webhooks. |
+| **Developer** | Acesso às ferramentas de dev e logs, sem acesso a dados bancários sensíveis. |
+| **Finance** | Acesso apenas a relatórios, extratos e dashboards (Read-only em configs). |
+| **Support** | Pode visualizar dados de clientes para atendimento, sem poder exportar em massa. |
+
+## Como Adicionar
+1. Navegue até **Settings > Team**.
+2. Clique no botão azul **"Invite Member"**.
+3. Digite o e-mail corporativo.
+4. Selecione a Role inicial.
+5. O usuário receberá um link mágico para definir a senha.
+
+<Callout type="warning">
+Membros com acesso "Finance" ou superior exigem MFA ativado obrigatoriamente.
+</Callout>`,
+
+    "Configurando MFA (Autenticação de Dois Fatores)": `## Por que usar MFA?
+Dados financeiros são alvos críticos. O MFA (Multi-Factor Authentication) impede 99.9% dos ataques de credential stuffing.
+
+## Ativação
+
+### Para seu Usuário
+1. Clique no seu avatar no canto superior direito > **Profile**.
+2. Em "Security", clique em **"Enable MFA"**.
+3. Escaneie o QR Code com seu app (Google Authenticator, Authy, 1Password).
+4. Digite o código de 6 dígitos para confirmar.
+5. **Salve os Recovery Codes** em um local seguro (não no seu computador!).
+
+### Para a Organização (Enforce)
+Admins podem forçar o MFA para toda a empresa:
+1. Vá em **Settings > Security**.
+2. Marque a opção **"Enforce MFA for all members"**.
+3. Usuários sem MFA serão deslogados e forçados a configurar no próximo login.`,
 
     // PROJECTS
-    "Criando um novo Projeto": `## Projetos
-Projetos funcionam como containers isolados (ex: Produto A, Produto B).
-1. Clique em "New Project".
-2. Defina se é Assinatura ou Pagamento Único.
-3. O sistema gerará um \`project_id\` único.`,
+    "Criando um novo Projeto": `## Estrutura de Projetos
+Projetos funcionam como ambientes isolados dentro da sua Organização. Use projetos para separar:
+- Produtos diferentes (ex: RevenueOS Billing vs RevenueOS Analytics).
+- Ambientes de desenvolvimento (ex: Staging vs Production).
 
-    "Arquivando projetos antigos": `## Arquivamento
-Para limpar seu dashboard, vá em **Project Settings > Danger Zone** e clique em Archive. Os dados não são deletados, apenas ocultos.`,
+## Como Criar
 
-    "Gerenciando ambientes (Staging vs Prod)": `## Ambientes
-Cada projeto tem chaves distintas para \`test_sk_...\` e \`live_sk_...\`.
-Use o header \`X-Environment: staging\` para testar sem afetar métricas reais.`,
+### 1. Painel de Controle
+No topo da sidebar esquerda, clique no nome do projeto atual para abrir o switcher.
+Selecione **"Create Project"**.
+
+### 2. Configuração
+- **Nome**: Identificador interno.
+- **Environment**: Escolha "Production" para dados reais ou "Development" para testes.
+- **Região de Dados**: GRU1 (São Paulo) para menor latência ou US-EAST (N. Virginia).
+
+### 3. Credenciais
+Assim que criar, você receberá:
+- \`Project ID\`: Identificador público (ex: \`proj_123xyz\`).
+- \`Secret Key\`: Chave privada para o backend (ex: \`sk_live_...\`).
+
+<Callout type="danger" title="Atenção">
+A Secret Key é mostrada apenas uma vez. Se perder, você terá que rolar a chave (roll key), o que quebrará sua integração até ser atualizada.
+</Callout>`,
+
+    "Arquivando projetos antigos": `## Ciclo de Vida
+Projetos de teste ou produtos descontinuados não devem poluir sua visão.
+Arquivar um projeto **interrompe** todas as cobranças e rejeita novas chamadas de API.
+
+## Procedimento
+1. Entre no projeto que deseja arquivar.
+2. Vá em **Project Settings > General**.
+3. Role até a "Danger Zone".
+4. Clique em **"Archive Project"**.
+5. Digite o nome do projeto para confirmar.
+
+Os dados históricos são mantidos por 5 anos para fins de auditoria, mas não podem mais ser modificados.`,
+
+    "Gerenciando ambientes (Staging vs Prod)": `## Boas Práticas de DevOps
+Nunca desenvolva ou teste em produção. O RevenueOS facilita isso com ambientes espelhados.
+
+### Diferenças Staging vs Prod
+- **Staging**:
+  - Cartões de crédito fictícios funcionam (ex: 4242...).
+  - Emails não são enviados para clientes reais (apenas para o log).
+  - Webhooks são disparados normalmente.
+  - Rate limits são mais relaxados.
+
+- **Production**:
+  - Transações reais.
+  - Emails reais.
+  - Dados imutáveis para fins contábeis.
+
+### Header de Ambiente
+Para alternar, basta mudar a chave de API (\`sk_test_...\` ou \`sk_live_...\`) no seu backend. O sistema detecta o ambiente automaticamente pelo prefixo da chave.`,
 
     // SALES
-    "Registrando uma venda manual": `## Vendas Manuais
-Para vendas fora do gateway (ex: TED/Dinheiro):
-1. Vá em **Sales > New Manual Sale**.
-2. Preencha cliente, valor e data.
-3. O sistema cria a reconciliação automaticamente.`,
+    "Registrando uma venda manual": `## Quando usar?
+Nem todas as vendas passam pelo checkout automático. Use a Venda Manual para:
+- Contratos Enterprise fechados via PIX/TED.
+- Migração de dados legados.
+- Vendas físicas/offline.
 
-    "Importando clientes via CSV": `## Importação em Massa
-Acesse **Sales > Import**.
-Baixe nosso template CSV.
-Coloque os emails e IDs externos.
-Faça o upload. O sistema processará em background.`,
+## Passo a Passo
+1. Acesse **Sales > Transactions**.
+2. Clique em **"New Transaction"** (botão superior direito).
+3. Selecione o Cliente (ou crie um novo na hora).
+4. Adicione os itens (SKUs) e valores.
+5. Em "Payment Method", selecione "External / Manual Bank Transfer".
+6. Anexe o comprovante (PDF/Imagem) para fins de reconciliação.
+7. Clique em **"Create & Reconcile"**.
+
+O sistema irá gerar a fatura, marcar como paga e lançar no fluxo de caixa imediatamente.`,
+
+    "Importando clientes via CSV": `## Migração de Dados
+Trazer dados de outro sistema? Nossa ferramenta de importação em massa lida com até 500k registros.
+
+## Preparando o Arquivo
+Baixe o template oficial em **Sales > Import > Download Template**.
+Colunas obrigatórias:
+- \`external_id\`: O ID do cliente no seu sistema antigo (para evitar duplicatas).
+- \`email\`: Chave única de identificação.
+- \`name\`: Nome completo.
+
+## Processo de Upload
+1. Salve sua planilha como \`.csv\` (UTF-8).
+2. Arraste para a área de upload.
+3. O sistema fará uma validação prévia (Check de emails inválidos).
+4. Confirme a importação.
+
+<Callout type="info" title="Processamento">
+Importações grandes rodam em background. Você receberá um e-mail quando terminar com um relatório de erros (se houver).
+</Callout>`,
 
     // PAYMENTS
-    "Visão Geral do Calendário de Recebíveis": `## Calendário
-O menu **Receivables** mostra um calendário visual.
-- **Verde**: Pago
-- **Amarelo**: Próximo (D-3)
-- **Vermelho**: Atrasado`,
+    "Visão Geral do Calendário de Recebíveis": `## Cashflow Management
+O calendário de recebíveis é sua bússola financeira. Ele projeta o fluxo de caixa futuro baseado nas datas de vencimento e nos prazos de liquidação (D+2, D+30).
 
-    "Configurando Grace Period": `## Grace Period
-Vá em **Settings > Billing**. O "Grace Period" define quantos dias após o vencimento o sistema espera antes de marcar como "Inadimplência Técnica". Padrão: 3 dias.`,
+## Funcionalidades
+- **Filtros de Data**: Visualize por Semana, Mês ou Trimestre.
+- **Status Color-coded**:
+  - 🟢 **Liquidado**: Dinheiro na conta.
+  - 🟡 **Projetado**: Venda feita, aguardando prazo do gateway.
+  - 🔴 **Atrasado**: Vencido e não pago.
+  - ⚪ **Previsto**: Assinaturas ativas que renovarão no futuro (MRR).
 
-    "Renegociando parcelas em atraso": `## Renegociação
-Na tela de detalhe da venda, clique em **Renegotiate**.
-Você pode:
-1. Mudar a data de vencimento.
-2. Isentar juros (com aprovação de Admin).
-Isso gera um log de auditoria.`,
+Use essa visão para saber exatamente quanto caixa você terá no dia 20 para pagar a folha.`,
+
+    "Configurando Grace Period": `## O que é Grace Period?
+É o "período de carência" entre o vencimento da fatura e o bloqueio do serviço.
+Muitos pagamentos corporativos levam 2-3 dias para compensar. Bloquear um cliente grande por delay bancário é um erro fatal.
+
+## Configuração
+1. Vá em **Settings > Billing Rules**.
+2. Localize **"Dunning & Grace Period"**.
+3. Defina os dias:
+   - **Soft Grace**: 3 dias (apenas lembretes gentis por email).
+   - **Hard Suspension**: 7 dias (bloqueio de acesso ao software).
+   - **Churn/Cancellation**: 30 dias (cancelamento do contrato).
+
+O RevenueOS respeita essa lógica automaticamente nos webhooks de status de assinatura.`,
+
+    "Renegociando parcelas em atraso": `## Recuperação de Receita
+Às vezes o cliente quer pagar, mas precisa de fôlego. O RevenueOS permite renegociar sem sujar as métricas de churn.
+
+## Fluxo de Renegociação
+1. Abra o perfil do cliente inadimplente.
+2. Na fatura atrasada, clique em **Actions > Renegotiate**.
+3. Opções:
+   - **Nova Data**: Postergar o vencimento.
+   - **Parcelamento**: Quebrar o valor em 2x ou 3x.
+   - **Desconto**: Abater juros/multa (exige aprovação de Admin).
+
+Ao salvar, o sistema gera um novo link de pagamento atualizado e envia para o cliente. A fatura antiga é anulada e substituída pela nova (nota de débito/crédito automática).`,
 
     // INTEGRATIONS
-    "Integrando com Stripe": `## Stripe
+    "Integrando com Stripe": `## Conexão Direta Stripe
+Aceite cartões globais e Apple Pay via Stripe Connect.
+
+## Configuração
 1. Vá em **Integrations > Stripe**.
 2. Cole sua \`Stripe Restricted Key\`.
-3. Selecione os eventos de webhook desejados (\`invoice.paid\`, \`charge.failed\`).`,
+3. Certifique-se que a chave tem permissões de \`Write\` para \`Customers\`, \`Charges\` e \`Invoices\`.
 
-    "Integrando com Hotmart": `## Hotmart
-Configure o postback na Hotmart apontando para \`https://api.revenueos.com.br/webhooks/hotmart\`.
-O token de verificação deve ser colado em **Integrations > Hotmart**.`,
+## Webhooks
+Para receber confirmações de pagamento em tempo real, configure o endpoint do RevenueOS (\`api.revenueos.com/hooks/stripe\`) no dashboard da Stripe.
+Eventos obrigatórios:
+- \`invoice.payment_succeeded\`
+- \`customer.subscription.deleted\`
+- \`charge.refunded\``,
 
-    // COPILOT
-    "Ativando o Copilot IA": `## Copilot
-O Copilot analisa seus dados a cada 24h. Para ativar, vá em **Intelligence > Copilot** e aceite os termos de processamento de dados.`,
+    "Integrando com Hotmart": `## Conexão Hotmart
+Ideal para infoprodutos. Importamos automaticamente vendas e reembolsos.
 
-    "Como o Copilot sugere ações": `## Sugestões
-O Copilot busca padrões:
-- Clientes com queda de usage.
-- Falhas de pagamento recorrentes em bin de cartão específico.
-- Anomalias de churn.`,
+## Passo a Passo
+1. No painel Hotmart, vá em **Ferramentas > Webhook (API)**.
+2. Adicione uma nova configuração.
+3. Nome: "RevenueOS".
+4. URL: \`https://api.revenueos.com.br/webhooks/hotmart\`.
+5. Selecione os eventos: "Compra Aprovada", "Reembolso", "Cancelamento".
+6. Copie o "Hottok" (Token de verificação).
+7. Cole o token no RevenueOS em **Integrations > Hotmart**.`,
 
     // SECURITY
-    "Entendendo RLS (Row Level Security)": `## RLS
-Nossa arquitetura usa Postgres RLS. Isso garante que, mesmo se houver bug na API, um tenant jamais verá dados de outro tenant, pois o banco bloqueia a query.`,
+    "Entendendo RLS (Row Level Security)": `## Arquitetura Multi-Tenant
+Segurança não é feature, é fundação. O RevenueOS utiliza **PostgreSQL Row Level Security (RLS)** nativo.
 
-    "Logs de Auditoria: Como exportar": `## Audit Logs
-Vá em **Settings > Compliance**.
-Clique em "Export Logs". Você receberá um CSV com todas as ações de escrita (create/update/delete) dos últimos 90 dias.`
+### Como funciona?
+Cada query no banco de dados obrigatoriamente carrega o \`project_id\` do contexto atual.
+\`\`\`sql
+SELECT * FROM invoices WHERE project_id = current_setting('app.current_project_id');
+\`\`\`
+
+Isso significa que o banco de dados **física e logicamente recusa** retornar dados de outro projeto, mesmo se houver um erro na camada de aplicação (Node.js).
+É a garantia matemática de que os dados (seus e dos seus clientes) estão isolados.`,
+
+    "Logs de Auditoria: Como exportar": `## Compliance e Auditoria
+Para certificações SOC2 ou ISO27001, você precisa provar "quem fez o quê e quando".
+
+## Audit Trail
+Registramos todas as operações de mutação (CREATE, UPDATE, DELETE):
+- **Actor**: Quem iniciou (User ID ou API Key ID).
+- **Resource**: Qual objeto foi afetado (ex: \`Invoice: inv_999\`).
+- **Action**: O que foi feito (ex: \`status_changed: paid -> void\`).
+- **Metadata**: IP de origem, User Agent, Timestamp.
+
+## Exportação
+1. Vá em **Settings > Compliance**.
+2. Defina o range de datas (ex: "Último Trimestre").
+3. Clique em **"Export CSV"** ou **"Export JSON"**.
+4. O arquivo assinado digitalmente será enviado para o email do Owner.`
 };
 
 const BLOG_CONTENT_MAP = {
@@ -233,37 +402,43 @@ ${specificContent || genericBody}
 }
 
 function generateHelpContent(title, category) {
-    const specificContent = CONTENT_MAP[title];
+    const specificContent = HELP_CONTENT_MAP[title];
     const body = specificContent ? specificContent : `## Visão Geral
-Este artigo detalha o funcionamento de **${title}**. 
+Este artigo detalha procedimentos oficiais sobre **${title}**. 
 
-### Como configurar
-1. Acesse o painel.
-2. Navegue até a seção relevante (${category.label}).
-3. Siga as instruções na tela.
+### Pré-requisitos
+- Conta ativa no RevenueOS com permissão de Admin ou Editor.
+- Acesso à internet estável.
 
-<Callout type="tip" title="Dica">
-Sempre verifique as permissões do seu usuário antes de tentar esta ação.
+### Como configurar passo a passo
+1. Acesse o **Dashboard Principal**.
+2. No menu lateral, localize a seção **${category.label}**.
+3. Selecione a opção **${title}**.
+4. Siga o wizard de configuração na tela.
+
+<Callout type="tip" title="Melhor Prática">
+Recomendamos realizar esta configuração em um ambiente de Staging (Teste) antes de aplicar em Produção.
 </Callout>
 
-### Solução de Problemas
-Se encontrar erros, verifique os logs de conexão ou contate o suporte.`;
+### Solução de Problemas Comuns
+- **Erro 403 (Forbidden)**: Verifique se seu usuário tem a role necessária.
+- **Timeouts**: Se a operação demorar mais de 30s, tente novamente mais tarde.`;
 
     return `---
 title: "${title}"
-excerpt: "Guia completo sobre ${title}."
+excerpt: "Guia técnico detalhado sobre ${title}, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "${category.label}"
-keywords: ["${category.id}", "tutorial", "guide"]
+keywords: ["${category.id}", "tutorial", "guide", "docs"]
 ---
 
 ${body}
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />
 `;
 }
 
-// Same topics list as before to ensure file consistency
+// Same topics list as before
 const HELP_TOPICS = [
     { title: "Criando sua primeira Organização", cat: "getting-started" },
     { title: "Adicionando membros ao time", cat: "getting-started" },
@@ -304,7 +479,6 @@ const HELP_TOPICS = [
     { title: "Status do sistema RevenueOS", cat: "ops" }
 ];
 
-// Blog topics (simplified for brevity in this replace, in reality we'd keep the full list or regeneration logic)
 const BLOG_TOPICS = [
     "KPIs que Investidores olham em Series A",
     "O Guia Definitivo da Receita Recorrente",
@@ -326,6 +500,7 @@ const BLOG_TOPICS = [
     "Dashboards Financeiros que funcionam",
     "O papel do CFO em Startups"
 ];
+
 // Add more to reach 100
 for (let i = 0; i < 80; i++) {
     const seeds = ["Estratégia", "Tática", "Segredo", "Erro Comum", "Futuro", "Tendência", "Análise", "Tutorial"];
@@ -335,10 +510,6 @@ for (let i = 0; i < 80; i++) {
 
 
 async function main() {
-    // We won't regenerate blog posts to save time/complexity if they exist properly, 
-    // but to ensure consistency we will overwrite help articles specifically.
-
-    // Actually, let's just overwrite both to be safe and fast.
     console.log('Regenerating content...');
 
     if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });

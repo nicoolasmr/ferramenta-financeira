@@ -1,14 +1,24 @@
 ---
 title: "Integrando com Stripe"
-excerpt: "Guia completo sobre Integrando com Stripe."
+excerpt: "Guia técnico detalhado sobre Integrando com Stripe, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Integrações"
-keywords: ["integrations", "tutorial", "guide"]
+keywords: ["integrations", "tutorial", "guide", "docs"]
 ---
 
-## Stripe
+## Conexão Direta Stripe
+Aceite cartões globais e Apple Pay via Stripe Connect.
+
+## Configuração
 1. Vá em **Integrations > Stripe**.
 2. Cole sua `Stripe Restricted Key`.
-3. Selecione os eventos de webhook desejados (`invoice.paid`, `charge.failed`).
+3. Certifique-se que a chave tem permissões de `Write` para `Customers`, `Charges` e `Invoices`.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Webhooks
+Para receber confirmações de pagamento em tempo real, configure o endpoint do RevenueOS (`api.revenueos.com/hooks/stripe`) no dashboard da Stripe.
+Eventos obrigatórios:
+- `invoice.payment_succeeded`
+- `customer.subscription.deleted`
+- `charge.refunded`
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

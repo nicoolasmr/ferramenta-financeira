@@ -1,13 +1,27 @@
 ---
 title: "Configurando MFA (Autenticação de Dois Fatores)"
-excerpt: "Guia completo sobre Configurando MFA (Autenticação de Dois Fatores)."
+excerpt: "Guia técnico detalhado sobre Configurando MFA (Autenticação de Dois Fatores), incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Começando"
-keywords: ["getting-started", "tutorial", "guide"]
+keywords: ["getting-started", "tutorial", "guide", "docs"]
 ---
 
-## Segurança Primeiro
-Vá em **Settings > Security**. Ative o MFA para forçar autenticação via App Authenticator para todos os admins.
-<Callout type="warning">Recomendamos fortemente o uso de MFA para contas com acesso a dados bancários.</Callout>
+## Por que usar MFA?
+Dados financeiros são alvos críticos. O MFA (Multi-Factor Authentication) impede 99.9% dos ataques de credential stuffing.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Ativação
+
+### Para seu Usuário
+1. Clique no seu avatar no canto superior direito > **Profile**.
+2. Em "Security", clique em **"Enable MFA"**.
+3. Escaneie o QR Code com seu app (Google Authenticator, Authy, 1Password).
+4. Digite o código de 6 dígitos para confirmar.
+5. **Salve os Recovery Codes** em um local seguro (não no seu computador!).
+
+### Para a Organização (Enforce)
+Admins podem forçar o MFA para toda a empresa:
+1. Vá em **Settings > Security**.
+2. Marque a opção **"Enforce MFA for all members"**.
+3. Usuários sem MFA serão deslogados e forçados a configurar no próximo login.
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

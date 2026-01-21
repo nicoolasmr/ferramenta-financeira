@@ -1,13 +1,25 @@
 ---
 title: "Logs de Auditoria: Como exportar"
-excerpt: "Guia completo sobre Logs de Auditoria: Como exportar."
+excerpt: "Guia técnico detalhado sobre Logs de Auditoria: Como exportar, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Segurança & Permissões"
-keywords: ["security", "tutorial", "guide"]
+keywords: ["security", "tutorial", "guide", "docs"]
 ---
 
-## Audit Logs
-Vá em **Settings > Compliance**.
-Clique em "Export Logs". Você receberá um CSV com todas as ações de escrita (create/update/delete) dos últimos 90 dias.
+## Compliance e Auditoria
+Para certificações SOC2 ou ISO27001, você precisa provar "quem fez o quê e quando".
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Audit Trail
+Registramos todas as operações de mutação (CREATE, UPDATE, DELETE):
+- **Actor**: Quem iniciou (User ID ou API Key ID).
+- **Resource**: Qual objeto foi afetado (ex: `Invoice: inv_999`).
+- **Action**: O que foi feito (ex: `status_changed: paid -> void`).
+- **Metadata**: IP de origem, User Agent, Timestamp.
+
+## Exportação
+1. Vá em **Settings > Compliance**.
+2. Defina o range de datas (ex: "Último Trimestre").
+3. Clique em **"Export CSV"** ou **"Export JSON"**.
+4. O arquivo assinado digitalmente será enviado para o email do Owner.
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

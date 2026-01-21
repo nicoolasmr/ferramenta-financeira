@@ -1,13 +1,27 @@
 ---
 title: "Gerenciando ambientes (Staging vs Prod)"
-excerpt: "Guia completo sobre Gerenciando ambientes (Staging vs Prod)."
+excerpt: "Guia técnico detalhado sobre Gerenciando ambientes (Staging vs Prod), incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Projetos"
-keywords: ["projects", "tutorial", "guide"]
+keywords: ["projects", "tutorial", "guide", "docs"]
 ---
 
-## Ambientes
-Cada projeto tem chaves distintas para `test_sk_...` e `live_sk_...`.
-Use o header `X-Environment: staging` para testar sem afetar métricas reais.
+## Boas Práticas de DevOps
+Nunca desenvolva ou teste em produção. O RevenueOS facilita isso com ambientes espelhados.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+### Diferenças Staging vs Prod
+- **Staging**:
+  - Cartões de crédito fictícios funcionam (ex: 4242...).
+  - Emails não são enviados para clientes reais (apenas para o log).
+  - Webhooks são disparados normalmente.
+  - Rate limits são mais relaxados.
+
+- **Production**:
+  - Transações reais.
+  - Emails reais.
+  - Dados imutáveis para fins contábeis.
+
+### Header de Ambiente
+Para alternar, basta mudar a chave de API (`sk_test_...` ou `sk_live_...`) no seu backend. O sistema detecta o ambiente automaticamente pelo prefixo da chave.
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

@@ -1,15 +1,26 @@
 ---
 title: "Registrando uma venda manual"
-excerpt: "Guia completo sobre Registrando uma venda manual."
+excerpt: "Guia técnico detalhado sobre Registrando uma venda manual, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Vendas & Clientes"
-keywords: ["sales", "tutorial", "guide"]
+keywords: ["sales", "tutorial", "guide", "docs"]
 ---
 
-## Vendas Manuais
-Para vendas fora do gateway (ex: TED/Dinheiro):
-1. Vá em **Sales > New Manual Sale**.
-2. Preencha cliente, valor e data.
-3. O sistema cria a reconciliação automaticamente.
+## Quando usar?
+Nem todas as vendas passam pelo checkout automático. Use a Venda Manual para:
+- Contratos Enterprise fechados via PIX/TED.
+- Migração de dados legados.
+- Vendas físicas/offline.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Passo a Passo
+1. Acesse **Sales > Transactions**.
+2. Clique em **"New Transaction"** (botão superior direito).
+3. Selecione o Cliente (ou crie um novo na hora).
+4. Adicione os itens (SKUs) e valores.
+5. Em "Payment Method", selecione "External / Manual Bank Transfer".
+6. Anexe o comprovante (PDF/Imagem) para fins de reconciliação.
+7. Clique em **"Create & Reconcile"**.
+
+O sistema irá gerar a fatura, marcar como paga e lançar no fluxo de caixa imediatamente.
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

@@ -1,12 +1,21 @@
 ---
 title: "Entendendo RLS (Row Level Security)"
-excerpt: "Guia completo sobre Entendendo RLS (Row Level Security)."
+excerpt: "Guia técnico detalhado sobre Entendendo RLS (Row Level Security), incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Segurança & Permissões"
-keywords: ["security", "tutorial", "guide"]
+keywords: ["security", "tutorial", "guide", "docs"]
 ---
 
-## RLS
-Nossa arquitetura usa Postgres RLS. Isso garante que, mesmo se houver bug na API, um tenant jamais verá dados de outro tenant, pois o banco bloqueia a query.
+## Arquitetura Multi-Tenant
+Segurança não é feature, é fundação. O RevenueOS utiliza **PostgreSQL Row Level Security (RLS)** nativo.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+### Como funciona?
+Cada query no banco de dados obrigatoriamente carrega o `project_id` do contexto atual.
+```sql
+SELECT * FROM invoices WHERE project_id = current_setting('app.current_project_id');
+```
+
+Isso significa que o banco de dados **física e logicamente recusa** retornar dados de outro projeto, mesmo se houver um erro na camada de aplicação (Node.js).
+É a garantia matemática de que os dados (seus e dos seus clientes) estão isolados.
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

@@ -1,15 +1,29 @@
 ---
 title: "Importando clientes via CSV"
-excerpt: "Guia completo sobre Importando clientes via CSV."
+excerpt: "Guia técnico detalhado sobre Importando clientes via CSV, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Vendas & Clientes"
-keywords: ["sales", "tutorial", "guide"]
+keywords: ["sales", "tutorial", "guide", "docs"]
 ---
 
-## Importação em Massa
-Acesse **Sales > Import**.
-Baixe nosso template CSV.
-Coloque os emails e IDs externos.
-Faça o upload. O sistema processará em background.
+## Migração de Dados
+Trazer dados de outro sistema? Nossa ferramenta de importação em massa lida com até 500k registros.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Preparando o Arquivo
+Baixe o template oficial em **Sales > Import > Download Template**.
+Colunas obrigatórias:
+- `external_id`: O ID do cliente no seu sistema antigo (para evitar duplicatas).
+- `email`: Chave única de identificação.
+- `name`: Nome completo.
+
+## Processo de Upload
+1. Salve sua planilha como `.csv` (UTF-8).
+2. Arraste para a área de upload.
+3. O sistema fará uma validação prévia (Check de emails inválidos).
+4. Confirme a importação.
+
+<Callout type="info" title="Processamento">
+Importações grandes rodam em background. Você receberá um e-mail quando terminar com um relatório de erros (se houver).
+</Callout>
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

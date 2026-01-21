@@ -1,15 +1,34 @@
 ---
 title: "Criando um novo Projeto"
-excerpt: "Guia completo sobre Criando um novo Projeto."
+excerpt: "Guia técnico detalhado sobre Criando um novo Projeto, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Projetos"
-keywords: ["projects", "tutorial", "guide"]
+keywords: ["projects", "tutorial", "guide", "docs"]
 ---
 
-## Projetos
-Projetos funcionam como containers isolados (ex: Produto A, Produto B).
-1. Clique em "New Project".
-2. Defina se é Assinatura ou Pagamento Único.
-3. O sistema gerará um `project_id` único.
+## Estrutura de Projetos
+Projetos funcionam como ambientes isolados dentro da sua Organização. Use projetos para separar:
+- Produtos diferentes (ex: RevenueOS Billing vs RevenueOS Analytics).
+- Ambientes de desenvolvimento (ex: Staging vs Production).
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Como Criar
+
+### 1. Painel de Controle
+No topo da sidebar esquerda, clique no nome do projeto atual para abrir o switcher.
+Selecione **"Create Project"**.
+
+### 2. Configuração
+- **Nome**: Identificador interno.
+- **Environment**: Escolha "Production" para dados reais ou "Development" para testes.
+- **Região de Dados**: GRU1 (São Paulo) para menor latência ou US-EAST (N. Virginia).
+
+### 3. Credenciais
+Assim que criar, você receberá:
+- `Project ID`: Identificador público (ex: `proj_123xyz`).
+- `Secret Key`: Chave privada para o backend (ex: `sk_live_...`).
+
+<Callout type="danger" title="Atenção">
+A Secret Key é mostrada apenas uma vez. Se perder, você terá que rolar a chave (roll key), o que quebrará sua integração até ser atualizada.
+</Callout>
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />

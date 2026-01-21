@@ -1,16 +1,22 @@
 ---
 title: "Renegociando parcelas em atraso"
-excerpt: "Guia completo sobre Renegociando parcelas em atraso."
+excerpt: "Guia técnico detalhado sobre Renegociando parcelas em atraso, incluindo configuração, melhores práticas e troubleshooting."
 updatedAt: "2026-02-21"
 category: "Pagamentos & Recebíveis"
-keywords: ["payments", "tutorial", "guide"]
+keywords: ["payments", "tutorial", "guide", "docs"]
 ---
 
-## Renegociação
-Na tela de detalhe da venda, clique em **Renegotiate**.
-Você pode:
-1. Mudar a data de vencimento.
-2. Isentar juros (com aprovação de Admin).
-Isso gera um log de auditoria.
+## Recuperação de Receita
+Às vezes o cliente quer pagar, mas precisa de fôlego. O RevenueOS permite renegociar sem sujar as métricas de churn.
 
-<CTABox title="Precisa de ajuda?" subtitle="Abra um ticket com nosso suporte técnico." />
+## Fluxo de Renegociação
+1. Abra o perfil do cliente inadimplente.
+2. Na fatura atrasada, clique em **Actions > Renegotiate**.
+3. Opções:
+   - **Nova Data**: Postergar o vencimento.
+   - **Parcelamento**: Quebrar o valor em 2x ou 3x.
+   - **Desconto**: Abater juros/multa (exige aprovação de Admin).
+
+Ao salvar, o sistema gera um novo link de pagamento atualizado e envia para o cliente. A fatura antiga é anulada e substituída pela nova (nota de débito/crédito automática).
+
+<CTABox title="Precisa de ajuda avançada?" subtitle="Nosso time de engenharia está disponível para integrações complexas." />
