@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { landingContent } from "@/content/landingContent";
 import { ArrowRight, CheckCircle2, Menu, Zap } from "lucide-react";
+import { TrustStrip } from "@/components/marketing/TrustStrip";
+import { ProductTour } from "@/components/marketing/ProductTour";
 
 export const metadata = {
     title: "RevenueOS - O Sistema Operacional Financeiro para SaaS Moderno",
@@ -101,22 +103,7 @@ export default function LandingPage() {
                 </section>
 
                 {/* TRUST STRIP */}
-                <section className="py-10 border-y bg-white">
-                    <div className="container mx-auto px-4 text-center">
-                        <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">
-                            {landingContent.trust.title}
-                        </p>
-
-                        <div className="flex justify-center flex-wrap gap-4">
-                            {landingContent.trust.badges.map((badge, i) => (
-                                <div key={i} className="flex items-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
-                                    <badge.icon className="h-3 w-3" />
-                                    {badge.label}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
+                <TrustStrip />
 
                 {/* PROBLEMS SECTION */}
                 <section className="py-20 bg-white">
@@ -142,36 +129,8 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                {/* HOW IT WORKS */}
-                <section className="py-20 bg-slate-900 text-white">
-                    <div className="container mx-auto max-w-6xl px-4">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                                {landingContent.howItWorks.title}
-                            </h2>
-                            <p className="text-slate-400 max-w-2xl mx-auto">
-                                {landingContent.howItWorks.subtitle}
-                            </p>
-                        </div>
-                        <div className="grid md:grid-cols-3 gap-12 relative">
-                            <div className="hidden md:block absolute top-8 left-[20%] right-[20%] h-px bg-slate-700 -z-10"></div>
-                            {landingContent.howItWorks.steps.map((step, i) => (
-                                <div key={i} className="flex flex-col items-center text-center">
-                                    <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center border-4 border-slate-900 mb-6 z-10 shadow-xl">
-                                        <span className="font-bold text-xl">{step.number}</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                                    <p className="text-slate-400 text-sm leading-relaxed">
-                                        {step.description}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                        <p className="text-center text-slate-500 mt-12 text-sm italic">
-                            "{landingContent.howItWorks.microcopy}"
-                        </p>
-                    </div>
-                </section>
+                {/* PRODUCT TOUR */}
+                <ProductTour />
 
                 {/* DATA TRUTH LAYER */}
                 <section className="py-24 bg-slate-50">

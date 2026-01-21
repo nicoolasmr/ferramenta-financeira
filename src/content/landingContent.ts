@@ -24,6 +24,7 @@ export const landingContent = {
             { label: "Segurança", href: "/#seguranca" },
             { label: "Preços", href: "/precos" },
             { label: "Blog", href: "/blog" },
+            { label: "Recursos", href: "/recursos" },
             { label: "Ajuda", href: "/ajuda" },
         ],
         ctaPrimary: { label: "Comece agora", href: "/precos" },

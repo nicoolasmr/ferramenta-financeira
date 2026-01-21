@@ -1,0 +1,33 @@
+---
+title: "Configurando Webhooks no Lastlink"
+excerpt: "Documentação oficial para Configurando Webhooks no Lastlink."
+updatedAt: "2026-02-21"
+category: "integrations"
+---
+
+## Objetivo
+Este guia explica como realizar **Configurando Webhooks** na integração com **Lastlink**.
+
+## Pré-requisitos
+- Conta ativa no Lastlink.
+- Permissão de Admin no RevenueOS.
+
+## Passo a Passo
+
+### 1. No Painel do Lastlink
+1. Faça login na sua conta.
+2. Navegue até **Configurações > API / Developers**.
+3. Localize a seção referente a chaves ou webhooks.
+
+### 2. No RevenueOS
+1. Vá em **Integrations > Lastlink**.
+2. Copie a URL de Webhook: `https://api.revenueos.com/hooks/lastlink`.
+3. Cole no painel do provedor.
+
+## Como Validar
+Envie uma transação de teste (Sandbox).
+Verifique em **RevenueOS > Ops > Integration Health**. Se aparecer um "check" verde, está tudo certo.
+
+<Callout type="warning" title="Troubleshooting">
+Se receber erro 403, verifique se a Secret Key não foi rotacionada recentemente.
+</Callout>
