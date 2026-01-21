@@ -136,7 +136,7 @@ export default function LandingPage() {
                         <div className="flex justify-center gap-12 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500 flex-wrap">
                             {/* Logos using text/style approximations for reliability */}
                             <div className="text-2xl font-bold tracking-tighter text-[#635BFF]">stripe</div>
-                            <img src="/hotmart-logo.png" alt="Hotmart" className="h-8 object-contain" />
+                            <img src="/hotmart-logo.svg" alt="Hotmart" className="h-8 object-contain" />
                             <img src="/asaas-logo.svg" alt="Asaas" className="h-8 object-contain" />
                             <div className="text-xl font-bold text-slate-700">kiwify</div>
                             <div className="text-xl font-bold text-slate-700">eduzz</div>
@@ -351,7 +351,7 @@ export default function LandingPage() {
                             {/* Hotmart */}
                             <div className="bg-white p-8 rounded-xl border shadow-sm flex flex-col items-center hover:shadow-lg transition-all hover:-translate-y-1">
                                 <div className="h-16 w-full flex items-center justify-center mb-6">
-                                    <img src="/hotmart-logo.png" alt="Hotmart" className="h-12 object-contain" />
+                                    <img src="/hotmart-logo.svg" alt="Hotmart" className="h-12 object-contain" />
                                 </div>
                                 <h3 className="text-xl font-bold text-slate-900 mb-4">Hotmart</h3>
                                 <div className="flex gap-2 flex-wrap justify-center">
@@ -467,7 +467,7 @@ export default function LandingPage() {
                                 <h3 className="font-bold text-xl text-slate-900">Starter</h3>
                                 <p className="text-slate-500 text-sm mt-2">Para quem está validando.</p>
                                 <div className="my-6">
-                                    <span className="text-3xl font-bold text-slate-900">R$ 197</span>
+                                    <span className="text-3xl font-bold text-slate-900">R$ 397</span>
                                     <span className="text-slate-500">/mês</span>
                                 </div>
                                 <ul className="space-y-3 mb-8 flex-1">
@@ -486,7 +486,7 @@ export default function LandingPage() {
                                 <h3 className="font-bold text-xl text-slate-900">Pro</h3>
                                 <p className="text-slate-500 text-sm mt-2">Para operações em escala.</p>
                                 <div className="my-6">
-                                    <span className="text-3xl font-bold text-slate-900">R$ 497</span>
+                                    <span className="text-3xl font-bold text-slate-900">R$ 697</span>
                                     <span className="text-slate-500">/mês</span>
                                 </div>
                                 <ul className="space-y-3 mb-8 flex-1">
