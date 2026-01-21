@@ -114,39 +114,121 @@ Vá em **Settings > Compliance**.
 Clique em "Export Logs". Você receberá um CSV com todas as ações de escrita (create/update/delete) dos últimos 90 dias.`
 };
 
+const BLOG_CONTENT_MAP = {
+    "KPIs que Investidores olham em Series A": `## O que define uma Series A?
+Ao contrário do Seed, onde a aposta é no time e na visão, a Series A é sobre **Product-Market Fit (PMF)** comprovado e **Unit Economics** saudáveis.
+Investidores como a16z e Sequoia não olham mais para métricas de vaidade.
+
+### 1. NDR (Net Dollar Retention) > 110%
+Não basta apenas adquirir novos clientes; você precisa expandir a receita da base atual.
+Um NDR de 120% significa que, mesmo se você parar de vender hoje, sua receita cresce 20% ano que vem.
+<Callout type="success" title="Benchmark">
+Top Tier SaaS: > 120%
+Good: 100-110%
+Bad: < 90% (Churn matando o crescimento)
+</Callout>
+
+### 2. LTV/CAC > 3x
+Para cada R$ 1 investido em marketing/vendas, quanto volta?
+- **CAC Payback**: Deve ser < 12 meses. Se for > 18 meses, você vai queimar caixa rápido demais.
+- **Margem Bruta**: Idealmente > 80% para SaaS puro.
+
+### 3. Burn Multiplier
+Quanto você queima para gerar R$ 1 de ARR novo?
+Se você queima R$ 2 para gerar R$ 1, seu multiplicador é 2x.
+Em mercados de "Capital Eficiente", busca-se um multiplicador < 1.0.
+
+## A armadilha do "Growth a qualquer custo"
+Em 2021, crescer 300% ao ano era tudo. Hoje, crescer 100% com fluxo de caixa livre (FCF) positivo vale mais que 300% com burn infinito.
+
+<CTABox title="Audite suas métricas" subtitle="O RevenueOS calcula seu NDR, LTV e CAC automaticamente em tempo real." />`,
+
+    "O Guia Definitivo da Receita Recorrente": `## Por que Receita Recorrente?
+A beleza do modelo SaaS é a previsibilidade. Mas previsibilidade exige disciplina.
+
+### Tipos de Receita
+1. **MRR (Monthly Recurring Revenue)**: O coração da operação.
+2. **Expansion Revenue**: Up-sells e Cross-sells.
+3. **Service Revenue**: Setup fees e consultoria (NÃO conte isso no MRR!).
+
+<Callout type="warning" title="Erro Comum">
+Muitos fundadores somam contratos de consultoria pontual ao MRR. Isso infla o valuation artificialmente e destrói a confiança na Due Diligence.
+</Callout>
+
+### Como aumentar a fidelidade
+- Contratos anuais com pagamento antecipado (melhora o Cashflow).
+- Lock-in via integração profunda (API).
+- Suporte proativo (Customer Success não é Suporte Técnico!).
+
+<CTABox title="Centralize sua receita" subtitle="Pare de somar planilhas. Tenha uma única fonte de verdade." />`,
+
+    "A Verdade sobre Reconciliação Financeira": `## O Caos dos Gateways
+Stripe diz que você vendeu R$ 100k. O banco diz que caiu R$ 98k. O CRM diz que tem R$ 105k fechado. Quem está certo?
+
+### O problema da "Data Truth"
+Gateways de pagamento cobram taxas, seguram reservas e fazem bundles de transferências.
+Sem uma camada de normalização, seu financeiro perde 5 dias por mês tentando bater as contas.
+
+### A Solução: Transaction Level Reconciliation
+Você precisa bater cada evento de venda (invoice.paid) com cada evento bancário (transfer.received), descontando a taxa (fee).
+
+1. **Ingestão**: Webhooks de todos os provedores.
+2. **Normalização**: Converter JSONs diferentes em um modelo padrão.
+3. **Matching**: Algoritmo que cruza valores e datas.
+
+<Callout type="tip" title="Automação">
+O RevenueOS faz isso automaticamente. Se houver divergência de 1 centavo, nós alertamos.
+</Callout>
+
+<CTABox title="Fim das planilhas manuais" subtitle="Reconciliação automática para Stripe, Hotmart e Asaas." />`
+};
+
 function generateBlogContent(title) {
+    const specificContent = BLOG_CONTENT_MAP[title];
+
+    // Better filler generation if no specific map
+    const genericBody = `## Introdução
+No cenário atual de tecnologia, **${title}** emergiu como um pilar fundamental para empresas que buscam escalabilidade e eficiência.
+Não se trata apenas de uma tendência passageira, mas de uma reestruturação na forma como as operações de SaaS são conduzidas.
+
+## O Contexto Atual
+Historicamente, processos manuais dominavam este setor. Hoje, com a ascensão de ferramentas baseadas em IA e automação financeira (como o **RevenueOS**), a barra subiu.
+Fundadores e CFOs não podem mais se dar ao luxo de ignorar a precisão dos dados.
+
+### Principais Desafios
+1. **Fragmentação de Dados**: Informações espalhadas em silos.
+2. **Falta de Visibilidade**: Decisões baseadas em "feeling" e não em números.
+3. **Lentidão Operacional**: Processos que demoram dias em vez de segundos.
+
+<Callout type="info" title="Fato de Mercado">
+Estudos mostram que empresas que automatizam ${title} reduzem o custo operacional em até 40% no primeiro ano.
+</Callout>
+
+## Estratégias para Implementação
+Para dominar **${title}**, comece pelo básico: limpe seus dados.
+Em seguida, integre suas ferramentas. A API do RevenueOS, por exemplo, permite conectar seu CRM direto ao Billing.
+
+### Checklist Prático
+- [ ] Mapeie seus processos atuais.
+- [ ] Identifique gargalos manuais.
+- [ ] Implemente uma solução de "System of Record".
+
+## Conclusão
+A jornada para dominar **${title}** é contínua. O mais importante é dar o primeiro passo hoje, garantindo que sua infraestrutura financeira suporte o crescimento de amanhã.
+
+<CTABox title="Pronto para evoluir?" subtitle="O RevenueOS é a plataforma definitiva para orquestrar sua operação financeira." />`;
+
     return `---
 title: "${title}"
-excerpt: "Descubra como aplicar ${title} na sua operação de SaaS e garantir escala sustentável."
+excerpt: "Uma análise profunda sobre ${title}, com estratégias práticas para implementar na sua operação de SaaS B2B."
 date: "${new Date(2025, 0, 1 + Math.floor(Math.random() * 365)).toISOString()}"
 category: "${BLOG_CATEGORIES[Math.floor(Math.random() * BLOG_CATEGORIES.length)]}"
-tags: ["SaaS", "Finanças", "Growth"]
+tags: ["SaaS", "Gestão", "Growth", "Finanças"]
 readingTime: "${5 + Math.floor(Math.random() * 10)} min"
 author: "RevenueOS Team"
 ---
 
-## Introdução
-
-No mundo acelerado das startups, **${title}** é um tema crucial.
-
-<Callout type="info" title="Insight">
-Empresas que dominam ${title} crescem 2x mais rápido.
-</Callout>
-
-## Desenvolvimento
-
-Aqui exploramos os detalhes técnicos e estratégicos. A implementação correta de **${title}** exige disciplina.
-
-### Pontos Chave:
-1. Análise de dados.
-2. Processos definidos.
-3. Tecnologia adequada (como o RevenueOS).
-
-## Conclusão
-
-Comece hoje a otimizar sua operação.
-
-<CTABox title="Escale com segurança" subtitle="O RevenueOS é a base para sua estratégia financeira." />
+${specificContent || genericBody}
 `;
 }
 
@@ -224,14 +306,13 @@ const HELP_TOPICS = [
 
 // Blog topics (simplified for brevity in this replace, in reality we'd keep the full list or regeneration logic)
 const BLOG_TOPICS = [
+    "KPIs que Investidores olham em Series A",
     "O Guia Definitivo da Receita Recorrente",
-    "Como Reduzir o Churn Involuntário em 30%",
     "A Verdade sobre Reconciliação Financeira",
     "Por que Planilhas matam seu SaaS",
     "Webhook vs. Polling: Qual o melhor?",
     "O que é 'Event Sourcing' na prática",
     "Como auditar um processo financeiro",
-    "KPIs que Investidores olham em Series A",
     "Gestão de Inadimplência com IA",
     "Stripe vs. Asaas: Comparativo 2026",
     "Como escalar operações financeiras",
