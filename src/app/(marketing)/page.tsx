@@ -106,12 +106,7 @@ export default function LandingPage() {
                         <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">
                             {landingContent.trust.title}
                         </p>
-                        <div className="flex justify-center gap-8 items-center flex-wrap mb-8 opacity-60 grayscale hover:grayscale-0 transition-all">
-                            {/* Placeholders for client logos */}
-                            {["Client A", "Client B", "Client C", "Client D", "Client E"].map((client) => (
-                                <div key={client} className="text-xl font-bold text-slate-300 select-none">{client}</div>
-                            ))}
-                        </div>
+
                         <div className="flex justify-center flex-wrap gap-4">
                             {landingContent.trust.badges.map((badge, i) => (
                                 <div key={i} className="flex items-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
