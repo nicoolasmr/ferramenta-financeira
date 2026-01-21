@@ -2,6 +2,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
+    LayoutDashboard,
+    User,
+    Calendar,
+    RefreshCw,
+    Banknote,
     ArrowRight,
     BarChart3,
     CheckCircle2,
@@ -119,21 +124,22 @@ export default function LandingPage() {
                             </div>
                         </div>
                     </div>
+
                 </section>
 
                 {/* SOCIAL PROOF */}
-                <section className="py-12 border-y bg-white">
+                <section className="py-12 border-y bg-white animate-fade-in-up animation-delay-200">
                     <div className="container mx-auto px-4 text-center">
                         <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-8">
                             Feito para quem vende no Brasil (Recorrência e Parcelas)
                         </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-8 items-center opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-                            {/* Placeholders for logos */}
-                            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                                <div key={i} className="flex justify-center">
-                                    <div className="h-8 w-24 bg-slate-200 rounded animate-pulse"></div>
-                                </div>
-                            ))}
+                        <div className="flex justify-center gap-12 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500 flex-wrap">
+                            {/* Logos using text/style approximations for reliability */}
+                            <div className="text-2xl font-bold tracking-tighter text-[#635BFF]">stripe</div>
+                            <div className="text-2xl font-bold tracking-tight text-[#F04E23]">hotmart</div>
+                            <div className="text-2xl font-bold tracking-tight text-[#0030b9]">asaas</div>
+                            <div className="text-xl font-bold text-slate-700">kiwify</div>
+                            <div className="text-xl font-bold text-slate-700">eduzz</div>
                         </div>
                     </div>
                 </section>
@@ -242,22 +248,53 @@ export default function LandingPage() {
                         </div>
 
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {[
-                                { title: "Projetos (Centro de Tudo)", desc: "Produtos, vendas, pagamentos e dashboard isolados por lançamento ou área de negócio." },
-                                { title: "Perfil 360 do Comprador", desc: "Histórico completo, parcelas pagas/abertas, contratos e status em uma tela só." },
-                                { title: "Calendário de Parcelas", desc: "Vencimentos, atrasos, grace periods configuráveis e alertas preventivos." },
-                                { title: "Renegociação sem Bagunça", desc: "Refinancie parcelas mantendo o histórico original intacto. O sistema recalcula tudo." },
-                                { title: "Portal do Cliente", desc: "Área read-only para seu cliente ver faturas e status. Transparência total." },
-                                { title: "Ops & Auditoria", desc: "Webhooks, replay de eventos, logs imutáveis e rastreabilidade ponta a ponta." }
-                            ].map((card, idx) => (
-                                <div key={idx} className="bg-white p-8 rounded-xl border hover:border-blue-500/30 transition-colors shadow-sm">
-                                    <div className="h-10 w-10 bg-slate-100 rounded-lg mb-6 flex items-center justify-center">
-                                        <CheckCircle2 className="w-5 h-5 text-slate-700" />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-slate-900 mb-2">{card.title}</h3>
-                                    <p className="text-slate-600 text-sm leading-relaxed">{card.desc}</p>
+                            <div className="bg-white p-8 rounded-xl border hover:border-blue-500/30 transition-colors shadow-sm hover:shadow-md">
+                                <div className="h-10 w-10 bg-blue-50 rounded-lg mb-6 flex items-center justify-center">
+                                    <LayoutDashboard className="w-5 h-5 text-blue-600" />
                                 </div>
-                            ))}
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Projetos (Centro de Tudo)</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">Produtos, vendas, pagamentos e dashboard isolados por lançamento ou área de negócio.</p>
+                            </div>
+
+                            <div className="bg-white p-8 rounded-xl border hover:border-blue-500/30 transition-colors shadow-sm hover:shadow-md">
+                                <div className="h-10 w-10 bg-indigo-50 rounded-lg mb-6 flex items-center justify-center">
+                                    <User className="w-5 h-5 text-indigo-600" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Perfil 360 do Comprador</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">Histórico completo, parcelas pagas/abertas, contratos e status em uma tela só.</p>
+                            </div>
+
+                            <div className="bg-white p-8 rounded-xl border hover:border-blue-500/30 transition-colors shadow-sm hover:shadow-md">
+                                <div className="h-10 w-10 bg-emerald-50 rounded-lg mb-6 flex items-center justify-center">
+                                    <Calendar className="w-5 h-5 text-emerald-600" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Calendário de Parcelas</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">Vencimentos, atrasos, grace periods configuráveis e alertas preventivos.</p>
+                            </div>
+
+                            <div className="bg-white p-8 rounded-xl border hover:border-blue-500/30 transition-colors shadow-sm hover:shadow-md">
+                                <div className="h-10 w-10 bg-amber-50 rounded-lg mb-6 flex items-center justify-center">
+                                    <Banknote className="w-5 h-5 text-amber-600" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Renegociação sem Bagunça</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">Refinancie parcelas mantendo o histórico original intacto. O sistema recalcula tudo.</p>
+                            </div>
+
+                            <div className="bg-white p-8 rounded-xl border hover:border-blue-500/30 transition-colors shadow-sm hover:shadow-md">
+                                <div className="h-10 w-10 bg-purple-50 rounded-lg mb-6 flex items-center justify-center">
+                                    <Globe className="w-5 h-5 text-purple-600" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Portal do Cliente</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">Área read-only para seu cliente ver faturas e status. Transparência total.</p>
+                            </div>
+
+                            <div className="bg-white p-8 rounded-xl border hover:border-blue-500/30 transition-colors shadow-sm hover:shadow-md">
+                                <div className="h-10 w-10 bg-rose-50 rounded-lg mb-6 flex items-center justify-center">
+                                    <ShieldCheck className="w-5 h-5 text-rose-600" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Ops & Auditoria</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">Webhooks, replay de eventos, logs imutáveis e rastreabilidade ponta a ponta.</p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -276,12 +313,16 @@ export default function LandingPage() {
 
                         <div className="space-y-12">
                             {/* Dashboard 1 */}
-                            <div className="rounded-2xl border bg-slate-50 p-2 lg:p-4 shadow-xl">
-                                <div className="aspect-[16/9] bg-white rounded-xl flex items-center justify-center border border-dashed border-slate-300">
-                                    <div className="text-center">
-                                        <BarChart3 className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                                        <p className="text-slate-400 font-medium">Dashboard Financeiro por Projeto (Preview)</p>
-                                    </div>
+                            <div className="rounded-2xl border bg-slate-900 p-2 lg:p-4 shadow-2xl animate-fade-in-up">
+                                <div className="aspect-[16/9] bg-slate-800 rounded-xl overflow-hidden shadow-inner">
+                                    <img
+                                        src="/dashboard-preview.png"
+                                        alt="RevenueOS Dashboard Preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="mt-4 text-center">
+                                    <p className="text-slate-400 text-sm font-medium">Dashboard Financeiro em Tempo Real</p>
                                 </div>
                             </div>
                         </div>
@@ -294,23 +335,44 @@ export default function LandingPage() {
                         <h2 className="text-3xl font-bold text-slate-900 mb-12">Integrações Tier 1 + Base para Escalar</h2>
 
                         <div className="grid md:grid-cols-3 gap-8 mb-16">
-                            {[
-                                { name: "Stripe", tags: ["Billing", "Webhooks", "Conciliação"] },
-                                { name: "Hotmart", tags: ["Vendas", "Comissões", "Cancelamento"] },
-                                { name: "Asaas", tags: ["PIX", "Boleto", "Status"] }
-                            ].map((integ) => (
-                                <div key={integ.name} className="bg-white p-8 rounded-xl border shadow-sm flex flex-col items-center">
-                                    <div className="h-16 w-16 bg-slate-100 rounded-full mb-6 flex items-center justify-center font-bold text-slate-400">
-                                        {integ.name[0]}
-                                    </div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-4">{integ.name}</h3>
-                                    <div className="flex gap-2 flex-wrap justify-center">
-                                        {integ.tags.map(tag => (
-                                            <span key={tag} className="text-xs font-medium bg-slate-100 px-2 py-1 rounded text-slate-600">{tag}</span>
-                                        ))}
-                                    </div>
+                            {/* Stripe */}
+                            <div className="bg-white p-8 rounded-xl border shadow-sm flex flex-col items-center hover:shadow-lg transition-all hover:-translate-y-1">
+                                <div className="h-16 w-full flex items-center justify-center mb-6">
+                                    <span className="text-4xl font-bold tracking-tighter text-[#635BFF]">stripe</span>
                                 </div>
-                            ))}
+                                <h3 className="text-xl font-bold text-slate-900 mb-4">Stripe</h3>
+                                <div className="flex gap-2 flex-wrap justify-center">
+                                    {["Billing", "Webhooks", "Conciliação"].map(tag => (
+                                        <span key={tag} className="text-xs font-medium bg-slate-100 px-2 py-1 rounded text-slate-600">{tag}</span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Hotmart */}
+                            <div className="bg-white p-8 rounded-xl border shadow-sm flex flex-col items-center hover:shadow-lg transition-all hover:-translate-y-1">
+                                <div className="h-16 w-full flex items-center justify-center mb-6">
+                                    <span className="text-4xl font-bold tracking-tight text-[#F04E23]">hotmart</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-4">Hotmart</h3>
+                                <div className="flex gap-2 flex-wrap justify-center">
+                                    {["Vendas", "Comissões", "Cancelamento"].map(tag => (
+                                        <span key={tag} className="text-xs font-medium bg-slate-100 px-2 py-1 rounded text-slate-600">{tag}</span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Asaas */}
+                            <div className="bg-white p-8 rounded-xl border shadow-sm flex flex-col items-center hover:shadow-lg transition-all hover:-translate-y-1">
+                                <div className="h-16 w-full flex items-center justify-center mb-6">
+                                    <span className="text-4xl font-bold tracking-tight text-[#0030b9] italic">asaas</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-4">Asaas</h3>
+                                <div className="flex gap-2 flex-wrap justify-center">
+                                    {["PIX", "Boleto", "Status"].map(tag => (
+                                        <span key={tag} className="text-xs font-medium bg-slate-100 px-2 py-1 rounded text-slate-600">{tag}</span>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-sm text-slate-600">
@@ -486,7 +548,7 @@ export default function LandingPage() {
                             <Link href="/signup">
                                 <Button size="lg" className="h-14 px-8 text-lg bg-emerald-500 hover:bg-emerald-600 text-white">Agendar Demo</Button>
                             </Link>
-                            <Button size="lg" variant="outline" className="h-14 px-8 text-lg text-white border-slate-700 hover:bg-slate-800">
+                            <Button size="lg" variant="outline" className="h-14 px-8 text-lg bg-white text-slate-900 border-none hover:bg-slate-100 shadow-md">
                                 Falar com Especialista
                             </Button>
                         </div>
@@ -514,6 +576,6 @@ export default function LandingPage() {
                     </div>
                 </div>
             </footer>
-        </div>
+        </div >
     );
 }
