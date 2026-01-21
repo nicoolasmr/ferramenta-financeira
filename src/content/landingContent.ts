@@ -23,7 +23,8 @@ export const landingContent = {
             { label: "IA Copilot", href: "#ia" },
             { label: "Segurança", href: "#seguranca" },
             { label: "Preços", href: "#precos" },
-            { label: "FAQ", href: "#faq" },
+            { label: "Blog", href: "/blog" },
+            { label: "Ajuda", href: "/ajuda" },
         ],
         ctaPrimary: { label: "Começar grátis", href: "/signup" },
         ctaSecondary: { label: "Agendar demo", href: "/demo" }, // Placeholder link
