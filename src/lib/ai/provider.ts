@@ -36,12 +36,28 @@ class MockAIProvider implements AIProvider {
             }
 
             if (lastMsg.includes("risk") || lastMsg.includes("risco")) {
-                return `[Project ${context.projectId}] Analysis (Confidence: 100% - SQL View): There is a 15% increase in overdue payments this week. Recommend contacting 5 clients.
+                const { data: aging } = await supabase
+                    .from("receivables_aging_view")
+                    .select("*")
+                    .eq("project_id", context.projectId)
+                    .single();
+
+                const totalOverdue = (aging?.overdue_30 || 0) + (aging?.overdue_60 || 0) + (aging?.overdue_90_plus || 0);
+                const critical = aging?.overdue_90_plus || 0;
+
+                if (totalOverdue === 0) {
+                    return `[Project ${context.projectId}] Analysis (Confidence: 100% - SQL View): **Healthy**. No overdue payments found for this project.`;
+                }
+
+                return `[Project ${context.projectId}] Analysis (Confidence: 100% - SQL View): Found **${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOverdue / 100)}** in overdue payments.
                 
-**Top 3 Actions:**
-1. **Cobrança**: Send "Lembrete Amigável" to John Doe (Assumido risco baixo).
-2. **Engajamento**: User Mary is inactive for 10 days. Check in.
-3. **Cash Flow**: Prepare forecast for next Friday.`;
+**Breakdown:**
+- Recent (30d): ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((aging?.overdue_30 || 0) / 100)}
+- Critical (90d+): ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(critical / 100)}
+
+**Recommended Action:**
+1. Go to **/app/projects/${context.projectId}/receivables** to send reminders.
+2. ${critical > 0 ? "URGENT: Block access for users with 90+ days overdue." : "Send 'Friendly Reminder' to recent defaults."}`;
             }
             return `[Project ${context.projectId}] I am your Project Analyst. Ask me about sales, overdue payments, or churn.`;
         }

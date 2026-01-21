@@ -20,14 +20,35 @@
     UPDATE subscriptions SET plan_id = (SELECT id FROM plans WHERE code='pro') WHERE org_id = 'ORG_UUID';
     ```
 
+### AI Copilot Debugging
+**Symptom**: AI gives hallucinations or says "No data".
+**Action**:
+1.  Check `ai_runs` table for the specific conversation.
+2.  Verify `metadata` column for context injected.
+3.  Check `integration_freshness_view` to ensure data layer is not stale.
+
 ## 2. Onboarding New Connectors
 1.  Add type to `IntegrationProvider` in `src/lib/integrations/normalizer.ts`.
 2.  Implement `normalize[Provider]` function.
-3.  Add UI Logic in `/app/app/integrations`.
-4.  Update Docs.
+3.  Add UI Logic in `/app/app/integrations` and `src/app/app/onboarding/page.tsx` (Step 3).
+4.  Add Contract Tests in `src/connectors/[provider]/contract.test.ts`.
+5.  Update Docs.
 
-## 3. Security Rotation
--   Re-encrypt integration configs if `ENCRYPTION_KEY_BASE64` changes (requires downtime script).
+## 3. Collections & Reconciliation Procedures
+
+### Data Reconciliation
+**Purpose**: Verify if `external_events_raw` matches `external_events_normalized`.
+**Action**:
+1.  Navigate to `/app/projects/[id]/reconciliation`.
+2.  Check for "Delta > 0".
+3.  If Delta > 0, check `failed` events in `external_events` table.
+
+### Managing Receivables (Overdue)
+**Purpose**: View and contact defaulting customers.
+**Action**:
+1.  Navigate to `/app/projects/[id]/receivables`.
+2.  Use the "Priority Collection List" to identify high-value/long-overdue items.
+3.  Use "Friendly Reminder" templates (WhatsApp/Email).
 
 ## 4. Ops & Support Procedures
 
@@ -51,3 +72,8 @@
 1.  Go to `/ops/webhooks`.
 2.  Click "Run Sync" to process pending events.
 3.  Click "Replay" on specific failed events.
+
+## 5. Deployment (Vercel)
+**Note**: CSS issues may require clean builds.
+**Command**: `rm -rf .next && next build`
+**Environment**: Ensure `NEXT_PUBLIC_SUPABASE_URL` and service keys are set.

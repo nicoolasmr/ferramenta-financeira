@@ -17,7 +17,8 @@ export default function OnboardingPage() {
         orgName: "",
         orgSlug: "",
         projectName: "",
-        planCode: "starter"
+        planCode: "starter",
+        integration: "" // Added state for integration
     });
 
     const handleNext = () => setStep(s => s + 1);
@@ -31,12 +32,13 @@ export default function OnboardingPage() {
                         <div className="p-2 bg-primary/10 rounded-full">
                             <Rocket className="w-5 h-5 text-primary" />
                         </div>
-                        <span className="text-sm font-medium text-muted-foreground">step {step} of 3</span>
+                        <span className="text-sm font-medium text-muted-foreground">step {step} of 4</span>
                     </div>
                     <CardTitle className="text-2xl">
                         {step === 1 && "Start your Organization"}
                         {step === 2 && "Choose your Plan"}
-                        {step === 3 && "Create your First Project"}
+                        {step === 3 && "Connect Integration"}
+                        {step === 4 && "Create your First Project"}
                     </CardTitle>
                     <CardDescription>
                         Let&apos;s get your workspace ready for business.
@@ -79,6 +81,36 @@ export default function OnboardingPage() {
                         )}
 
                         {step === 3 && (
+                            <div className="grid gap-4">
+                                <Label className="mb-2">Connect your Primary Integration</Label>
+                                {['Stripe', 'Hotmart', 'Asaas'].map((provider) => (
+                                    <div key={provider}
+                                        className={`border rounded-lg p-4 cursor-pointer hover:border-primary transition-colors ${formData.integration === provider ? 'border-primary bg-primary/5 ring-1 ring-primary' : ''}`}
+                                        onClick={() => setFormData({ ...formData, integration: provider })}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-3">
+                                                {/* Placeholder icons */}
+                                                <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center font-bold text-xs text-slate-500">
+                                                    {provider[0]}
+                                                </div>
+                                                <span className="font-semibold">{provider}</span>
+                                            </div>
+                                            {formData.integration === provider && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                                        </div>
+                                    </div>
+                                ))}
+                                {/* Skip option */}
+                                <div className="mt-4 text-center">
+                                    <Button type="button" variant="link" className="text-muted-foreground" onClick={() => setFormData({ ...formData, integration: 'skip' })}>
+                                        I'll connect later
+                                    </Button>
+                                </div>
+                                <input type="hidden" name="integration" value={formData.integration || 'skip'} />
+                            </div>
+                        )}
+
+                        {step === 4 && (
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <Label>First Project Name</Label>
@@ -88,6 +120,7 @@ export default function OnboardingPage() {
                                 <input type="hidden" name="orgName" value={formData.orgName} />
                                 <input type="hidden" name="orgSlug" value={formData.orgSlug} />
                                 <input type="hidden" name="planCode" value={formData.planCode} />
+                                <input type="hidden" name="integration" value={formData.integration} />
                             </div>
                         )}
                     </CardContent>
@@ -96,9 +129,11 @@ export default function OnboardingPage() {
                             <Button type="button" variant="ghost" onClick={() => setStep(s => s - 1)}>Back</Button>
                         )}
                         <div className="ml-auto">
-                            {step < 3 ? (
+                            {step < 4 ? (
                                 <Button type="button" onClick={handleNext} disabled={
-                                    (step === 1 && !formData.orgName) || (step === 2 && !formData.planCode)
+                                    (step === 1 && !formData.orgName) ||
+                                    (step === 2 && !formData.planCode) ||
+                                    (step === 3 && !formData.integration && formData.integration !== 'skip')
                                 }>Continue</Button>
                             ) : (
                                 <Button type="submit">Complete Setup</Button>
