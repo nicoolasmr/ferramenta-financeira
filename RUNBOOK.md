@@ -73,7 +73,24 @@
 2.  Click "Run Sync" to process pending events.
 3.  Click "Replay" on specific failed events.
 
-## 5. Deployment (Vercel)
+## 5. RevenueOS Copilot (AI)
+
+### Manual Recalculation
+**Purpose**: Force update of health scores and insights.
+**Action**:
+1.  Go to `/app/copilot` (Portfolio Dashboard).
+2.  Click "Recalculate Analysis" button (top right).
+3.  Wait 5-10 seconds for page reload.
+
+### Troubleshooting "Stale Data" Insight
+**Symptom**: Copilot flags "Data feeds are slow (-10)" or "Stale (-25)".
+**Action**:
+1.  Check `integration_freshness_view` via Supabase Studio or Ops Overview.
+2.  If `last_event_at` is > 24h, check Provider Webhooks (Stripe/Hotmart).
+3.  Trigger a manual sync in `/ops/webhooks`.
+
+## 6. Deployment (Vercel)
 **Note**: CSS issues may require clean builds.
 **Command**: `rm -rf .next && next build`
 **Environment**: Ensure `NEXT_PUBLIC_SUPABASE_URL` and service keys are set.
+**Optional Env**: `OPENAI_API_KEY` (for GPT summaries).
