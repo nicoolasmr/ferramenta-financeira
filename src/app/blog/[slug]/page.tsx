@@ -110,8 +110,8 @@ export default async function BlogPost({ params }: { params: { slug: string } })
             </div>
 
             {/* Content */}
-            <div className="container mx-auto px-4 max-w-3xl py-16">
-                <div className="prose prose-slate prose-xl max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-headings:tracking-tight prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-2xl prose-img:shadow-lg prose-p:leading-loose prose-li:leading-loose">
+            <div className="container mx-auto px-4 max-w-4xl py-12 md:py-20">
+                <div className="prose prose-slate prose-lg md:prose-xl max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-headings:tracking-tight prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-2xl prose-img:shadow-lg prose-p:leading-loose prose-li:leading-loose text-slate-700">
                     <MDXRemote source={post.content} components={components} />
                 </div>
 
