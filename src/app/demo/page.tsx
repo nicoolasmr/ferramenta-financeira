@@ -12,13 +12,13 @@ export default function DemoPage() {
         <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col">
             {/* Demo Header */}
             <header className="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
-                <div className="container mx-auto flex justify-between items-center">
+                <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
                     <div className="flex items-center gap-4">
                         <div className="font-bold text-lg tracking-tight">RevenueOS <span className="text-xs bg-emerald-500 text-black px-2 py-0.5 rounded ml-2">DEMO MODE</span></div>
                     </div>
-                    <div className="flex gap-4">
-                        <Button variant="ghost" className="text-white hover:text-white/80" onClick={() => window.location.href = '/'}>Sair da Demo</Button>
-                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold" onClick={() => window.location.href = '/precos'}>Criar Conta Real</Button>
+                    <div className="flex gap-3 w-full sm:w-auto">
+                        <Button variant="outline" className="flex-1 sm:flex-none bg-white text-slate-900 hover:bg-slate-100 border-white" onClick={() => window.location.href = '/'}>Sair da Demo</Button>
+                        <Button className="flex-1 sm:flex-none bg-emerald-500 hover:bg-emerald-600 text-black font-bold" onClick={() => window.location.href = '/precos'}>Criar Conta Real</Button>
                     </div>
                 </div>
             </header>
