@@ -16,8 +16,9 @@ export async function POST(req: Request) {
             signature,
             process.env.STRIPE_WEBHOOK_SECRET!
         );
-    } catch (error: any) {
-        return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        return new NextResponse(`Webhook Error: ${message}`, { status: 400 });
     }
 
     const session = event.data.object as Stripe.Checkout.Session;
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
         if (subRecord) {
             await supabase.from("subscriptions").update({
                 status: subscription.status,
-                current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
                 cancel_at_period_end: subscription.cancel_at_period_end,
                 updated_at: new Date().toISOString()
             }).eq("org_id", subRecord.org_id);

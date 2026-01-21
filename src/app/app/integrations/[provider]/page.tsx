@@ -8,9 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, AlertCircle, RefreshCcw } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
+type IntegrationLog = {
+    id: string;
+    status: string;
+    event_type: string;
+    external_event_id: string;
+    received_at: string;
+};
+
 export default async function IntegrationProviderPage({ params }: { params: Promise<{ provider: string }> }) {
     const { provider } = await params;
-    const logs = await getIntegrationLogs(provider);
+    const logs = (await getIntegrationLogs(provider)) as IntegrationLog[];
 
     // Get current config status
     const supabase = await createClient();
@@ -118,7 +126,7 @@ export default async function IntegrationProviderPage({ params }: { params: Prom
                                 <div className="text-center py-8 text-muted-foreground">No events received yet.</div>
                             ) : (
                                 <div className="space-y-2">
-                                    {logs.map((log: any) => (
+                                    {logs.map((log) => (
                                         <div key={log.id} className="flex items-center justify-between p-3 border rounded-md">
                                             <div className="flex items-center gap-3">
                                                 <Badge variant={log.status === 'processed' ? 'outline' : 'destructive'}>

@@ -19,12 +19,12 @@ export type CanonicalEvent = {
         customerName?: string;
         externalCustomerId?: string;
         items?: { productId: string; name: string; priceCents: number }[];
-        [key: string]: any;
+        [key: string]: unknown;
     };
     occurredAt: string;
 };
 
-export async function normalizeEvent(provider: string, eventType: string, rawPayload: any): Promise<CanonicalEvent | null> {
+export async function normalizeEvent(provider: string, eventType: string, rawPayload: unknown): Promise<CanonicalEvent | null> {
     switch (provider) {
         case 'stripe':
             return normalizeStripe(eventType, rawPayload);
@@ -36,35 +36,52 @@ export async function normalizeEvent(provider: string, eventType: string, rawPay
     }
 }
 
-function normalizeStripe(type: string, payload: any): CanonicalEvent | null {
+type StripeSessionPayload = {
+    id?: string;
+    created?: number;
+    amount_total?: number;
+    customer_details?: { email?: string };
+    customer?: string;
+};
+
+function normalizeStripe(type: string, payload: unknown): CanonicalEvent | null {
+    const data = payload as StripeSessionPayload;
     if (type === 'checkout.session.completed') {
         return {
             canonicalType: 'order.created',
-            externalId: payload.id,
-            occurredAt: new Date(payload.created * 1000).toISOString(),
+            externalId: data.id || "",
+            occurredAt: new Date((data.created || 0) * 1000).toISOString(),
             payload: {
-                amountCents: payload.amount_total,
+                amountCents: data.amount_total,
                 status: 'paid',
-                customerEmail: payload.customer_details?.email,
-                externalCustomerId: payload.customer,
+                customerEmail: data.customer_details?.email,
+                externalCustomerId: data.customer,
             }
         };
     }
     return null;
 }
 
-function normalizeHotmart(type: string, payload: any): CanonicalEvent | null {
+type HotmartPurchasePayload = {
+    transaction?: string;
+    purchase_date?: string;
+    price?: { value?: number };
+    buyer?: { email?: string; name?: string };
+};
+
+function normalizeHotmart(type: string, payload: unknown): CanonicalEvent | null {
+    const data = payload as HotmartPurchasePayload;
     // Hotmart payload structure varies, assuming standard 'purchase' hook
     if (type === 'PURCHASE_COMPLETE') {
         return {
             canonicalType: 'order.created',
-            externalId: payload.transaction,
-            occurredAt: new Date(payload.purchase_date).toISOString(),
+            externalId: data.transaction || "",
+            occurredAt: new Date(data.purchase_date || Date.now()).toISOString(),
             payload: {
-                amountCents: Math.round(payload.price.value * 100), // Assuming float
+                amountCents: Math.round((data.price?.value || 0) * 100), // Assuming float
                 status: 'paid',
-                customerEmail: payload.buyer.email,
-                customerName: payload.buyer.name,
+                customerEmail: data.buyer?.email,
+                customerName: data.buyer?.name,
             }
         };
     }

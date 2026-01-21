@@ -10,6 +10,17 @@ export default async function DLQPage() {
         .order("created_at", { ascending: false })
         .limit(50);
 
+    type DeadLetterEvent = {
+        id: string;
+        provider: string;
+        external_event_id: string;
+        reason: string;
+        payload_dump: unknown;
+        created_at: string;
+    };
+
+    const typedEvents = (events || []) as DeadLetterEvent[];
+
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Dead Letter Queue</h1>
@@ -20,14 +31,14 @@ export default async function DLQPage() {
                     <CardTitle>Failed Events</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {(!events || events.length === 0) ? (
+                    {(typedEvents.length === 0) ? (
                         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-slate-50 rounded-lg border border-dashed">
                             <AlertCircle className="h-10 w-10 mb-4 opacity-50" />
                             <p>No dead letters found. System is healthy.</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {events.map((event: any) => (
+                            {typedEvents.map((event) => (
                                 <div key={event.id} className="flex items-start justify-between p-4 border rounded-md">
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">

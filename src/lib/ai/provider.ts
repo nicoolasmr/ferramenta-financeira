@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { AIMessage, AIEnrollmentSchema } from "./schemas";
+import { AIEnrollment, AIMessage } from "./schemas";
 
 export type AIContext = {
     mode: "global" | "project" | "wizard";
@@ -9,7 +9,7 @@ export type AIContext = {
 
 export interface AIProvider {
     chat(messages: AIMessage[], context: AIContext): Promise<string>;
-    extractEnrollment(text: string): Promise<any>; // Returns partial AIEnrollment
+    extractEnrollment(text: string): Promise<Partial<AIEnrollment>>; // Returns partial AIEnrollment
 }
 
 class MockAIProvider implements AIProvider {
@@ -65,7 +65,7 @@ class MockAIProvider implements AIProvider {
         return "I am the RevenueOS Copilot. I can help you with Global Insights, Project Analysis, or Data Entry. Where should we start?";
     }
 
-    async extractEnrollment(text: string): Promise<any> {
+    async extractEnrollment(text: string): Promise<Partial<AIEnrollment>> {
         // Regex heuristics to extract data from text
         // E.g. "Novo mentorado João Silva valor 5000 em 10x no pix"
 

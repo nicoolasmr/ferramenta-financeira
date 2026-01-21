@@ -10,7 +10,11 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 export function CollectionsInterface() {
-    const [metrics, setMetrics] = useState<any>(null);
+    type CollectionMetrics = {
+        agingBuckets: Record<string, number>;
+    };
+
+    const [metrics, setMetrics] = useState<CollectionMetrics | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -33,7 +37,7 @@ export function CollectionsInterface() {
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-3">
-                {Object.entries(metrics?.agingBuckets || {}).map(([bucket, amount]: [string, any]) => (
+                {Object.entries(metrics?.agingBuckets || {}).map(([bucket, amount]) => (
                     <Card key={bucket} className={amount > 0 ? "border-red-200 bg-red-50/30" : ""}>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground uppercase">Overdue {bucket} days</CardTitle>
@@ -87,7 +91,7 @@ export function CollectionsInterface() {
                 <AlertTriangle className="h-5 w-5 shrink-0" />
                 <p>
                     <strong>Guardrail:</strong> Automated messaging is disabled in this version.
-                    Review the client's profile before sending any collection notice to avoid friction.
+                    Review the client&apos;s profile before sending any collection notice to avoid friction.
                 </p>
             </div>
         </div>

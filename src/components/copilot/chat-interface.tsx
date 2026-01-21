@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { processChatMessage } from "@/actions/copilot/chat-action";
-import { AIEnrollmentSchema, AIMessage } from "@/lib/ai/schemas";
+import { AIEnrollment, AIMessage } from "@/lib/ai/schemas";
 import { createEnrollmentPlan } from "@/actions/copilot/create-enrollment-plan";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -17,7 +17,7 @@ type Message = {
     role: "user" | "assistant";
     content: string;
     intent?: "CHAT" | "PREVIEW_ENROLLMENT";
-    data?: any;
+    data?: Partial<AIEnrollment> & { project_id?: string };
 };
 
 export function ChatInterface({
@@ -56,7 +56,7 @@ export function ChatInterface({
             setMessages(prev => [...prev, {
                 role: "assistant",
                 content: response.text,
-                intent: response.intent as any,
+                intent: response.intent,
                 data: response.data
             }]);
         } catch (e) {
@@ -66,15 +66,16 @@ export function ChatInterface({
         }
     };
 
-    const handleConfirmEnrollment = async (data: any) => {
+    const handleConfirmEnrollment = async (data: Partial<AIEnrollment> & { project_id?: string }) => {
         try {
             const result = await createEnrollmentPlan(data, "org-1");
             if (result.success) {
                 toast.success("Enrollment created successfully!");
                 setMessages(prev => [...prev, { role: "assistant", content: "Enrollment Confirmed & Created! 🚀" }]);
             }
-        } catch (e: any) {
-            toast.error("Error creating enrollment: " + e.message);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : "Unknown error";
+            toast.error("Error creating enrollment: " + message);
         }
     };
 

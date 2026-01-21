@@ -23,7 +23,7 @@ export async function getReceivablesMetrics(orgId: string, projectId?: string) {
     const next30 = new Date(); next30.setDate(today.getDate() + 30);
     const next60 = new Date(); next60.setDate(today.getDate() + 60);
 
-    let metrics = {
+    const metrics = {
         overdue: 0,
         next7: 0,
         next30: 0,
@@ -35,7 +35,13 @@ export async function getReceivablesMetrics(orgId: string, projectId?: string) {
         }
     };
 
-    installments.forEach((inst: any) => {
+    type InstallmentRow = {
+        amount_cents: number;
+        due_date: string;
+        status: string;
+    };
+
+    installments.forEach((inst: InstallmentRow) => {
         const dueDate = new Date(inst.due_date);
         const amount = inst.amount_cents;
 

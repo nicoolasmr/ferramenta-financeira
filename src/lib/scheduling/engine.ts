@@ -100,7 +100,6 @@ export function generateInstallments(params: GenerateInstallmentsParams): Calcul
             // Let's implement: Month (Anchor + i). Day (targetDay).
             // e.g. i=1 (first installment). Anchor Jan. Result Feb.
 
-            let targetDateBase = addMonths(anchorDate, i); // basic +i months
             // But wait, if rule is "fixed_day_of_month", we usually blindly force the day.
             // What if user wants first installment in CURRENT month? 
             // Usually that's the "Entry". The installments follow.

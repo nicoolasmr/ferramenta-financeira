@@ -12,7 +12,7 @@ export async function saveIntegrationConfig(provider: string, formData: FormData
     const { data: membership } = await supabase.from("memberships").select("org_id").eq("user_id", user.id).single();
     if (!membership) throw new Error("No Org Found");
 
-    const config: Record<string, any> = {};
+    const config: Record<string, string | null> = {};
     // Extract config based on provider
     if (provider === 'stripe') {
         config.account_id = formData.get("account_id");

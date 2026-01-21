@@ -35,9 +35,15 @@ export async function syncOverdueStatuses(projectId: string) {
 
     const idsToUpdate: string[] = [];
 
-    for (const inst of installments) {
-        const rule = (inst.payment_plans as any).schedule_rule || {};
-        const graceDays = rule.grace_days || 0;
+    type InstallmentRow = {
+        id: string;
+        due_date: string;
+        payment_plans?: { schedule_rule?: { grace_days?: number } };
+    };
+
+    for (const inst of installments as InstallmentRow[]) {
+        const rule = inst.payment_plans?.schedule_rule;
+        const graceDays = rule?.grace_days || 0;
 
         const dueDate = new Date(inst.due_date);
         dueDate.setUTCHours(0, 0, 0, 0);

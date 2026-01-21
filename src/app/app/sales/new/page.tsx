@@ -16,6 +16,17 @@ type Message = {
     options?: { label: string; value: string }[]; // Optional quick replies
 };
 
+type Product = {
+    id: string;
+    name: string;
+    price_cents: number;
+};
+
+type Customer = {
+    id: string;
+    name: string;
+};
+
 export default function SalesWizardPage() {
     const router = useRouter();
     const [messages, setMessages] = useState<Message[]>([
@@ -23,9 +34,13 @@ export default function SalesWizardPage() {
     ]);
     const [input, setInput] = useState("");
     const [step, setStep] = useState<'product' | 'customer' | 'installments' | 'confirm'>('product');
-    const [formData, setFormData] = useState({
-        product: null as any,
-        customer: null as any,
+    const [formData, setFormData] = useState<{
+        product: Product | null;
+        customer: Customer | null;
+        installments: 1
+    }>({
+        product: null,
+        customer: null,
         installments: 1
     });
     const scrollRef = useRef<HTMLDivElement>(null);

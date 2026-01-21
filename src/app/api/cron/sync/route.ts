@@ -12,7 +12,8 @@ export async function GET(req: Request) {
     try {
         const result = await processPendingBatch(20);
         return NextResponse.json(result);
-    } catch (e: any) {
-        return new NextResponse(e.message, { status: 500 });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Unknown error";
+        return new NextResponse(message, { status: 500 });
     }
 }

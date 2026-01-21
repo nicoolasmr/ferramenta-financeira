@@ -61,6 +61,26 @@ export default async function ClientPortalPage(props: { params: Promise<{ projec
         `)
         .eq("project_id", projectId);
 
+    type Installment = {
+        status: string;
+        amount_cents: number;
+    };
+
+    type PaymentPlan = {
+        id: string;
+        total_amount_cents: number;
+        installments: Installment[];
+    };
+
+    type Enrollment = {
+        id: string;
+        status: string;
+        customer?: { name?: string; email?: string };
+        payment_plans?: PaymentPlan[];
+    };
+
+    const typedEnrollments = (enrollments || []) as Enrollment[];
+
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
@@ -111,7 +131,7 @@ export default async function ClientPortalPage(props: { params: Promise<{ projec
                             <Users className="h-4 w-4 text-blue-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{enrollments?.length || 0}</div>
+                            <div className="text-2xl font-bold">{typedEnrollments.length}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -123,17 +143,17 @@ export default async function ClientPortalPage(props: { params: Promise<{ projec
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {!enrollments || enrollments.length === 0 ? (
+                            {typedEnrollments.length === 0 ? (
                                 <p className="text-muted-foreground text-sm">No students enrolled.</p>
-                            ) : enrollments.map((enr: any) => {
+                            ) : typedEnrollments.map((enr) => {
                                 // Calculate Paid %
                                 const plan = enr.payment_plans?.[0];
                                 const total = plan?.total_amount_cents || 0;
                                 const paid = plan?.installments
-                                    ?.filter((i: any) => i.status === 'paid')
-                                    .reduce((acc: number, cur: any) => acc + cur.amount_cents, 0) || 0;
+                                    ?.filter((i) => i.status === 'paid')
+                                    .reduce((acc, cur) => acc + cur.amount_cents, 0) || 0;
                                 const percent = total > 0 ? Math.round((paid / total) * 100) : 0;
-                                const hasOverdue = plan?.installments?.some((i: any) => i.status === 'overdue');
+                                const hasOverdue = plan?.installments?.some((i) => i.status === 'overdue');
 
                                 // Masking PII
                                 const displayName = maskPII
@@ -165,4 +185,3 @@ export default async function ClientPortalPage(props: { params: Promise<{ projec
         </div>
     );
 }
-

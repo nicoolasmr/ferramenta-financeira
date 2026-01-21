@@ -28,7 +28,7 @@ export default function SecurityPage() {
                         <div>
                             <h2 className="text-2xl font-bold mb-2">Infrastructure Isolation</h2>
                             <p className="text-muted-foreground mb-4">
-                                Every organization's data is logically isolated using Row Level Security (RLS) policies.
+                                Every organization&apos;s data is logically isolated using Row Level Security (RLS) policies.
                                 We perform daily backups and redundant storage.
                             </p>
                         </div>
