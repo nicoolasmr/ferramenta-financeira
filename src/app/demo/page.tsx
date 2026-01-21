@@ -18,7 +18,7 @@ export default function DemoPage() {
                     </div>
                     <div className="flex gap-4">
                         <Button variant="ghost" className="text-white hover:text-white/80" onClick={() => window.location.href = '/'}>Sair da Demo</Button>
-                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold" onClick={() => window.location.href = '/signup'}>Criar Conta Real</Button>
+                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold" onClick={() => window.location.href = '/precos'}>Criar Conta Real</Button>
                     </div>
                 </div>
             </header>
@@ -155,7 +155,7 @@ export default function DemoPage() {
             {/* Banner Fixed Bottom */}
             <div className="bg-slate-900 text-white p-4 text-center z-50">
                 <span className="opacity-80">Você está explorando o modo de demonstração. Os dados são fictícios.</span>
-                <Button variant="link" className="text-emerald-400 font-bold ml-2 hover:text-emerald-300" onClick={() => window.location.href = '/signup'}>
+                <Button variant="link" className="text-emerald-400 font-bold ml-2 hover:text-emerald-300" onClick={() => window.location.href = '/precos'}>
                     Começar com seu projeto real &rarr;
                 </Button>
             </div>

@@ -244,7 +244,7 @@ export const landingContent = {
     finalCta: {
         headline: "Você não precisa vender mais. Precisa receber melhor.",
         sub: "Se hoje você depende de planilha e 'sensação', a próxima inadimplência vai te lembrar.",
-        ctaPrimary: { label: "Começar grátis", href: "/signup" },
+        ctaPrimary: { label: "Começar grátis", href: "/precos" },
         ctaSecondary: { label: "Agendar demo", href: "/demo" }
     },
     footer: {

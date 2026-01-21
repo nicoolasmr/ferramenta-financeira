@@ -52,7 +52,7 @@ export function PublicHeader() {
                         <Link href="/login">
                             <Button variant="ghost" size="sm">Login</Button>
                         </Link>
-                        <Link href="/signup">
+                        <Link href="/precos">
                             <Button size="sm">Get Started</Button>
                         </Link>
                     </nav>

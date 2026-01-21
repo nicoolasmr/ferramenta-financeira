@@ -73,7 +73,7 @@ export default async function BenchmarkPage({ params }: { params: { slug: string
                             <h3 className="text-2xl font-bold mb-2">Quer dados em tempo real?</h3>
                             <p className="text-slate-400">Conecte suas fontes e veja seus próprios benchmarks no RevenueOS.</p>
                         </div>
-                        <Link href="/signup">
+                        <Link href="/precos">
                             <Button size="lg" className="bg-purple-600 hover:bg-purple-700 whitespace-nowrap">
                                 Começar Grátis
                             </Button>

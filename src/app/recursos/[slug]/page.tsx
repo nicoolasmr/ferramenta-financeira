@@ -64,7 +64,7 @@ export default async function ResourcePage({ params }: { params: { slug: string 
                 <div className="mt-16 p-8 bg-slate-900 text-white rounded-2xl text-center">
                     <h3 className="text-2xl font-bold mb-4">Pronto para começar?</h3>
                     <p className="text-slate-400 mb-6">Implemente essas estratégias no RevenueOS hoje mesmo.</p>
-                    <Link href="/signup">
+                    <Link href="/precos">
                         <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600">
                             Começar Grátis
                         </Button>

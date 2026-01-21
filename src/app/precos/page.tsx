@@ -116,7 +116,7 @@ export default function PricingPage() {
                         Comece hoje e veja a diferença no seu caixa já no próximo mês.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Link href="/signup">
+                        <Link href="/precos">
                             <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8">
                                 Criar conta grátis
                             </Button>

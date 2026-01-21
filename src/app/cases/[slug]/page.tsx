@@ -64,7 +64,7 @@ export default async function CasePage({ params }: { params: { slug: string } })
                 <div className="mt-16 p-8 bg-blue-600 text-white rounded-2xl text-center">
                     <h3 className="text-2xl font-bold mb-4">Sua história é a próxima?</h3>
                     <p className="text-blue-100 mb-6">Descubra como o RevenueOS pode transformar sua operação financeira.</p>
-                    <Link href="/signup">
+                    <Link href="/precos">
                         <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100">
                             Começar Agora
                         </Button>

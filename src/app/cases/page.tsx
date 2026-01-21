@@ -70,7 +70,7 @@ export default function CasesPage() {
 
             <section className="bg-blue-600 text-white py-24 text-center">
                 <h2 className="text-3xl font-bold mb-6">Sua história é a próxima?</h2>
-                <Link href="/signup">
+                <Link href="/precos">
                     <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100">Começar Agora</Button>
                 </Link>
             </section>
