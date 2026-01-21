@@ -62,9 +62,9 @@ export default function LandingPage() {
                     <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
                     <div className="container relative mx-auto max-w-6xl px-4 text-center">
                         <div className="mx-auto mb-6 flex max-w-fit items-center justify-center space-x-2 overflow-hidden rounded-full border border-slate-200 bg-white px-7 py-2 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50">
-                            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <ShieldCheck className="w-4 h-4 text-emerald-500" />
                             <p className="text-sm font-semibold text-slate-700">
-                                Multi-tenant + RLS + Trilha de Auditoria
+                                Segurança de Nível Bancário e Auditoria Total
                             </p>
                         </div>
 
