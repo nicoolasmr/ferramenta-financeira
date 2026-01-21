@@ -136,7 +136,7 @@ export default function ResourceCenter() {
                             <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold">Falar com Consultor</Button>
                         </Link>
                         <Link href="/ajuda">
-                            <Button size="lg" variant="outline" className="border-slate-700 text-white hover:bg-slate-800">Ir para Ajuda</Button>
+                            <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 font-bold">Ir para Ajuda</Button>
                         </Link>
                     </div>
                 </div>
