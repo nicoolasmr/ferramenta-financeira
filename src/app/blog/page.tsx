@@ -58,8 +58,8 @@ export default function BlogIndex({ searchParams }: { searchParams: { category?:
                         <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
                             <h4 className="font-bold text-blue-900 mb-2">Escalando sua operação?</h4>
                             <p className="text-sm text-blue-800 mb-4">Descubra como o RevenueOS automatiza seus recebíveis.</p>
-                            <Link href="/signup">
-                                <Button className="w-full bg-blue-600 hover:bg-blue-700">Começar grátis</Button>
+                            <Link href="/precos">
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700">Comece agora</Button>
                             </Link>
                         </div>
                     </aside>
