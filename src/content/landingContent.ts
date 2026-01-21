@@ -99,7 +99,7 @@ export const landingContent = {
             "Aplicação no domínio: orders/payments/installments (Applied Layer)",
             "Reconciliação visual: delta, falhas e replay automático"
         ],
-        cta: { label: "Ver reconciliação", href: "#produto" } // Linkando para produto por enquanto
+        cta: { label: "Ver reconciliação", href: "#seguranca" }
     },
     features: {
         title: "Tudo o que você precisa para operar receita",
