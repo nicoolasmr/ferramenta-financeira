@@ -459,20 +459,7 @@ export default function LandingPage() {
                 </section>
             </main>
 
-            {/* FOOTER */}
-            <footer className="bg-white border-t py-12">
-                <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-slate-900">
-                        <div className="flex h-6 w-6 items-center justify-center rounded bg-slate-900 text-white text-xs">
-                            R
-                        </div>
-                        {landingContent.nav.logo}
-                    </div>
-                    <div className="text-sm text-slate-400">
-                        {landingContent.footer.copyright}
-                    </div>
-                </div>
-            </footer>
+
         </div>
     );
 }
