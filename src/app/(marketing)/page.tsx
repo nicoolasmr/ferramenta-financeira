@@ -265,7 +265,7 @@ export default function LandingPage() {
                         </div>
                         <div className="inline-flex flex-col items-center gap-2">
                             <div className="px-4 py-2 bg-slate-200 rounded-full text-sm text-slate-700 font-medium">
-                                Roadmap: {landingContent.integrations.roadmap}
+                                Em breve: {landingContent.integrations.roadmap}
                             </div>
                             <p className="text-xs text-slate-500 mt-2 font-mono">{landingContent.integrations.techProof}</p>
                         </div>
