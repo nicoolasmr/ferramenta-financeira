@@ -1,0 +1,98 @@
+-- Create team invitations table
+CREATE TABLE IF NOT EXISTS team_invitations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
+  token TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '7 days'),
+  created_by UUID REFERENCES auth.users(id),
+  accepted_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(organization_id, email)
+);
+
+-- Create index for token lookups
+CREATE INDEX IF NOT EXISTS idx_team_invitations_token ON team_invitations(token) WHERE accepted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_team_invitations_org_id ON team_invitations(organization_id);
+
+-- Enable RLS
+ALTER TABLE team_invitations ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for team_invitations
+CREATE POLICY "Users can view invitations for their organizations"
+  ON team_invitations FOR SELECT
+  USING (
+    organization_id IN (
+      SELECT organization_id 
+      FROM organization_members 
+      WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Owners and admins can create invitations"
+  ON team_invitations FOR INSERT
+  WITH CHECK (
+    organization_id IN (
+      SELECT organization_id 
+      FROM organization_members 
+      WHERE user_id = auth.uid() 
+      AND role IN ('owner', 'admin')
+    )
+  );
+
+CREATE POLICY "Owners and admins can delete invitations"
+  ON team_invitations FOR DELETE
+  USING (
+    organization_id IN (
+      SELECT organization_id 
+      FROM organization_members 
+      WHERE user_id = auth.uid() 
+      AND role IN ('owner', 'admin')
+    )
+  );
+
+-- Function to accept invitation
+CREATE OR REPLACE FUNCTION accept_team_invitation(invitation_token TEXT)
+RETURNS JSONB AS $$
+DECLARE
+  invitation RECORD;
+  new_member_id UUID;
+BEGIN
+  -- Find and validate invitation
+  SELECT * INTO invitation
+  FROM team_invitations
+  WHERE token = invitation_token
+    AND accepted_at IS NULL
+    AND expires_at > NOW();
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Invalid or expired invitation');
+  END IF;
+
+  -- Check if user is already a member
+  IF EXISTS (
+    SELECT 1 FROM organization_members
+    WHERE organization_id = invitation.organization_id
+    AND user_id = auth.uid()
+  ) THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Already a member');
+  END IF;
+
+  -- Add user as member
+  INSERT INTO organization_members (organization_id, user_id, role, invited_by)
+  VALUES (invitation.organization_id, auth.uid(), invitation.role, invitation.created_by)
+  RETURNING id INTO new_member_id;
+
+  -- Mark invitation as accepted
+  UPDATE team_invitations
+  SET accepted_at = NOW()
+  WHERE id = invitation.id;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'organization_id', invitation.organization_id,
+    'member_id', new_member_id
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
