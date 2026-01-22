@@ -75,7 +75,7 @@ export default async function BenchmarkPage({ params }: { params: { slug: string
                         </div>
                         <Link href="/precos">
                             <Button size="lg" className="bg-purple-600 hover:bg-purple-700 whitespace-nowrap">
-                                Começar Grátis
+                                Começar Agora
                             </Button>
                         </Link>
                     </div>

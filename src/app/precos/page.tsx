@@ -118,7 +118,7 @@ export default function PricingPage() {
                     <div className="flex justify-center gap-4">
                         <Link href="/precos">
                             <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8">
-                                Criar conta grátis
+                                Criar conta
                             </Button>
                         </Link>
                         <Link href="/contact">
