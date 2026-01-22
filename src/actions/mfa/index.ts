@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { authenticator } from "otplib";
+import { generateSecret, generateURI, verify } from "otplib";
 import QRCode from "qrcode";
 
 export async function getMFAStatus() {
@@ -25,8 +25,12 @@ export async function setupMFA() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
-    const secret = authenticator.generateSecret();
-    const otpauth = authenticator.keyuri(user.email!, "RevenueOS", secret);
+    const secret = generateSecret();
+    const otpauth = generateURI({
+        secret,
+        label: user.email!,
+        issuer: "RevenueOS",
+    });
     const qrCodeUrl = await QRCode.toDataURL(otpauth);
 
     // Save temporary secret (or update existing one)
@@ -56,7 +60,7 @@ export async function activateMFA(token: string) {
 
     if (error || !data) throw new Error("MFA not set up");
 
-    const isValid = authenticator.verify({
+    const isValid = verify({
         token,
         secret: data.secret,
     });
