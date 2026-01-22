@@ -167,14 +167,19 @@ CREATE POLICY "Users can manage integrations provided org_id matches" ON public.
 
 -- External Events (Logs)
 ALTER TABLE public.external_events ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view external events for their org" ON public.external_events;
 CREATE POLICY "Users can view external events for their org" ON public.external_events
     FOR SELECT USING ( (select auth.uid()) = org_id );
 
 -- AI Tables
 ALTER TABLE public.ai_runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can access their AI history" ON public.ai_runs;
 CREATE POLICY "Users can access their AI history" ON public.ai_runs
     USING ( (select auth.uid()) = org_id );
+
+DROP POLICY IF EXISTS "Users can access their AI messages" ON public.ai_messages;
 CREATE POLICY "Users can access their AI messages" ON public.ai_messages
     USING ( (select auth.uid()) = org_id );
 

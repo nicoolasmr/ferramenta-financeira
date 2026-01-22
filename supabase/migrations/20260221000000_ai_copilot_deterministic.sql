@@ -55,9 +55,11 @@ DROP POLICY IF EXISTS "Orgs view own insights" ON public.insights;
 CREATE POLICY "Orgs view own insights" ON public.insights
     FOR SELECT USING (org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Orgs view own actions" ON public.actions_queue;
 CREATE POLICY "Orgs view own actions" ON public.actions_queue
     FOR ALL USING (org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Orgs view own settings" ON public.ai_settings;
 CREATE POLICY "Orgs view own settings" ON public.ai_settings
     FOR ALL USING (org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid()));
 
