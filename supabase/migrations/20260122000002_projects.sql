@@ -3,19 +3,35 @@ CREATE TYPE project_environment AS ENUM ('production', 'development', 'staging')
 CREATE TYPE project_region AS ENUM ('gru1', 'us-east-1');
 
 -- Create projects table
-CREATE TABLE IF NOT EXISTS projects (
+CREATE TABLE IF NOT EXISTS public.projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  slug TEXT NOT NULL,
-  environment project_environment NOT NULL DEFAULT 'production',
-  region project_region NOT NULL DEFAULT 'gru1',
-  settings JSONB DEFAULT '{}'::jsonb,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(organization_id, slug)
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure extended columns exist (idempotent)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='projects' AND column_name='slug') THEN
+        ALTER TABLE public.projects ADD COLUMN slug TEXT NOT NULL DEFAULT 'default-' || (now())::text;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='projects' AND column_name='environment') THEN
+        ALTER TABLE public.projects ADD COLUMN environment project_environment NOT NULL DEFAULT 'production';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='projects' AND column_name='region') THEN
+        ALTER TABLE public.projects ADD COLUMN region project_region NOT NULL DEFAULT 'gru1';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='projects' AND column_name='settings') THEN
+        ALTER TABLE public.projects ADD COLUMN settings JSONB DEFAULT '{}'::jsonb;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='projects' AND column_name='is_active') THEN
+        ALTER TABLE public.projects ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='projects' AND column_name='updated_at') THEN
+        ALTER TABLE public.projects ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+END $$;
 
 -- Create project_api_keys table
 CREATE TABLE IF NOT EXISTS project_api_keys (
@@ -44,6 +60,7 @@ ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_api_keys ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for projects
+DROP POLICY IF EXISTS "Users can view projects from their organizations" ON projects;
 CREATE POLICY "Users can view projects from their organizations"
   ON projects FOR SELECT
   USING (
@@ -54,6 +71,7 @@ CREATE POLICY "Users can view projects from their organizations"
     )
   );
 
+DROP POLICY IF EXISTS "Owners and admins can create projects" ON projects;
 CREATE POLICY "Owners and admins can create projects"
   ON projects FOR INSERT
   WITH CHECK (
@@ -65,6 +83,7 @@ CREATE POLICY "Owners and admins can create projects"
     )
   );
 
+DROP POLICY IF EXISTS "Owners and admins can update projects" ON projects;
 CREATE POLICY "Owners and admins can update projects"
   ON projects FOR UPDATE
   USING (
@@ -76,6 +95,7 @@ CREATE POLICY "Owners and admins can update projects"
     )
   );
 
+DROP POLICY IF EXISTS "Owners can delete projects" ON projects;
 CREATE POLICY "Owners can delete projects"
   ON projects FOR DELETE
   USING (
@@ -88,6 +108,7 @@ CREATE POLICY "Owners can delete projects"
   );
 
 -- RLS Policies for project_api_keys
+DROP POLICY IF EXISTS "Users can view API keys for their projects" ON project_api_keys;
 CREATE POLICY "Users can view API keys for their projects"
   ON project_api_keys FOR SELECT
   USING (
@@ -99,6 +120,7 @@ CREATE POLICY "Users can view API keys for their projects"
     )
   );
 
+DROP POLICY IF EXISTS "Owners and admins can manage API keys" ON project_api_keys;
 CREATE POLICY "Owners and admins can manage API keys"
   ON project_api_keys FOR ALL
   USING (

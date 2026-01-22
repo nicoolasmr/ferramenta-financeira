@@ -41,6 +41,7 @@ ALTER TABLE gateway_integrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gateway_events ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
+DROP POLICY IF EXISTS "Users can view integrations for their projects" ON gateway_integrations;
 CREATE POLICY "Users can view integrations for their projects"
   ON gateway_integrations FOR SELECT
   USING (
@@ -52,6 +53,7 @@ CREATE POLICY "Users can view integrations for their projects"
     )
   );
 
+DROP POLICY IF EXISTS "Admins can manage integrations" ON gateway_integrations;
 CREATE POLICY "Admins can manage integrations"
   ON gateway_integrations FOR ALL
   USING (
@@ -64,6 +66,7 @@ CREATE POLICY "Admins can manage integrations"
     )
   );
 
+DROP POLICY IF EXISTS "Users can view events for their integrations" ON gateway_events;
 CREATE POLICY "Users can view events for their integrations"
   ON gateway_events FOR SELECT
   USING (

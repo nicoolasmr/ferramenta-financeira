@@ -51,6 +51,7 @@ ALTER TABLE sales_stages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sales_opportunities ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
+DROP POLICY IF EXISTS "Users can view data for their projects" ON aging_reports;
 CREATE POLICY "Users can view data for their projects"
   ON aging_reports FOR SELECT
   USING (
@@ -62,6 +63,7 @@ CREATE POLICY "Users can view data for their projects"
     )
   );
 
+DROP POLICY IF EXISTS "Users can manage sales data for their projects" ON sales_stages;
 CREATE POLICY "Users can manage sales data for their projects"
   ON sales_stages FOR ALL
   USING (
@@ -74,6 +76,7 @@ CREATE POLICY "Users can manage sales data for their projects"
     )
   );
 
+DROP POLICY IF EXISTS "Users can manage opportunities for their projects" ON sales_opportunities;
 CREATE POLICY "Users can manage opportunities for their projects"
   ON sales_opportunities FOR ALL
   USING (

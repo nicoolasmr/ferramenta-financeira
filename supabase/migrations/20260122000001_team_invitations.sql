@@ -20,6 +20,7 @@ CREATE INDEX IF NOT EXISTS idx_team_invitations_org_id ON team_invitations(organ
 ALTER TABLE team_invitations ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for team_invitations
+DROP POLICY IF EXISTS "Users can view invitations for their organizations" ON team_invitations;
 CREATE POLICY "Users can view invitations for their organizations"
   ON team_invitations FOR SELECT
   USING (
@@ -30,6 +31,7 @@ CREATE POLICY "Users can view invitations for their organizations"
     )
   );
 
+DROP POLICY IF EXISTS "Owners and admins can create invitations" ON team_invitations;
 CREATE POLICY "Owners and admins can create invitations"
   ON team_invitations FOR INSERT
   WITH CHECK (
@@ -41,6 +43,7 @@ CREATE POLICY "Owners and admins can create invitations"
     )
   );
 
+DROP POLICY IF EXISTS "Owners and admins can delete invitations" ON team_invitations;
 CREATE POLICY "Owners and admins can delete invitations"
   ON team_invitations FOR DELETE
   USING (

@@ -23,11 +23,13 @@ ALTER TABLE user_mfa_secrets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE organization_security_settings ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for user_mfa_secrets
+DROP POLICY IF EXISTS "Users can manage their own MFA" ON user_mfa_secrets;
 CREATE POLICY "Users can manage their own MFA"
   ON user_mfa_secrets FOR ALL
   USING (user_id = auth.uid());
 
 -- RLS Policies for organization_security_settings
+DROP POLICY IF EXISTS "Users can view security settings of their organizations" ON organization_security_settings;
 CREATE POLICY "Users can view security settings of their organizations"
   ON organization_security_settings FOR SELECT
   USING (
@@ -38,6 +40,7 @@ CREATE POLICY "Users can view security settings of their organizations"
     )
   );
 
+DROP POLICY IF EXISTS "Owners can update security settings" ON organization_security_settings;
 CREATE POLICY "Owners can update security settings"
   ON organization_security_settings FOR ALL
   USING (

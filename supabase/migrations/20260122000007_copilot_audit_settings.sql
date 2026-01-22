@@ -52,6 +52,7 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE system_settings ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
+DROP POLICY IF EXISTS "Users can view copilot suggestions for their projects" ON copilot_suggestions;
 CREATE POLICY "Users can view copilot suggestions for their projects"
   ON copilot_suggestions FOR ALL
   USING (
@@ -63,6 +64,7 @@ CREATE POLICY "Users can view copilot suggestions for their projects"
     )
   );
 
+DROP POLICY IF EXISTS "Users can view audit logs for their organizations" ON audit_logs;
 CREATE POLICY "Users can view audit logs for their organizations"
   ON audit_logs FOR SELECT
   USING (
@@ -73,6 +75,7 @@ CREATE POLICY "Users can view audit logs for their organizations"
     )
   );
 
+DROP POLICY IF EXISTS "Admins can manage system settings" ON system_settings;
 CREATE POLICY "Admins can manage system settings"
   ON system_settings FOR ALL
   USING (

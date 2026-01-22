@@ -36,6 +36,7 @@ ALTER TABLE webhook_endpoints ENABLE ROW LEVEL SECURITY;
 ALTER TABLE webhook_deliveries ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
+DROP POLICY IF EXISTS "Users can manage webhooks for their projects" ON webhook_endpoints;
 CREATE POLICY "Users can manage webhooks for their projects"
   ON webhook_endpoints FOR ALL
   USING (
@@ -48,6 +49,7 @@ CREATE POLICY "Users can manage webhooks for their projects"
     )
   );
 
+DROP POLICY IF EXISTS "Users can view deliveries for their webhooks" ON webhook_deliveries;
 CREATE POLICY "Users can view deliveries for their webhooks"
   ON webhook_deliveries FOR SELECT
   USING (
