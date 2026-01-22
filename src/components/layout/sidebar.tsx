@@ -16,7 +16,20 @@ import {
     Calendar,
     TrendingUp,
     Shield,
+    LogOut,
 } from "lucide-react";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { signOut } from "@/actions/auth";
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -136,14 +149,48 @@ export function Sidebar() {
                     </nav>
                 </div>
                 <div className="mt-auto p-4 border-t bg-white">
-                    <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                            U
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                                U
+                            </div>
+                            <div className="text-sm flex-1 min-w-0">
+                                <p className="font-medium text-slate-900 truncate">User</p>
+                                <p className="text-xs text-slate-500 truncate">My Organization</p>
+                            </div>
                         </div>
-                        <div className="text-sm flex-1 min-w-0">
-                            <p className="font-medium text-slate-900 truncate">User</p>
-                            <p className="text-xs text-slate-500 truncate">My Organization</p>
-                        </div>
+
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <button
+                                    className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Sair"
+                                >
+                                    <LogOut className="h-5 w-5" />
+                                </button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                    <DialogTitle>Confirmar Saída</DialogTitle>
+                                    <DialogDescription>
+                                        Tem certeza que deseja encerrar sua sessão? Você precisará fazer login novamente para acessar seus dados.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter className="gap-2 sm:gap-0">
+                                    <DialogClose asChild>
+                                        <Button variant="outline">Cancelar</Button>
+                                    </DialogClose>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={async () => {
+                                            await signOut();
+                                        }}
+                                    >
+                                        Sair do Sistema
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
             </div>
