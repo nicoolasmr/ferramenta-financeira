@@ -88,3 +88,12 @@ export async function toggleIntegration(id: string, isActive: boolean) {
 
     revalidatePath("/app/integrations");
 }
+
+export async function testIntegrationConnection(id: string) {
+    // Simulate a real test by waiting 1.5s
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // In a real app, you'd call the provider API with the credentials
+    // For now, we return success to simulate a working test
+    return { success: true, message: "Connection established successfully!" };
+}

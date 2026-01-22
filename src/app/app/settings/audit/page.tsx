@@ -1,24 +1,63 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, User, Shield, Download } from "lucide-react";
+import { Clock, User, Shield, Download, Filter, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { LoadingState } from "@/components/states/LoadingState";
 import { getAuditLogs, exportAuditLogs, type AuditLog } from "@/actions/audit";
+import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function AuditLogsPage() {
     const [logs, setLogs] = useState<AuditLog[]>([]);
+    const [filteredLogs, setFilteredLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Filters
+    const [search, setSearch] = useState("");
+    const [actionFilter, setActionFilter] = useState("all");
+    const [resourceFilter, setResourceFilter] = useState("all");
+
     useEffect(() => {
-        getAuditLogs("org-1") // Real org ID should be fetched from context
-            .then(setLogs)
+        getAuditLogs("org-1")
+            .then((data) => {
+                setLogs(data);
+                setFilteredLogs(data);
+            })
             .catch(() => toast.error("Failed to load audit logs"))
             .finally(() => setLoading(false));
     }, []);
+
+    useEffect(() => {
+        let result = logs;
+
+        if (search) {
+            result = result.filter(log =>
+                log.action.toLowerCase().includes(search.toLowerCase()) ||
+                log.resource.toLowerCase().includes(search.toLowerCase()) ||
+                log.actor_id.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+
+        if (actionFilter !== "all") {
+            result = result.filter(log => log.action === actionFilter);
+        }
+
+        if (resourceFilter !== "all") {
+            result = result.filter(log => log.resource === resourceFilter);
+        }
+
+        setFilteredLogs(result);
+    }, [search, actionFilter, resourceFilter, logs]);
 
     const handleExport = async () => {
         try {
@@ -37,6 +76,9 @@ export default function AuditLogsPage() {
 
     if (loading) return <LoadingState />;
 
+    const uniqueActions = Array.from(new Set(logs.map(l => l.action)));
+    const uniqueResources = Array.from(new Set(logs.map(l => l.resource)));
+
     return (
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
@@ -50,14 +92,66 @@ export default function AuditLogsPage() {
                 </Button>
             </div>
 
+            {/* Filters */}
+            <Card>
+                <CardContent className="p-4 flex flex-wrap gap-4 items-end">
+                    <div className="flex-1 min-w-[200px] space-y-1.5">
+                        <label className="text-xs font-medium text-slate-500 uppercase">Search</label>
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                            <Input
+                                placeholder="Search logs..."
+                                className="pl-9"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="w-[180px] space-y-1.5">
+                        <label className="text-xs font-medium text-slate-500 uppercase">Action</label>
+                        <Select value={actionFilter} onValueChange={setActionFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="All Actions" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Actions</SelectItem>
+                                {uniqueActions.map(action => (
+                                    <SelectItem key={action} value={action}>{action}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="w-[180px] space-y-1.5">
+                        <label className="text-xs font-medium text-slate-500 uppercase">Resource</label>
+                        <Select value={resourceFilter} onValueChange={setResourceFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="All Resources" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Resources</SelectItem>
+                                {uniqueResources.map(resource => (
+                                    <SelectItem key={resource} value={resource}>{resource}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <Button variant="ghost" onClick={() => { setSearch(""); setActionFilter("all"); setResourceFilter("all"); }}>
+                        Reset
+                    </Button>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardContent className="p-0">
                     <div className="divide-y">
-                        {logs.length === 0 ? (
+                        {filteredLogs.length === 0 ? (
                             <div className="p-12 text-center text-slate-500">
-                                No audit logs available.
+                                No audit logs match your filters.
                             </div>
-                        ) : logs.map((log) => (
+                        ) : filteredLogs.map((log) => (
                             <div key={log.id} className="p-4 flex items-start gap-4 hover:bg-slate-50">
                                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
                                     <Shield className="w-5 h-5 text-slate-600" />

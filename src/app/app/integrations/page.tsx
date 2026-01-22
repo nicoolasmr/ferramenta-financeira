@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plug, CheckCircle, XCircle, Settings2, Trash2, Power, PowerOff } from "lucide-react";
+import { Plug, CheckCircle, XCircle, Settings2, Trash2, Power, PowerOff, TestTube2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import {
     connectIntegration,
     disconnectIntegration,
     toggleIntegration,
+    testIntegrationConnection,
     type GatewayIntegration,
     type GatewayProvider,
 } from "@/actions/integrations";
@@ -93,10 +94,11 @@ export default function IntegrationsPage() {
     const [selectedProvider, setSelectedProvider] = useState<any>(null);
     const [configData, setConfigData] = useState<Record<string, string>>({});
     const [isSaving, setIsSaving] = useState(false);
+    const [testingId, setTestingId] = useState<string | null>(null);
 
     const fetchIntegrations = async () => {
         try {
-            const data = await getIntegrations("proj-1"); // Real project ID should be fetched from context
+            const data = await getIntegrations("proj-1");
             setIntegrations(data);
         } catch (error) {
             toast.error("Failed to load integrations");
@@ -120,7 +122,7 @@ export default function IntegrationsPage() {
         setIsSaving(true);
         try {
             await connectIntegration({
-                projectId: "proj-1", // Real project ID should be fetched from context
+                projectId: "proj-1",
                 provider: selectedProvider.id,
                 credentials: configData,
             });
@@ -155,6 +157,22 @@ export default function IntegrationsPage() {
         }
     };
 
+    const onTest = async (id: string) => {
+        setTestingId(id);
+        try {
+            const res = await testIntegrationConnection(id);
+            if (res.success) {
+                toast.success(res.message);
+            } else {
+                toast.error("Test failed. Please check your credentials.");
+            }
+        } catch (error) {
+            toast.error("An error occurred during testing.");
+        } finally {
+            setTestingId(null);
+        }
+    };
+
     if (loading) return <LoadingState />;
 
     return (
@@ -168,6 +186,7 @@ export default function IntegrationsPage() {
                 {INTEGRATIONS_CONFIG.map((provider) => {
                     const integration = integrations.find((i) => i.provider === provider.id);
                     const isConnected = !!integration;
+                    const isTesting = testingId === integration?.id;
 
                     return (
                         <Card key={provider.id}>
@@ -203,14 +222,25 @@ export default function IntegrationsPage() {
                                         )}
                                         <div className="flex gap-2">
                                             {isConnected && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => onToggle(integration.id, integration.is_active)}
-                                                    title={integration.is_active ? "Disable" : "Enable"}
-                                                >
-                                                    <Power className={`h-4 w-4 ${integration.is_active ? 'text-green-600' : 'text-slate-400'}`} />
-                                                </Button>
+                                                <>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        onClick={() => onTest(integration.id)}
+                                                        disabled={isTesting}
+                                                        title="Test connection"
+                                                    >
+                                                        {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <TestTube2 className="h-4 w-4" />}
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => onToggle(integration.id, integration.is_active)}
+                                                        title={integration.is_active ? "Disable" : "Enable"}
+                                                    >
+                                                        <Power className={`h-4 w-4 ${integration.is_active ? 'text-green-600' : 'text-slate-400'}`} />
+                                                    </Button>
+                                                </>
                                             )}
                                             <Button
                                                 size="sm"

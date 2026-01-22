@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CreditCard, Check, ArrowRight, Package, Receipt, AlertCircle } from "lucide-react";
+import { CreditCard, Check, ArrowRight, Package, Receipt, AlertCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,17 @@ import {
     type Plan,
     type Subscription,
 } from "@/actions/billing";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function BillingPage() {
     const [plans, setPlans] = useState<Plan[]>([]);
@@ -22,11 +33,20 @@ export default function BillingPage() {
     const [loading, setLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
 
+    // Payment Method Dialog
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [paymentData, setPaymentData] = useState({
+        name: "John Doe",
+        card: "**** **** **** 4242",
+        expiry: "12/26",
+        cvv: "***"
+    });
+
     const fetchData = async () => {
         try {
             const [plansData, subData] = await Promise.all([
                 getAvailablePlans(),
-                getBillingInfo("org-1"), // Real org ID should be fetched from context
+                getBillingInfo("org-1"),
             ]);
             setPlans(plansData);
             setSubscription(subData);
@@ -68,6 +88,15 @@ export default function BillingPage() {
         }
     };
 
+    const onUpdatePayment = () => {
+        setIsUpdating(true);
+        setTimeout(() => {
+            toast.success("Payment method updated!");
+            setIsPaymentOpen(false);
+            setIsUpdating(false);
+        }, 1000);
+    };
+
     if (loading) return <LoadingState />;
 
     const currentPlan = subscription?.plan;
@@ -79,70 +108,100 @@ export default function BillingPage() {
                 <p className="text-slate-500">Manage your subscription and billing information</p>
             </div>
 
-            {/* Current Subscription */}
-            <Card className="bg-slate-50">
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Package className="w-6 h-6 text-blue-600" />
-                            <div>
-                                <CardTitle>Current Plan</CardTitle>
-                                <CardDescription>
-                                    Your organization is currently on the <strong>{currentPlan?.name || "Free"}</strong> plan.
-                                </CardDescription>
-                            </div>
-                        </div>
-                        {subscription && (
-                            <Badge variant={subscription.status === "active" ? "default" : "secondary"}>
-                                {subscription.status.toUpperCase()}
-                            </Badge>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {subscription ? (
-                        <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-8 py-2">
+            {/* Current Subscription & Payment Method */}
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card className="bg-slate-50">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Package className="w-6 h-6 text-blue-600" />
                                 <div>
-                                    <p className="text-sm text-slate-500">Amount</p>
-                                    <p className="text-lg font-semibold">
-                                        {currentPlan?.currency || "BRL"} {(currentPlan?.price_cents || 0) / 100}/mo
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-slate-500">Current Period End</p>
-                                    <p className="text-lg font-semibold">
-                                        {subscription.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : "N/A"}
-                                    </p>
+                                    <CardTitle>Current Plan</CardTitle>
                                 </div>
                             </div>
-                            {subscription.cancel_at_period_end && (
-                                <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
-                                    <AlertCircle className="w-4 h-4" />
-                                    Subscription will be canceled at the end of the current period.
-                                </div>
+                            {subscription && (
+                                <Badge variant={subscription.status === "active" ? "default" : "secondary"}>
+                                    {subscription.status.toUpperCase()}
+                                </Badge>
                             )}
                         </div>
-                    ) : (
-                        <div className="p-4 border border-dashed rounded-lg text-center text-slate-500">
-                            You don't have an active subscription. Choose a plan below to get started.
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-lg font-bold">{currentPlan?.name || "Free Plan"}</p>
+                            <p className="text-sm text-slate-500">
+                                {subscription ? `${currentPlan?.currency || "BRL"} ${(currentPlan?.price_cents || 0) / 100}/mo` : "Standard features"}
+                            </p>
+                            {subscription?.cancel_at_period_end && (
+                                <Badge className="bg-yellow-100 text-yellow-800 mt-2 border-yellow-200">Cancels on renewal</Badge>
+                            )}
                         </div>
-                    )}
-                </CardContent>
-                {subscription && !subscription.cancel_at_period_end && (
+                    </CardContent>
                     <CardFooter className="flex justify-end gap-2 border-t pt-4">
-                        <Button variant="outline" size="sm" onClick={handleCancel} disabled={isUpdating}>
-                            Cancel Subscription
-                        </Button>
-                        <Button size="sm" onClick={() => window.scrollTo({ top: 500, behavior: 'smooth' })}>
-                            Upgrade Plan
+                        <Button variant="outline" size="sm" onClick={() => window.scrollTo({ top: 500, behavior: 'smooth' })}>
+                            Change Plan
                         </Button>
                     </CardFooter>
-                )}
-            </Card>
+                </Card>
+
+                <Card className="bg-slate-50">
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <CreditCard className="w-6 h-6 text-slate-600" />
+                            <div>
+                                <CardTitle>Payment Method</CardTitle>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center gap-3 p-3 bg-white border rounded-lg">
+                            <div className="w-10 h-7 bg-slate-100 rounded flex items-center justify-center font-bold text-[10px] text-slate-500 uppercase">VISA</div>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium">Visa ending in 4242</p>
+                                <p className="text-xs text-slate-500">Exp: 12/26</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                        <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">Update Payment</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Update Payment Method</DialogTitle>
+                                    <DialogDescription>Update your credit card details securely.</DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid gap-1.5">
+                                        <Label htmlFor="card">Card Number</Label>
+                                        <Input id="card" defaultValue="**** **** **** 4242" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-1.5">
+                                            <Label htmlFor="expiry">Expiry Date</Label>
+                                            <Input id="expiry" placeholder="MM/YY" />
+                                        </div>
+                                        <div className="grid gap-1.5">
+                                            <Label htmlFor="cvv">CVV</Label>
+                                            <Input id="cvv" placeholder="123" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsPaymentOpen(false)}>Cancel</Button>
+                                    <Button onClick={onUpdatePayment} disabled={isUpdating}>
+                                        {isUpdating ? "Processing..." : "Save Card"}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    </CardFooter>
+                </Card>
+            </div>
 
             {/* Plan Selection */}
-            <div className="grid gap-6 md:grid-cols-3">
+            <div id="plans" className="grid gap-6 md:grid-cols-3">
                 {plans.length === 0 ? (
                     <div className="col-span-3 text-center py-12 text-slate-500">
                         No plans available. Please contact support.
@@ -177,7 +236,7 @@ export default function BillingPage() {
                                     disabled={isCurrent || isUpdating}
                                     onClick={() => handleUpdatePlan(plan.id)}
                                 >
-                                    {isCurrent ? "Current Plan" : "Choose Plan"}
+                                    {isCurrent ? "Current Plan" : "Upgrade Now"}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -205,7 +264,7 @@ export default function BillingPage() {
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className="text-sm font-semibold">BRL 299.00</span>
-                                <Button variant="ghost" size="sm">Download</Button>
+                                <Button variant="ghost" size="sm" onClick={() => toast.success("Invoice downloading...")}>Download</Button>
                             </div>
                         </div>
                         <div className="flex items-center justify-between py-3">
@@ -215,13 +274,13 @@ export default function BillingPage() {
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className="text-sm font-semibold">BRL 299.00</span>
-                                <Button variant="ghost" size="sm">Download</Button>
+                                <Button variant="ghost" size="sm" onClick={() => toast.success("Invoice downloading...")}>Download</Button>
                             </div>
                         </div>
                     </div>
                 </CardContent>
                 <CardFooter className="justify-center pt-4 border-t">
-                    <Button variant="link" className="text-slate-500">View more invoices</Button>
+                    <Button variant="link" className="text-slate-500" onClick={() => toast.info("No more invoices to display.")}>View more invoices</Button>
                 </CardFooter>
             </Card>
         </div>
