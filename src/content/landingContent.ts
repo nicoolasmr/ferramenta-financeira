@@ -214,11 +214,28 @@ export const landingContent = {
             }
         ],
         comparison: [
-            { feature: "Projetos", starter: "1", pro: "Ilimitados", ent: "Ilimitados" },
-            { feature: "Eventos/mês", starter: "1.000", pro: "10.000", ent: "Ilimitados" },
-            { feature: "Portal do Cliente", starter: "-", pro: "Sim", ent: "Sim (White-label)" },
-            { feature: "Reconciliation", starter: "Básico", pro: "Avançado", ent: "Custom" },
-            { feature: "IA Copilot", starter: "-", pro: "Sim", ent: "Sim" }
+            { feature: "Organizations System", starter: "1 org", pro: "Unlimited", ent: "Unlimited + White-label" },
+            { feature: "Team Management (RBAC)", starter: "3 users", pro: "Unlimited users", ent: "Unlimited + Custom roles" },
+            { feature: "Projects (Multi-tenant)", starter: "5 projects", pro: "Unlimited", ent: "Unlimited + Custom fields" },
+            { feature: "Multi-Factor Authentication (MFA)", starter: "✓", pro: "✓", ent: "✓ + SSO" },
+            { feature: "Gateway Integrations", starter: "2 gateways", pro: "All 6 gateways", ent: "All + Custom API" },
+            { feature: "Stripe", starter: "✓", pro: "✓", ent: "✓" },
+            { feature: "Hotmart", starter: "✓", pro: "✓", ent: "✓" },
+            { feature: "Asaas", starter: "-", pro: "✓", ent: "✓" },
+            { feature: "Mercado Pago", starter: "-", pro: "✓", ent: "✓" },
+            { feature: "Eduzz", starter: "-", pro: "✓", ent: "✓" },
+            { feature: "Kiwify", starter: "-", pro: "✓", ent: "✓" },
+            { feature: "Webhooks System", starter: "5 endpoints", pro: "Unlimited", ent: "Unlimited + Priority" },
+            { feature: "Aging Buckets (Receivables)", starter: "✓", pro: "✓ + Export", ent: "✓ + Custom buckets" },
+            { feature: "Sales Funnel", starter: "Basic", pro: "Advanced + Analytics", ent: "Advanced + Custom stages" },
+            { feature: "IA Copilot", starter: "-", pro: "✓ Top 3 actions", ent: "✓ Unlimited + Custom" },
+            { feature: "API Keys Management", starter: "2 keys", pro: "Unlimited", ent: "Unlimited + IP whitelist" },
+            { feature: "Audit Logs", starter: "30 days", pro: "1 year", ent: "Unlimited + Export" },
+            { feature: "Advanced Settings", starter: "Basic", pro: "Advanced", ent: "Full customization" },
+            { feature: "Security & Compliance", starter: "RLS + LGPD", pro: "RLS + LGPD + SOC2", ent: "All + Custom compliance" },
+            { feature: "Data Retention", starter: "90 days", pro: "1 year", ent: "Unlimited" },
+            { feature: "Support", starter: "Email", pro: "Email + Chat", ent: "24/7 Priority + Dedicated" },
+            { feature: "SLA", starter: "99%", pro: "99.9%", ent: "99.99% + Custom" },
         ]
     },
     faq: {
