@@ -136,51 +136,50 @@ export const landingContent = {
         tier1: [
             {
                 name: "Stripe",
-                logo: "/stripe-logo.png",
+                logo: "/logos/stripe.svg",
                 tags: ["Billing", "Webhooks", "Conciliação"],
                 color: "text-[#635BFF]",
-                isImage: false,
-                textLogo: "stripe"
+                isImage: true
             },
             {
                 name: "Hotmart",
-                logo: "/hotmart-logo.png",
+                logo: "/logos/hotmart.svg",
                 tags: ["Vendas", "Comissões", "Cancelamento"],
                 isImage: true
             },
             {
                 name: "Asaas",
-                logo: "/asaas-logo.svg",
+                logo: "/logos/asaas.svg",
                 tags: ["PIX", "Boleto", "Status"],
                 isImage: true
             },
             {
                 name: "Mercado Pago",
-                logo: "/mercado-pago-logo.png",
+                logo: "/logos/mercadopago.svg",
                 tags: ["Checkouts", "Carteira", "QR Code"],
                 isImage: true
             },
             {
                 name: "Kiwify",
-                logo: "/kiwify-logo.png",
+                logo: "/logos/kiwify.svg",
                 tags: ["Infoprodutos", "Checkout", "Upsell"],
                 isImage: true
             },
             {
                 name: "Eduzz",
-                logo: "/eduzz-logo.png",
+                logo: "/logos/eduzz.svg",
                 tags: ["Vendas", "Cursos", "Taxas"],
                 isImage: true
             },
             {
                 name: "Lastlink",
-                logo: "/lastlink-logo.png",
+                logo: "/logos/lastlink.svg",
                 tags: ["Comunidades", "Recorrência", "Churn"],
                 isImage: true
             },
             {
                 name: "PagSeguro",
-                logo: "/pagseguro-logo.png",
+                logo: "/logos/pagseguro.svg",
                 tags: ["Vendas On/Off", "Cartão", "Recebíveis"],
                 isImage: true
             }

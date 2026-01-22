@@ -2,8 +2,8 @@
 CREATE OR REPLACE FUNCTION public.is_master_admin()
 RETURNS BOOLEAN AS $$
 BEGIN
-  -- Replaces current owner logic with a universal bypass for specific email
-  RETURN (SELECT email FROM auth.users WHERE id = auth.uid()) = 'nicoolascf5@gmail.com';
+  -- Optimized: Check email from JWT claim to avoid expensive subqueries in RLS
+  RETURN (auth.jwt() ->> 'email') = 'nicoolascf5@gmail.com';
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
