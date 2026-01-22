@@ -1,102 +1,196 @@
 "use client";
 
-import { Key, Plus, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Plus, Eye, EyeOff, Trash2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { CreateDialog } from "@/components/dialogs/CreateDialog";
+import { DeleteDialog } from "@/components/dialogs/DeleteDialog";
+import { LoadingState } from "@/components/states/LoadingState";
 import { EmptyState } from "@/components/states/EmptyState";
-
-const apiKeys = [
-    {
-        id: 1,
-        name: "Production API Key",
-        key: "sk_live_abc123...",
-        created: "2024-01-15",
-        lastUsed: "2024-01-22 08:00:00",
-        status: "active",
-    },
-    {
-        id: 2,
-        name: "Development API Key",
-        key: "sk_test_xyz789...",
-        created: "2024-01-10",
-        lastUsed: "2024-01-20 15:30:00",
-        status: "active",
-    },
-];
+import {
+    getAPIKeys,
+    createAPIKey,
+    revokeAPIKey,
+    deleteAPIKey,
+    type APIKey,
+} from "@/actions/api-keys";
+import { toast } from "sonner";
 
 export default function APIKeysPage() {
-    const [showKeys, setShowKeys] = useState<Record<number, boolean>>({});
+    const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
+    const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+    useEffect(() => {
+        getAPIKeys("org-1")
+            .then(setApiKeys)
+            .catch(() => toast.error("Failed to load API keys"))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleCreate = async (data: Record<string, string>) => {
+        try {
+            const result = await createAPIKey({
+                name: data.name,
+                org_id: "org-1",
+            });
+            toast.success("API Key created! Copy it now - it won't be shown again.");
+            // Show the key in a dialog or copy to clipboard
+            navigator.clipboard.writeText(result.key);
+            toast.info("Key copied to clipboard!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to create API key");
+        }
+    };
+
+    const handleRevoke = async (id: string) => {
+        try {
+            await revokeAPIKey(id);
+            toast.success("API Key revoked!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to revoke API key");
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteAPIKey(id);
+            toast.success("API Key deleted!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to delete API key");
+        }
+    };
+
+    const toggleKeyVisibility = (id: string) => {
+        setVisibleKeys((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
+    };
+
+    const copyKey = (key: string, id: string) => {
+        navigator.clipboard.writeText(key);
+        setCopiedKey(id);
+        toast.success("Key copied to clipboard!");
+        setTimeout(() => setCopiedKey(null), 2000);
+    };
+
+    const maskKey = (key: string) => {
+        return `${key.substring(0, 7)}${"•".repeat(48)}${key.substring(key.length - 4)}`;
+    };
+
+    if (loading) return <LoadingState />;
 
     return (
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">API Keys</h1>
-                    <p className="text-slate-500">Manage your API authentication keys</p>
+                    <p className="text-slate-500">Manage your API keys for programmatic access</p>
                 </div>
-                <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create API Key
-                </Button>
+                <CreateDialog
+                    title="Create API Key"
+                    description="Generate a new API key for your application"
+                    fields={[
+                        { name: "name", label: "Key Name", type: "text", required: true, placeholder: "Production API Key" },
+                    ]}
+                    onSubmit={handleCreate}
+                    triggerLabel="Create API Key"
+                />
             </div>
 
             {apiKeys.length === 0 ? (
                 <EmptyState
-                    title="No API keys"
+                    title="No API keys yet"
                     description="Create your first API key to start using the API"
-                    icon={<Key className="w-6 h-6 text-slate-400" />}
-                    action={
-                        <Button>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create API Key
-                        </Button>
-                    }
                 />
             ) : (
-                <div className="space-y-4">
+                <div className="grid gap-4">
                     {apiKeys.map((apiKey) => (
-                        <Card key={apiKey.id}>
-                            <CardHeader>
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <CardTitle className="text-lg">{apiKey.name}</CardTitle>
-                                        <CardDescription>Created on {apiKey.created}</CardDescription>
-                                    </div>
-                                    <Badge className="bg-green-100 text-green-700">Active</Badge>
+                        <div key={apiKey.id} className="bg-white rounded-lg border p-6">
+                            <div className="flex items-start justify-between mb-4">
+                                <div>
+                                    <h3 className="font-semibold mb-1">{apiKey.name}</h3>
+                                    <p className="text-sm text-slate-500">
+                                        Created {new Date(apiKey.created_at).toLocaleDateString()}
+                                    </p>
+                                    {apiKey.last_used_at && (
+                                        <p className="text-sm text-slate-500">
+                                            Last used {new Date(apiKey.last_used_at).toLocaleDateString()}
+                                        </p>
+                                    )}
                                 </div>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <code className="flex-1 px-3 py-2 bg-slate-100 rounded font-mono text-sm">
-                                        {showKeys[apiKey.id] ? apiKey.key : "••••••••••••••••"}
-                                    </code>
+                                <span
+                                    className={`px-2 py-1 rounded text-xs font-medium ${apiKey.status === "active"
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-red-100 text-red-700"
+                                        }`}
+                                >
+                                    {apiKey.status}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <code className="flex-1 px-3 py-2 bg-slate-50 rounded border font-mono text-sm">
+                                    {visibleKeys.has(apiKey.id) ? apiKey.key : maskKey(apiKey.key)}
+                                </code>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => toggleKeyVisibility(apiKey.id)}
+                                >
+                                    {visibleKeys.has(apiKey.id) ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => copyKey(apiKey.key, apiKey.id)}
+                                >
+                                    {copiedKey === apiKey.id ? (
+                                        <Check className="h-4 w-4 text-green-600" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                {apiKey.status === "active" && (
                                     <Button
                                         variant="outline"
-                                        size="icon"
-                                        onClick={() =>
-                                            setShowKeys((prev) => ({ ...prev, [apiKey.id]: !prev[apiKey.id] }))
-                                        }
+                                        size="sm"
+                                        onClick={() => handleRevoke(apiKey.id)}
                                     >
-                                        {showKeys[apiKey.id] ? (
-                                            <EyeOff className="h-4 w-4" />
-                                        ) : (
-                                            <Eye className="h-4 w-4" />
-                                        )}
-                                    </Button>
-                                </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <div>
-                                        <span className="text-slate-500">Last used: </span>
-                                        <span className="font-medium">{apiKey.lastUsed}</span>
-                                    </div>
-                                    <Button variant="destructive" size="sm">
                                         Revoke
                                     </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                )}
+                                <DeleteDialog
+                                    title="Delete API Key"
+                                    description="Are you sure you want to delete this API key? This action cannot be undone."
+                                    itemName={apiKey.name}
+                                    onConfirm={() => handleDelete(apiKey.id)}
+                                    trigger={
+                                        <Button variant="outline" size="sm" className="text-red-600">
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            Delete
+                                        </Button>
+                                    }
+                                />
+                            </div>
+                        </div>
                     ))}
                 </div>
             )}
