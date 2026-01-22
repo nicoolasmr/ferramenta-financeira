@@ -1,118 +1,118 @@
 "use client";
 
+import { CreditCard, Download, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { CreditCard, Zap, Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+const currentPlan = {
+    name: "Pro",
+    price: 299,
+    billingCycle: "monthly",
+    nextBilling: "2024-02-22",
+};
+
+const invoices = [
+    { id: 1, date: "2024-01-22", amount: 299, status: "paid", downloadUrl: "#" },
+    { id: 2, date: "2023-12-22", amount: 299, status: "paid", downloadUrl: "#" },
+    { id: 3, date: "2023-11-22", amount: 299, status: "paid", downloadUrl: "#" },
+];
 
 export default function BillingPage() {
     return (
-        <div className="container py-8 space-y-8">
+        <div className="flex flex-col gap-6">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Billing & Plans</h1>
-                <p className="text-muted-foreground">Manage your subscription and limits.</p>
+                <h1 className="text-3xl font-bold tracking-tight">Billing</h1>
+                <p className="text-slate-500">Manage your subscription and invoices</p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Zap className="h-5 w-5 text-yellow-500" />
-                            Current Plan
-                        </CardTitle>
-                        <CardDescription>You are on the <span className="font-semibold text-foreground">Pro Plan</span></CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="text-2xl font-bold">R$ 299<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
-                        <Button className="w-full">Manage Subscription (Stripe)</Button>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Usage Limits</CardTitle>
-                        <CardDescription>Your consumption this month.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span>Projects</span>
-                                <span className="font-mono">3 / 10</span>
-                            </div>
-                            <Progress value={30} />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Current Plan</CardTitle>
+                    <CardDescription>You are currently on the {currentPlan.name} plan</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                            <h3 className="text-2xl font-bold">
+                                {new Intl.NumberFormat("pt-BR", {
+                                    style: "currency",
+                                    currency: "BRL",
+                                }).format(currentPlan.price)}
+                            </h3>
+                            <p className="text-sm text-slate-500">per {currentPlan.billingCycle}</p>
                         </div>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span>Users</span>
-                                <span className="font-mono">2 / 5</span>
+                        <Badge className="bg-blue-100 text-blue-700">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Next billing date:</span>
+                        <span className="font-medium">{currentPlan.nextBilling}</span>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline">Change Plan</Button>
+                        <Button variant="outline" className="text-red-600">
+                            Cancel Subscription
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Payment Method</CardTitle>
+                    <CardDescription>Manage your payment information</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <CreditCard className="w-5 h-5 text-slate-600" />
+                            <div>
+                                <p className="font-medium">•••• •••• •••• 4242</p>
+                                <p className="text-sm text-slate-500">Expires 12/2025</p>
                             </div>
-                            <Progress value={40} />
                         </div>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span>Processed Events</span>
-                                <span className="font-mono">850 / 5000</span>
+                        <Button variant="outline" size="sm">
+                            Update
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Invoice History</CardTitle>
+                    <CardDescription>{invoices.length} invoices</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        {invoices.map((invoice) => (
+                            <div
+                                key={invoice.id}
+                                className="flex items-center justify-between p-3 border rounded-lg"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium">{invoice.date}</p>
+                                        <p className="text-sm text-slate-500">
+                                            {new Intl.NumberFormat("pt-BR", {
+                                                style: "currency",
+                                                currency: "BRL",
+                                            }).format(invoice.amount)}
+                                        </p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="sm">
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Download
+                                </Button>
                             </div>
-                            <Progress value={17} />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <div className="pt-8">
-                <h3 className="text-xl font-semibold mb-4">Available Plans</h3>
-                <div className="grid gap-6 md:grid-cols-3">
-                    {/* Starter */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Starter</CardTitle>
-                            <CardDescription>For individuals.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="text-2xl font-bold">R$ 97<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
-                            <ul className="space-y-2 text-sm">
-                                <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 3 Projects</li>
-                                <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 1 User</li>
-                            </ul>
-                            <Button variant="outline" className="w-full">Downgrade</Button>
-                        </CardContent>
-                    </Card>
-
-                    {/* Pro */}
-                    <Card className="border-primary bg-primary/5">
-                        <CardHeader>
-                            <CardTitle>Pro</CardTitle>
-                            <CardDescription>For growing businesses.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="text-2xl font-bold">R$ 299<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
-                            <ul className="space-y-2 text-sm">
-                                <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 10 Projects</li>
-                                <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 5 Users</li>
-                                <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Advanced Integrations</li>
-                            </ul>
-                            <Button className="w-full" disabled>Current Plan</Button>
-                        </CardContent>
-                    </Card>
-
-                    {/* Agency */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Agency</CardTitle>
-                            <CardDescription>Scale without limits.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="text-2xl font-bold">R$ 997<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
-                            <ul className="space-y-2 text-sm">
-                                <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Unlimited Projects</li>
-                                <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Unlimited Users</li>
-                                <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Priority Support</li>
-                            </ul>
-                            <Button variant="outline" className="w-full">Upgrade</Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }
