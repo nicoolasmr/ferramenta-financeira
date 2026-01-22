@@ -27,8 +27,8 @@ export const landingContent = {
             { label: "Recursos", href: "/recursos" },
             { label: "Ajuda", href: "/ajuda" },
         ],
-        ctaPrimary: { label: "Comece agora", href: "/precos" },
-        ctaSecondary: { label: "Agendar demo", href: "/demo" }, // Placeholder link
+        ctaPrimary: { label: "Começar agora", href: "/precos" },
+        ctaSecondary: { label: "Login", href: "/login" },
     },
     hero: {
         headline: "Recebíveis sob controle. Receita previsível. Sem planilhas.",

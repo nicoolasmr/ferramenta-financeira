@@ -32,11 +32,11 @@ export default function LandingPage() {
                         ))}
                     </nav>
                     <div className="flex items-center gap-4">
-                        <Link href={landingContent.nav.ctaPrimary.href} className="text-sm font-medium text-slate-600 hover:text-slate-900 hidden sm:block">
-                            Login
+                        <Link href={landingContent.nav.ctaSecondary.href} className="text-sm font-medium text-slate-600 hover:text-slate-900 hidden sm:block">
+                            {landingContent.nav.ctaSecondary.label}
                         </Link>
-                        <Link href={landingContent.nav.ctaSecondary.href}>
-                            <Button>{landingContent.nav.ctaSecondary.label}</Button>
+                        <Link href={landingContent.nav.ctaPrimary.href}>
+                            <Button>{landingContent.nav.ctaPrimary.label}</Button>
                         </Link>
                         {/* Mobile Menu Trigger Placeholder */}
                         <button className="md:hidden text-slate-600">
@@ -82,9 +82,9 @@ export default function LandingPage() {
                                     {landingContent.hero.ctaPrimary.label} <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </Link>
-                            <Link href={landingContent.hero.ctaSecondary.href}>
+                            <Link href="/demo">
                                 <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-white text-slate-900 hover:bg-slate-50">
-                                    {landingContent.hero.ctaSecondary.label}
+                                    Ver demo
                                 </Button>
                             </Link>
                         </div>
