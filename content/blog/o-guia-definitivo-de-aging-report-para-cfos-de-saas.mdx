@@ -1,51 +1,76 @@
 ---
-title: "O guia definitivo de Aging Report para CFOs de SaaS"
-excerpt: "Análise profunda sobre O guia definitivo de Aging Report para CFOs de SaaS para líderes de SaaS."
-date: "2025-01-02T03:00:00.000Z"
-category: "SaaS Growth"
-tags: ["Strategy","Finance","Ops"]
-readingTime: "9 min"
+title: "Aging Report: O Relatório que Salva seu Fluxo de Caixa"
+excerpt: "Você sabe quem te deve e há quanto tempo? O Aging Report é a bússola do CFO para reduzir a inadimplência antes que ela vire PDD."
+date: "2026-02-26T03:00:00.000Z"
+category: "Financeiro & Billing"
+tags: ["Aging Report", "Inadimplência", "CFO", "Cobrança"]
+readingTime: "8 min"
+author: "RevenueOS Team"
 ---
 
-## Contexto Estratégico
-No cenário atual de alta eficiência de capital, dominar este tópico não é opcional. É uma questão de sobrevivência.
-Empresas que falham aqui perdem, em média, **15% da margem líquida** anualmente.
+# Aging Report: Como Prever (e Evitar) a Quebra de Caixa
 
-## A Realidade Técnica
-Muitos fundadores tratam isso como um problema operacional, mas é um problema de **Arquitetura de Dados**.
-Sem uma fonte única de verdade (Single Source of Truth), suas decisões são baseadas em ruído.
+Se você vende no B2B (boleto, transferência faturada), você não recebe na hora. Você emite uma Nota Fiscal e espera.
+O problema é: alguns clientes pagam em dia, outros atrasam 5 dias, outros somem.
 
-### O Modelo Mental Correto
-1. **Ingestão**: Capture dados brutos.
-2. **Normalização**: Padronize formatos (e.g., converta "cents" do Stripe para "float").
-3. **Ação**: Automatize a resposta.
+Se você não monitora o **envelhecimento (aging)** dessa dívida, você está financiando seus clientes com o seu caixa.
 
-<Callout type="info" title="Insight">
-A automação remove o erro humano da equação. Em testes, o RevenueOS reduziu incidentes manuais em 99%.
+Neste guia, vamos explicar como estruturar um Aging Report que aciona seu time de Customer Success antes do churn.
+
+**O que você vai aprender:**
+*   Como estruturar os "Buckets" de atraso (0-30, 31-60, 60-90, 90+).
+*   A correlação direta entre Aging e a probabilidade de recebimento.
+*   Como automatizar a régua de cobrança baseada no Aging Bucket.
+
+## Para quem é este guia?
+Exclusivamente para **CFOs, Controllers e times de Recebíveis** em SaaS B2B.
+
+<Callout type="info" title="Fato Estatístico">
+Um recebível com 90 dias de atraso tem apenas 20% de chance de ser recuperado. A velocidade da cobrança é o fator #1 de sucesso.
 </Callout>
 
-## Benchmark 2026
-Analisando nossa base de 76 milhões de eventos, vimos que:
-- **Top Performers**: Resolvem incidentes em < 1h.
-- **Média de Mercado**: Leva 3 dias.
-- **Laggards**: Só descobrem no fechamento do mês.
+## 1. O que é o Aging Report?
 
-## Implementação Prática
-Não tente construir isso do zero. Utilize APIs robustas que já abstraem a complexidade bancária.
+É uma "foto" dos seus recebíveis em aberto, classificados por data de vencimento.
+Ele responde: **"Quanto dinheiro está na rua e quão velho é esse dinheiro?"**
 
-### Exemplo de Código (Node.js)
-```javascript
-const revenueos = require('revenueos');
+### A Estrutura Clássica (Buckets)
+*   **Current (A Vencer):** Tudo certo. O dinheiro vai entrar.
+*   **1-30 Dias (Atraso Leve):** Esquecimento operacional. Cobrança amigável.
+*   **31-60 Dias (Atraso Médio):** Problema de fluxo de caixa do cliente ou insatisfação. Cobrança firme + CS.
+*   **61-90 Dias (Atraso Grave):** Risco alto de calote. Suspensão de serviço.
+*   **90+ Dias (Perda Provável):** Encaminhar para jurídico/negativação. Provisionar como PDD (Perda).
 
-// Automatizando a reconciliação
-await revenueos.reconciliation.autoMatch({
-  tolerance: 0.05, // 5 centavos
-  sources: ['stripe', 'itaú']
-});
-```
+## 2. Checklist de Saúde de Carteira
 
-## Conclusão
-O jogo mudou. Não é mais sobre quem vende mais, é sobre quem opera melhor.
-Comece hoje auditando seu processo atual e identificando os gargalos manuais.
+Analise seu relatório hoje:
 
-<CTABox title="Auditoria Gratuita" subtitle="Conecte seus dados no RevenueOS e receba um diagnóstico em 5 minutos." />
+*   [ ] **Concentração:** Se 1 cliente representa 50% do seu atraso > 30 dias, você tem um risco de concentração enorme.
+*   [ ] **DSO (Days Sales Outstanding):** Qual o prazo médio que você leva para receber? Se o contrato é 30 dias e o DSO é 45, seus clientes estão te usando como banco.
+*   [ ] **Aging Quality:** Idealmente, 80%+ da sua carteira deve estar em "Current" ou "1-30". Se "90+" estiver crescendo, pare de vender e foque em cobrar.
+
+## 3. Automatizando a Cobrança por Bucket
+
+O erro é tratar todo atraso igual.
+*   **Cliente 0-30 dias:** *"Oi, acho que o boleto não chegou. Segue 2ª via."* (Empatia)
+*   **Cliente 31-60 dias:** *"Consta em aberto. Precisamos regularizar para manter o serviço."* (Urgência)
+*   **Cliente 60+ dias:** *"Serviço suspenso conforme contrato."* (Consequência)
+
+Fazer isso manualmente no Excel é impossível. Você esquece, o e-mail não vai, o cliente ganha tempo.
+
+## 4. O Painel de Aging do RevenueOS
+
+O RevenueOS gera o Aging Report em tempo real, conectado aos seus bancos e gateways.
+Mais do que mostrar o gráfico, ele **age**:
+
+1.  Classifica automaticamente cada invoice no bucket certo a cada dia.
+2.  Dispara e-mails/SMS customizados para cada estágio da régua.
+3.  Calcula juros e multa automaticamente na atualização do boleto.
+4.  Bloqueia o acesso ao SaaS via API quando atinge a regra de suspensão (ex: 15 dias de atraso).
+
+<CTABox 
+  title="Recupere seu caixa" 
+  subtitle="Visualize seu Aging Report em tempo real e reduza o DSO em até 30%." 
+  buttonText="Ver Demonstração" 
+  href="/demo" 
+/>

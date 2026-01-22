@@ -1,32 +1,39 @@
 ---
-title: "Estratégia de API para SaaS de Alta Performance #41"
-excerpt: "Descubra como aplicar Estratégia de API para SaaS de Alta Performance #41 na sua operação de SaaS e garantir escala sustentável."
-date: "2025-12-03T03:00:00.000Z"
-category: "Tecnologia SaaS"
-tags: ["SaaS", "Finanças", "Growth"]
-readingTime: "13 min"
+title: "Redis para Fintechs: Cache vs Database"
+excerpt: "Redis é rápido, mas perde dados. Quando usar Redis para cache de saldo (perigoso) e quando usar para Filas e Rate Limit."
+date: "2026-03-21T03:00:00.000Z"
+category: "Tech & Engenharia"
+tags: ["Redis", "Cache", "Performance", "Database"]
+readingTime: "10 min"
 author: "RevenueOS Team"
 ---
 
-## Introdução
+# O Cache que Mente
 
-No mundo acelerado das startups, **Estratégia de API para SaaS de Alta Performance #41** é um tema crucial.
+É tentador cachear o saldo do usuário no Redis para não bater no Postgres a cada request.
+`GET /saldo` -> Le do Redis (1ms).
+O problema é a **Invalidação de Cache**.
 
-<Callout type="info" title="Insight">
-Empresas que dominam Estratégia de API para SaaS de Alta Performance #41 crescem 2x mais rápido.
-</Callout>
+Se você credita R$ 50 no Postgres e o Redis cai/falha em atualizar, o usuário vê o saldo antigo.
+Ele deposita e o dinheiro "não aparece". Suporte chamado.
 
-## Desenvolvimento
+**Regra:** Dados financeiros críticos (Saldo, Ledger) devem ser lidos do **Primary Database**. O custo de I/O vale a consistência.
 
-Aqui exploramos os detalhes técnicos e estratégicos. A implementação correta de **Estratégia de API para SaaS de Alta Performance #41** exige disciplina.
+## Onde usar Redis em Finanças?
 
-### Pontos Chave:
-1. Análise de dados.
-2. Processos definidos.
-3. Tecnologia adequada (como o RevenueOS).
+1.  **Idempotency Keys:** Perfeito. Se perder, o pior caso é o request rodar de novo (e seu DB tratar).
+2.  **Rate Limiting:** Sliding Window counters.
+3.  **Filas (Sidekiq/Bull):** Jobs efêmeros.
+4.  **Sessão de Usuário:** Tokens de auth.
 
-## Conclusão
+## Caching de Leitura (Read-Through)
 
-Comece hoje a otimizar sua operação.
+Se você precisa muito cachear (ex: Dashboard de Analytics que carrega 5 anos de dados), use padrões de invalidação robustos.
+Ou melhor: Use **Materialized Views** no Postgres. É rápido o suficiente e garante consistência eventual controlada.
 
-<CTABox title="Escale com segurança" subtitle="O RevenueOS é a base para sua estratégia financeira." />
+<CTABox 
+  title="Performance com Segurança" 
+  subtitle="O RevenueOS usa Redis inteligentemente para acelerar a UI, sem arriscar seus dados financeiros." 
+  buttonText="Nossa Stack" 
+  href="/stack" 
+/>

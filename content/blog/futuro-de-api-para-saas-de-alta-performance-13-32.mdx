@@ -1,32 +1,60 @@
 ---
-title: "Futuro de API para SaaS de Alta Performance #13"
-excerpt: "Descubra como aplicar Futuro de API para SaaS de Alta Performance #13 na sua operação de SaaS e garantir escala sustentável."
-date: "2025-11-22T03:00:00.000Z"
-category: "Gestão Financeira"
-tags: ["SaaS", "Finanças", "Growth"]
-readingTime: "11 min"
+title: "Webhooks: O Guia de Sobrevivência para Black Friday"
+excerpt: "O que acontece quando seu servidor recebe 10.000 webhooks por segundo? Aprenda a arquitetar workers assíncronos que não caem sob pressão."
+date: "2026-03-15T03:00:00.000Z"
+category: "Tech & Engenharia"
+tags: ["Webhooks", "Escalabilidade", "Black Friday", "Queues"]
+readingTime: "9 min"
 author: "RevenueOS Team"
 ---
 
-## Introdução
+# Sobrevivendo ao Pico de Tráfego: Arquitetura de Webhooks
 
-No mundo acelerado das startups, **Futuro de API para SaaS de Alta Performance #13** é um tema crucial.
+Black Friday. Seu cliente explode de vender.
+O Gateway de pagamento começa a disparar webhooks `payment.succeeded` furiosamente para sua URL.
+Seu endpoint síncrono tenta conectar no banco, fazer update, mandar e-mail...
+**Timeout.** O Gateway recebe erro 500 e começa a reenviar (Retry Storm).
+Seu servidor derrete.
 
-<Callout type="info" title="Insight">
-Empresas que dominam Futuro de API para SaaS de Alta Performance #13 crescem 2x mais rápido.
-</Callout>
+## A Regra dos 200ms
 
-## Desenvolvimento
+Seu endpoint de webhook deve fazer apenas 1 coisa:
+**Salvar o evento na fila (SQS/Redis) e retornar 200 OK.**
 
-Aqui exploramos os detalhes técnicos e estratégicos. A implementação correta de **Futuro de API para SaaS de Alta Performance #13** exige disciplina.
+```typescript
+app.post('/webhooks', async (req, res) => {
+  const event = req.body;
+  
+  // 1. Valida assinatura (Rápido - CPU bound)
+  verifySignature(req);
+  
+  // 2. Joga na fila (Rápido - I/O bound)
+  await queue.add('process-payment', event);
+  
+  // 3. Tchau
+  res.sendStatus(200);
+});
+```
 
-### Pontos Chave:
-1. Análise de dados.
-2. Processos definidos.
-3. Tecnologia adequada (como o RevenueOS).
+A lógica pesada (e-mail, banco, nota fiscal) acontece nos **Consumers** da fila, no ritmo que seu banco aguentar (Throttling).
 
-## Conclusão
+## Idempotência no Consumo
 
-Comece hoje a otimizar sua operação.
+Como o gateway pode mandar duplicado, seu Worker deve ser idempotente.
+`IF exists(event_id) RETURN;`
 
-<CTABox title="Escale com segurança" subtitle="O RevenueOS é a base para sua estratégia financeira." />
+## Fan-out Pattern
+
+Um webhook pode desencadear múltiplas ações independentes:
+1.  Liberar Acesso
+2.  Mandar E-mail
+3.  Atualizar KPI
+
+Não faça isso em série. Use o padrão Fan-out (SNS -> SQS). Publique o evento uma vez, e tenha múltiplos consumidores inscritos. Se o serviço de E-mail cair, o serviço de Acesso continua funcionando.
+
+<CTABox 
+  title="Escala Infinita" 
+  subtitle="O RevenueOS aguenta picos de 50k RPS sem suar. Foque no seu produto, deixe a infra com a gente." 
+  buttonText="Arquitetura Cloud" 
+  href="/features/infrastructure" 
+/>

@@ -1,32 +1,54 @@
 ---
-title: "Segredo de API para SaaS de Alta Performance #27"
-excerpt: "Descubra como aplicar Segredo de API para SaaS de Alta Performance #27 na sua operação de SaaS e garantir escala sustentável."
-date: "2025-06-11T03:00:00.000Z"
-category: "Tecnologia SaaS"
-tags: ["SaaS", "Finanças", "Growth"]
-readingTime: "11 min"
+title: "Filas e Workers: Orquestrando Background Jobs"
+excerpt: "Como processar milhares de boletos sem travar o servidor. Um guia sobre SQS, RabbitMQ e BullMQ."
+date: "2026-03-23T03:00:00.000Z"
+category: "Tech & Engenharia"
+tags: ["Queues", "Background Jobs", "Performance", "Arquitetura"]
+readingTime: "9 min"
 author: "RevenueOS Team"
 ---
 
-## Introdução
+# Async First
 
-No mundo acelerado das startups, **Segredo de API para SaaS de Alta Performance #27** é um tema crucial.
+Para cada ação do usuário, pergunte: "Eu preciso responder agora?".
+*   Login? Sim.
+*   Criar Cobrança no Stripe? Sim.
+*   Enviar E-mail de Boas Vindas? **Não.**
+*   Gerar PDF da Nota Fiscal? **Não.**
 
-<Callout type="info" title="Insight">
-Empresas que dominam Segredo de API para SaaS de Alta Performance #27 crescem 2x mais rápido.
-</Callout>
+Tudo que não é crítico para a resposta HTTP imediata deve ir para uma **Fila**.
 
-## Desenvolvimento
+## Anatomia de um Job
 
-Aqui exploramos os detalhes técnicos e estratégicos. A implementação correta de **Segredo de API para SaaS de Alta Performance #27** exige disciplina.
+```json
+{
+  "job": "send_email",
+  "payload": { "user_id": 123, "template": "welcome" },
+  "attempts": 0,
+  "max_attempts": 3
+}
+```
 
-### Pontos Chave:
-1. Análise de dados.
-2. Processos definidos.
-3. Tecnologia adequada (como o RevenueOS).
+O Worker pega esse job, processa e marca como `Completed`.
+Se falhar, incrementa `attempts` e devolve para a fila (com um delay).
 
-## Conclusão
+## Dead Letter Queues (DLQ)
 
-Comece hoje a otimizar sua operação.
+E se falhar 3 vezes? O job morre?
+Não. Ele vai para a DLQ (Fila de Cartas Mortas).
+Um engenheiro deve monitorar a DLQ diariamente. É lá que os bugs reais aparecem.
+*"Olha, o e-mail falhou porque o usuário digitou `.com.br` errado."*
 
-<CTABox title="Escale com segurança" subtitle="O RevenueOS é a base para sua estratégia financeira." />
+## BullMQ vs SQS
+
+*   **BullMQ (Redis):** Ótimo para Node.js, rápido, barato. Mas se o Redis encher, pode perder jobs se não configurado com persistência AOF.
+*   **AWS SQS:** Infinito, robusto, "set and forget". Mas tem latência maior e custo por request.
+
+No RevenueOS, usamos SQS para coisas críticas (Dinheiro) e BullMQ para coisas voláteis (Notificações).
+
+<CTABox 
+  title="Processamento Assíncrono" 
+  subtitle="Descubra como nossa arquitetura de eventos garante que nenhuma tarefa se perca no limbo." 
+  buttonText="Arquitetura" 
+  href="/features/infrastructure" 
+/>

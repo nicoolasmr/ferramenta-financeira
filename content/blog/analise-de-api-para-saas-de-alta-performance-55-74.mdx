@@ -1,32 +1,49 @@
 ---
-title: "Análise de API para SaaS de Alta Performance #55"
-excerpt: "Descubra como aplicar Análise de API para SaaS de Alta Performance #55 na sua operação de SaaS e garantir escala sustentável."
-date: "2025-11-02T03:00:00.000Z"
-category: "Gestão Financeira"
-tags: ["SaaS", "Finanças", "Growth"]
-readingTime: "5 min"
+title: "Testes de Integração em Fintechs: Mockar ou não Mockar?"
+excerpt: "Unit tests não pegam bugs de integração. Descubra como criar um ambiente de testes ephemerais que sobe um banco Postgres real para cada teste."
+date: "2026-03-19T03:00:00.000Z"
+category: "Tech & Engenharia"
+tags: ["Testing", "QA", "CI/CD", "Docker"]
+readingTime: "9 min"
 author: "RevenueOS Team"
 ---
 
-## Introdução
+# Mock é Mentira
 
-No mundo acelerado das startups, **Análise de API para SaaS de Alta Performance #55** é um tema crucial.
+Você mockou o Stripe. Mockou o Banco de Dados. Mockou a Rede.
+O teste passou `✅`.
+Em produção, o webhook do Stripe veio com um campo novo que você não previu e o app crashou.
 
-<Callout type="info" title="Insight">
-Empresas que dominam Análise de API para SaaS de Alta Performance #55 crescem 2x mais rápido.
-</Callout>
+Em fintechs, **Testes de Integração** (E2E) são a única verdade.
 
-## Desenvolvimento
+## Containerized Testing
 
-Aqui exploramos os detalhes técnicos e estratégicos. A implementação correta de **Análise de API para SaaS de Alta Performance #55** exige disciplina.
+Não use H2 ou SQLite em memória para testar se seu app usa Postgres. Eles se comportam diferente (especialmente com Locking e JSONB).
 
-### Pontos Chave:
-1. Análise de dados.
-2. Processos definidos.
-3. Tecnologia adequada (como o RevenueOS).
+Use **Testcontainers** (ou Docker Compose).
+Para cada suíte de teste:
+1.  Sobe um container Postgres limpo.
+2.  Roda as migrations.
+3.  Executa o cenário real (HTTP Request -> Controller -> DB).
+4.  Assert no estado do banco.
+5.  Destrói o container.
 
-## Conclusão
+## API Sandboxes
 
-Comece hoje a otimizar sua operação.
+Nunca teste contra a API real de produção do parceiro.
+Mas usar mocks estáticos (`nock`) é perigoso.
+Prefira usar as **Sandboxes** oficiais dos gateways.
+Se o gateway não tem sandbox, crie um **WireMock** gravado (VCR Record/Replay) baseada em respostas reais, e atualize as gravações semanalmente.
 
-<CTABox title="Escale com segurança" subtitle="O RevenueOS é a base para sua estratégia financeira." />
+## Pipeline do RevenueOS
+
+Nossa pipeline de CI roda 15.000 testes de integração a cada Pull Request.
+Nós subimos a infraestrutura inteira em ambientes efêmeros.
+Se o teste diz que o saldo bateu, é porque o saldo bateu no Postgres real.
+
+<CTABox 
+  title="Qualidade de Código" 
+  subtitle="Descubra como nossa engenharia garante 99.99% de uptime com testes rigorosos." 
+  buttonText="Blog de Engenharia" 
+  href="/engineering" 
+/>

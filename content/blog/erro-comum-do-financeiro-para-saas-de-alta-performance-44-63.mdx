@@ -1,32 +1,61 @@
 ---
-title: "Erro Comum do Financeiro para SaaS de Alta Performance #44"
-excerpt: "Descubra como aplicar Erro Comum do Financeiro para SaaS de Alta Performance #44 na sua operação de SaaS e garantir escala sustentável."
-date: "2025-08-15T03:00:00.000Z"
-category: "Estratégia B2B"
-tags: ["SaaS", "Finanças", "Growth"]
-readingTime: "9 min"
+title: "Erro de Conciliação em APIs: Quando o JSON mente"
+excerpt: "Tipos de dados importam. Por que usar float para dinheiro é um erro fatal e como tratar arredondamentos em integrações financeiras."
+date: "2026-03-10T03:00:00.000Z"
+category: "API & Integrações"
+tags: ["API", "Tipagem", "Moeda", "Erros"]
+readingTime: "8 min"
 author: "RevenueOS Team"
 ---
 
-## Introdução
+# 0.1 + 0.2 = 0.30000000000000004
 
-No mundo acelerado das startups, **Erro Comum do Financeiro para SaaS de Alta Performance #44** é um tema crucial.
+Se você já abriu o console do Chrome e digitou isso, sabe do que estou falando.
+Sistemas binários (pontos flutuantes IEEE 754) não conseguem representar decimais com precisão perfeita.
+Em um e-commerce, perder R$ 0,0000004 não importa.
+Em um banco processando trilhões, isso vira fraude.
 
-<Callout type="info" title="Insight">
-Empresas que dominam Erro Comum do Financeiro para SaaS de Alta Performance #44 crescem 2x mais rápido.
-</Callout>
+## A Regra de Ouro: Use Inteiros (Cents)
 
-## Desenvolvimento
+Nunca trafegue valores monetários como `type: Number` (float/double) na sua API JSON.
+Sempre use **Inteiros representando a menor unidade da moeda**.
 
-Aqui exploramos os detalhes técnicos e estratégicos. A implementação correta de **Erro Comum do Financeiro para SaaS de Alta Performance #44** exige disciplina.
+*   **Errado:** `{"amount": 19.90}`
+*   **Certo:** `{"amount": 1990, "currency": "BRL"}`
 
-### Pontos Chave:
-1. Análise de dados.
-2. Processos definidos.
-3. Tecnologia adequada (como o RevenueOS).
+Isso elimina problemas de arredondamento entre linguagens (Java vs Python vs JS).
 
-## Conclusão
+## O Problema do Arredondamento (Split de Pagamento)
 
-Comece hoje a otimizar sua operação.
+Imagine que você precisa dividir R$ 100,00 entre 3 vendedores igualmente.
+`100 / 3 = 33.3333...`
 
-<CTABox title="Escale com segurança" subtitle="O RevenueOS é a base para sua estratégia financeira." />
+Se você der 33.33 para cada um: `33.33 + 33.33 + 33.33 = 99.99`.
+Sobrou 1 centavo. Para onde ele vai?
+
+Seu código de split precisa tratar esse **"Centavo Residual"**. Normalmente, ele é atribuído ao "Marketplace Owner" ou ao primeiro vendedor da lista.
+Se você não tratar isso explicitamente, sua conciliação bancária nunca vai bater.
+
+## Padrões de Data (ISO 8601)
+
+Outro erro clássico de integração: Fuso Horário.
+O servidor está em UTC. O banco está em Horário de Brasília. O usuário está no Acre.
+Uma transação feita às 23:00 do dia 28 pode cair no dia 01 do mês seguinte dependendo de quem olha.
+
+**Regra:** APIs devem sempre trafegar datas em UTC com ISO 8601 (`2026-03-10T14:30:00Z`). Deixe o frontend converter para a hora local do usuário.
+
+## Como o RevenueOS padroniza isso
+
+Nossa API é "Opinionated":
+1.  Todo dinheiro é Integer (Cents).
+2.  Toda data é UTC ISO 8601.
+3.  Todo ID é UUID v4.
+
+Isso elimina 90% dos bugs de integração que desenvolvedores enfrentam ao conectar gateways legados.
+
+<CTABox 
+  title="DX de Primeira Classe" 
+  subtitle="Integre com uma API desenhada por desenvolvedores, para desenvolvedores. Tipagem forte, SDKs e Docs perfeitos." 
+  buttonText="Ler a API Reference" 
+  href="/docs/api" 
+/>
