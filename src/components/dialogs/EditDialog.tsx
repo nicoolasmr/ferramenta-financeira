@@ -21,6 +21,7 @@ interface Field {
     label: string;
     type: "text" | "email" | "number" | "textarea";
     placeholder?: string;
+    validation?: (value: string) => string | null;
 }
 
 interface EditDialogProps {
@@ -43,17 +44,52 @@ export function EditDialog({
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Record<string, string>>(initialData);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const validateField = (field: Field, value: string): string | null => {
+        if (field.type === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return "Invalid email format";
+        }
+        if (field.validation) {
+            return field.validation(value);
+        }
+        return null;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate all fields
+        const newErrors: Record<string, string> = {};
+        fields.forEach((field) => {
+            const error = validateField(field, formData[field.name] || "");
+            if (error) {
+                newErrors[field.name] = error;
+            }
+        });
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
         setLoading(true);
         try {
             await onSubmit(formData);
             setOpen(false);
+            setErrors({});
         } catch (error) {
             console.error("Error updating:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleFieldChange = (fieldName: string, value: string) => {
+        setFormData({ ...formData, [fieldName]: value });
+        // Clear error when user starts typing
+        if (errors[fieldName]) {
+            setErrors({ ...errors, [fieldName]: "" });
         }
     };
 
@@ -82,9 +118,8 @@ export function EditDialog({
                                         id={field.name}
                                         placeholder={field.placeholder}
                                         value={formData[field.name] || ""}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, [field.name]: e.target.value })
-                                        }
+                                        onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                                        className={errors[field.name] ? "border-red-500" : ""}
                                     />
                                 ) : (
                                     <Input
@@ -92,10 +127,12 @@ export function EditDialog({
                                         type={field.type}
                                         placeholder={field.placeholder}
                                         value={formData[field.name] || ""}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, [field.name]: e.target.value })
-                                        }
+                                        onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                                        className={errors[field.name] ? "border-red-500" : ""}
                                     />
+                                )}
+                                {errors[field.name] && (
+                                    <p className="text-sm text-red-500">{errors[field.name]}</p>
                                 )}
                             </div>
                         ))}
