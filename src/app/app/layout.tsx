@@ -1,6 +1,7 @@
 import { Toaster } from "sonner";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -11,7 +12,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex flex-col overflow-hidden">
                     <Header />
                     <main className="flex-1 overflow-y-auto p-8">
-                        {children}
+                        <ErrorBoundary>
+                            {children}
+                        </ErrorBoundary>
                     </main>
                 </div>
             </div>
