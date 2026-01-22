@@ -1,7 +1,7 @@
 -- Create team invitations table
-CREATE TABLE IF NOT EXISTS team_invitations (
+CREATE TABLE IF NOT EXISTS public.team_invitations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  org_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
   token TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
@@ -11,17 +11,19 @@ CREATE TABLE IF NOT EXISTS team_invitations (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(org_id, email)
 );
--- Create index for token lookups
-CREATE INDEX IF NOT EXISTS idx_team_invitations_token ON team_invitations(token) WHERE accepted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_team_invitations_org_id ON team_invitations(org_id);
 
 -- Ensure correct column name in team_invitations (idempotent rename)
+-- MUST happen before index/policy creation
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='team_invitations' AND column_name='organization_id') THEN
         ALTER TABLE public.team_invitations RENAME COLUMN organization_id TO org_id;
     END IF;
 END $$;
+
+-- Create index for token lookups
+CREATE INDEX IF NOT EXISTS idx_team_invitations_token ON team_invitations(token) WHERE accepted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_team_invitations_org_id ON team_invitations(org_id);
 
 -- Enable RLS
 ALTER TABLE team_invitations ENABLE ROW LEVEL SECURITY;

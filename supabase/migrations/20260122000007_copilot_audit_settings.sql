@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS copilot_suggestions (
 
 -- Create audit logs table
 CREATE TABLE IF NOT EXISTS public.audit_logs (
-  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  org_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   user_id UUID REFERENCES auth.users(id),
   action TEXT NOT NULL,
   resource_type TEXT NOT NULL,
@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 );
 
 -- Ensure correct column name in audit_logs (idempotent rename)
+-- MUST happen before index/policy creation
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='audit_logs' AND column_name='organization_id') THEN
