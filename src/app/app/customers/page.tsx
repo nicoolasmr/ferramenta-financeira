@@ -1,167 +1,82 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
+import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Download, Search } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DataTable } from "@/components/data-table/DataTable";
+import { EmptyState } from "@/components/states/EmptyState";
+import { LoadingState } from "@/components/states/LoadingState";
+import { getCustomers, type Customer } from "@/actions/customers";
+import { ColumnDef } from "@tanstack/react-table";
 
-// Mock Data
-const customers = [
+const columns: ColumnDef<Customer>[] = [
     {
-        id: "cus_1",
-        name: "Olivia Martin",
-        email: "olivia.martin@email.com",
-        orders: 15,
-        spent: "R$ 4.200,00",
-        lastPurchase: "2023-01-20",
-        status: "Active"
+        accessorKey: "name",
+        header: "Name",
     },
     {
-        id: "cus_2",
-        name: "Jackson Lee",
-        email: "jackson.lee@email.com",
-        orders: 2,
-        spent: "R$ 89,00",
-        lastPurchase: "2023-01-18",
-        status: "Inactive"
+        accessorKey: "email",
+        header: "Email",
     },
     {
-        id: "cus_3",
-        name: "Isabella Nguyen",
-        email: "isabella.nguyen@email.com",
-        orders: 8,
-        spent: "R$ 1.250,00",
-        lastPurchase: "2023-01-15",
-        status: "Active"
+        accessorKey: "phone",
+        header: "Phone",
     },
     {
-        id: "cus_4",
-        name: "William Kim",
-        email: "will@email.com",
-        orders: 1,
-        spent: "R$ 99,00",
-        lastPurchase: "2023-01-05",
-        status: "Active"
+        accessorKey: "document",
+        header: "Document",
     },
     {
-        id: "cus_5",
-        name: "Sofia Davis",
-        email: "sofia.davis@email.com",
-        orders: 4,
-        spent: "R$ 390,00",
-        lastPurchase: "2022-12-28",
-        status: "Active"
+        accessorKey: "created_at",
+        header: "Created",
+        cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
     },
 ];
 
 export default function CustomersPage() {
-    const [filter, setFilter] = useState("");
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredCustomers = customers.filter(
-        (customer) =>
-            customer.name.toLowerCase().includes(filter.toLowerCase()) ||
-            customer.email.toLowerCase().includes(filter.toLowerCase())
-    );
+    useEffect(() => {
+        getCustomers("org-1")
+            .then(setCustomers)
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) return <LoadingState />;
 
     return (
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
-                        <Download className="mr-2 h-4 w-4" />
-                        Export
-                    </Button>
-                    <Button size="sm">Add Customer</Button>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
+                    <p className="text-slate-500">Manage your customer database</p>
                 </div>
+                <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Customer
+                </Button>
             </div>
 
-            <div className="flex items-center gap-2">
-                <div className="relative max-w-sm w-full">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Search customers..."
-                        className="pl-8"
-                        value={filter}
-                        onChange={(e) => setFilter(e.target.value)}
-                    />
-                </div>
-            </div>
-
-            <div className="rounded-md border bg-white">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[80px]"></TableHead>
-                            <TableHead>Customer</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Orders</TableHead>
-                            <TableHead>Total Spent</TableHead>
-                            <TableHead>Last Purchase</TableHead>
-                            <TableHead className="w-[50px]"></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredCustomers.map((customer) => (
-                            <TableRow key={customer.id}>
-                                <TableCell>
-                                    <Avatar className="h-9 w-9">
-                                        <AvatarImage src={`https://avatar.vercel.sh/${customer.id}.png`} alt={customer.name} />
-                                        <AvatarFallback>{customer.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col">
-                                        <Link href={`/app/customers/${customer.id}`} className="font-medium hover:underline text-primary">
-                                            {customer.name}
-                                        </Link>
-                                        <span className="text-xs text-muted-foreground">{customer.email}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${customer.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'}`}>
-                                        {customer.status}
-                                    </div>
-                                </TableCell>
-                                <TableCell>{customer.orders}</TableCell>
-                                <TableCell>{customer.spent}</TableCell>
-                                <TableCell>{customer.lastPurchase}</TableCell>
-                                <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                                <span className="sr-only">Menu</span>
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem>Edit details</DropdownMenuItem>
-                                            <DropdownMenuItem className="text-red-600">Ban customer</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
+            {customers.length === 0 ? (
+                <EmptyState
+                    title="No customers yet"
+                    description="Start by adding your first customer"
+                    action={
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Customer
+                        </Button>
+                    }
+                />
+            ) : (
+                <DataTable
+                    columns={columns}
+                    data={customers}
+                    searchKey="name"
+                    searchPlaceholder="Search customers..."
+                />
+            )}
         </div>
     );
 }
