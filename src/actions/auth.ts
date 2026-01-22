@@ -8,3 +8,10 @@ export async function signOut() {
     await supabase.auth.signOut();
     redirect('/login');
 }
+
+export async function getCurrentUser() {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+    return user;
+}
