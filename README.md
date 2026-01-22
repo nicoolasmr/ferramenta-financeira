@@ -94,10 +94,25 @@
 
 ---
 
-## � Documentation
+## 📚 Documentation
 
-*   [**Task Tracker**](./brain/71f4b9ee-c509-4049-890e-053d723c82c5/task.md): Detailed implementation history.
-*   [**Walkthrough**](./brain/71f4b9ee-c509-4049-890e-053d723c82c5/walkthrough.md): Comprehensive guide of all functional modules.
+The technical and operational documentation is organized in the [`docs/`](./docs/) directory:
+
+### Core Platform
+- [**Architecture Guide**](./docs/ARCHITECTURE.md): System design, data flow, and stack details.
+- [**Database Schema**](./docs/DB_SCHEMA.md): Entity relationship diagram and table descriptions.
+- [**Security & Compliance**](./docs/SECURITY.md): RLS, MFA, and data protection policies.
+- [**Routes & API**](./docs/ROUTES.md): Complete list of app routes and API endpoints.
+
+### Operations & Intelligence
+- [**AI Copilot**](./docs/AI_COPILOT.md): How the deterministic and GPT layers work.
+- [**Operations Manual (OPS)**](./docs/OPS.md): Managing gateways, webhooks, and the DLQ.
+- [**Payment Scheduling**](./docs/PAYMENTS_SCHEDULING.md): Logic for installments and re-negotiations.
+- [**Runbook**](./docs/RUNBOOK.md): Troubleshooting common operational issues.
+
+### Implementation History
+- [**Task Tracker**](./docs/brain/task.md): Detailed 100% completion checklist.
+- [**Final Walkthrough**](./docs/brain/walkthrough.md): Documented proofs of all functional modules.
 
 ---
 
