@@ -7,7 +7,10 @@ export interface Project {
     id: string;
     org_id: string;
     name: string;
+    slug: string;
     description: string | null;
+    environment: 'production' | 'development' | 'staging';
+    region: 'gru1' | 'us-east-1';
     status: string;
     settings: any;
     created_at: string;
@@ -51,15 +54,26 @@ export async function getProjectById(id: string): Promise<Project | null> {
 export async function createProject(formData: {
     name: string;
     description?: string;
+    environment: 'production' | 'development' | 'staging';
+    region: 'gru1' | 'us-east-1';
     org_id: string;
 }) {
     const supabase = await createClient();
+
+    // Generate slug using database function
+    const { data: slugData } = await supabase.rpc('generate_project_slug', {
+        project_name: formData.name,
+        org_id: formData.org_id
+    });
 
     const { data, error } = await supabase
         .from("projects")
         .insert({
             name: formData.name,
+            slug: slugData || `project-${Date.now()}`,
             description: formData.description || null,
+            environment: formData.environment,
+            region: formData.region,
             org_id: formData.org_id,
             status: "active",
             settings: {},

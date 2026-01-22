@@ -56,7 +56,7 @@ export function CreateProjectDialog({
                 name: formData.name,
                 environment: formData.environment,
                 region: formData.region,
-                orgId: organizationId,
+                org_id: organizationId,
             });
 
             toast.success('Projeto criado com sucesso!');
