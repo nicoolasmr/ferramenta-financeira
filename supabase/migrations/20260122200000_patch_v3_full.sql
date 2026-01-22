@@ -131,7 +131,7 @@ CREATE INDEX IF NOT EXISTS idx_payments_org_project ON public.payments(org_id, p
 -- 4. Financial Views
 
 -- Portfolio Financials View (Aggregated by Org)
-DROP VIEW IF EXISTS public.portfolio_financials_view;
+DROP VIEW IF EXISTS public.portfolio_financials_view CASCADE;
 CREATE OR REPLACE VIEW public.portfolio_financials_view AS
 SELECT 
     org_id,
@@ -144,7 +144,7 @@ FROM public.installments
 GROUP BY org_id;
 
 -- Receivables Aging View
-DROP VIEW IF EXISTS public.receivables_aging_view;
+DROP VIEW IF EXISTS public.receivables_aging_view CASCADE;
 CREATE OR REPLACE VIEW public.receivables_aging_view AS
 SELECT 
     org_id,

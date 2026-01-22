@@ -71,6 +71,7 @@ END $$;
 -- =============================================================================
 
 -- Freshness View: When was the last time we heard from a provider?
+DROP VIEW IF EXISTS public.integration_freshness_view CASCADE;
 CREATE OR REPLACE VIEW public.integration_freshness_view AS
 SELECT 
     org_id,
@@ -88,6 +89,7 @@ FROM public.external_events_raw
 GROUP BY org_id, provider;
 
 -- Reconciliation Summary: High-level funnel metrics
+DROP VIEW IF EXISTS public.reconciliation_summary_view CASCADE;
 CREATE OR REPLACE VIEW public.reconciliation_summary_view AS
 WITH raw_counts AS (
     SELECT org_id, provider, count(*) as total_raw 

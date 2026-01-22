@@ -113,6 +113,7 @@ CREATE INDEX IF NOT EXISTS idx_installments_org_status_due ON public.installment
 
 
 -- 4. FINANCIAL CONSISTENCY (View)
+DROP VIEW IF EXISTS public.project_financials_view CASCADE;
 CREATE OR REPLACE VIEW public.project_financials_view AS
 SELECT 
   p.id as project_id,
