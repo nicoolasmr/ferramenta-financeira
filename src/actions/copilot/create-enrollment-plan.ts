@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { generateInstallments } from "@/lib/scheduling/engine";
 import { AIEnrollmentSchema } from "@/lib/ai/schemas";
+import { createNotification } from "@/actions/notifications";
 
 export async function createEnrollmentPlan(data: any, orgId: string) {
     const supabase = await createClient();
@@ -132,5 +133,14 @@ export async function createEnrollmentPlan(data: any, orgId: string) {
     });
 
     revalidatePath("/app/enrollments");
+
+    await createNotification({
+        org_id: orgId,
+        title: "Matrícula Criada",
+        message: `A matrícula de ${customer.name} foi realizada com sucesso pelo Copilot.`,
+        type: "success",
+        link: `/app/enrollments/${enrollment.id}`
+    });
+
     return { success: true, enrollmentId: enrollment.id };
 }

@@ -5,6 +5,8 @@ import { Sparkles, X, Check, AlertTriangle, TrendingUp, Users } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState } from "@/components/states/LoadingState";
+import { ErrorState } from "@/components/states/ErrorState";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 import {
     getCopilotSuggestions,
     dismissSuggestion,
@@ -33,15 +35,18 @@ const ICONS = {
 };
 
 export default function CopilotPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [suggestions, setSuggestions] = useState<CopilotSuggestion[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getCopilotSuggestions("org-1")
+        if (!activeOrganization) return;
+
+        getCopilotSuggestions(activeOrganization.id)
             .then(setSuggestions)
             .catch(() => toast.error("Failed to load suggestions"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleDismiss = async (id: string) => {
         try {
@@ -63,7 +68,8 @@ export default function CopilotPage() {
         }
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     const topSuggestions = suggestions.slice(0, 3);
 

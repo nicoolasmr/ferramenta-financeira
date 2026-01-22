@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { LoadingState } from "@/components/states/LoadingState";
 import { getAuditLogs, exportAuditLogs, type AuditLog } from "@/actions/audit";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 import { Input } from "@/components/ui/input";
 import {
     Select,
@@ -18,6 +20,7 @@ import {
 } from "@/components/ui/select";
 
 export default function AuditLogsPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [filteredLogs, setFilteredLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,14 +31,16 @@ export default function AuditLogsPage() {
     const [resourceFilter, setResourceFilter] = useState("all");
 
     useEffect(() => {
-        getAuditLogs("org-1")
+        if (!activeOrganization) return;
+
+        getAuditLogs(activeOrganization.id)
             .then((data) => {
                 setLogs(data);
                 setFilteredLogs(data);
             })
             .catch(() => toast.error("Failed to load audit logs"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     useEffect(() => {
         let result = logs;
@@ -60,8 +65,9 @@ export default function AuditLogsPage() {
     }, [search, actionFilter, resourceFilter, logs]);
 
     const handleExport = async () => {
+        if (!activeOrganization) return;
         try {
-            const csv = await exportAuditLogs("org-1");
+            const csv = await exportAuditLogs(activeOrganization.id);
             const blob = new Blob([csv], { type: "text/csv" });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -74,7 +80,8 @@ export default function AuditLogsPage() {
         }
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     const uniqueActions = Array.from(new Set(logs.map(l => l.action)));
     const uniqueResources = Array.from(new Set(logs.map(l => l.resource)));

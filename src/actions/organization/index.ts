@@ -26,6 +26,32 @@ export async function getOrganization(orgId: string): Promise<Organization | nul
     return data;
 }
 
+export async function getUserOrganizations(): Promise<Organization[]> {
+    const supabase = await createClient();
+    const { data: memberships, error: memError } = await supabase
+        .from("memberships")
+        .select("org_id");
+
+    if (memError) throw memError;
+    if (!memberships || memberships.length === 0) return [];
+
+    const orgIds = memberships.map(m => m.org_id);
+    const { data, error } = await supabase
+        .from("organizations")
+        .select("*")
+        .in("id", orgIds);
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function getActiveOrganization(): Promise<Organization | null> {
+    const orgs = await getUserOrganizations();
+    if (orgs.length === 0) return null;
+    // For now, return the first one as default active
+    return orgs[0];
+}
+
 export async function updateOrganization(orgId: string, formData: Partial<Organization>) {
     const supabase = await createClient();
     const { error } = await supabase

@@ -13,8 +13,11 @@ import {
     type Organization,
 } from "@/actions/organization";
 import { toast } from "sonner";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 export default function OrganizationSettingsPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [organization, setOrganization] = useState<Organization | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -26,7 +29,9 @@ export default function OrganizationSettingsPage() {
     });
 
     useEffect(() => {
-        getOrganization("org-1")
+        if (!activeOrganization) return;
+
+        getOrganization(activeOrganization.id)
             .then((org) => {
                 if (org) {
                     setOrganization(org);
@@ -34,19 +39,20 @@ export default function OrganizationSettingsPage() {
                         name: org.name || "",
                         legal_name: org.legal_name || "",
                         tax_id: org.tax_id || "",
-                        address: org.address || "",
+                        address: (org.address as string) || "",
                     });
                 }
             })
             .catch(() => toast.error("Failed to load organization"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleSave = async (e: React.FormEvent) => {
+        if (!activeOrganization) return;
         e.preventDefault();
         setSaving(true);
         try {
-            await updateOrganization("org-1", formData);
+            await updateOrganization(activeOrganization.id, formData);
             toast.success("Organization settings saved!");
         } catch (error) {
             toast.error("Failed to save settings");
@@ -59,7 +65,8 @@ export default function OrganizationSettingsPage() {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     return (
         <div className="flex flex-col gap-6">

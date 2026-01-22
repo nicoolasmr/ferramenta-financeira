@@ -23,6 +23,8 @@ import {
     type TeamInvitation,
 } from "@/actions/team";
 import { toast } from "sonner";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 const ROLE_COLORS = {
     owner: "bg-purple-100 text-purple-700",
@@ -31,14 +33,17 @@ const ROLE_COLORS = {
 };
 
 export default function TeamPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [members, setMembers] = useState<TeamMember[]>([]);
     const [invitations, setInvitations] = useState<TeamInvitation[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!activeOrganization) return;
+
         Promise.all([
-            getTeamMembers("org-1"),
-            getPendingInvitations("org-1"),
+            getTeamMembers(activeOrganization.id),
+            getPendingInvitations(activeOrganization.id),
         ])
             .then(([membersData, invitationsData]) => {
                 setMembers(membersData);
@@ -46,14 +51,15 @@ export default function TeamPage() {
             })
             .catch(() => toast.error("Failed to load team data"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleInvite = async (data: Record<string, string>) => {
+        if (!activeOrganization) return;
         try {
             await inviteTeamMember({
                 email: data.email,
                 role: data.role as "owner" | "admin" | "member",
-                org_id: "org-1",
+                org_id: activeOrganization.id,
                 invited_by: "current-user-id", // TODO: Get from auth
             });
             toast.success("Invitation sent!");
@@ -92,7 +98,8 @@ export default function TeamPage() {
         }
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     return (
         <div className="flex flex-col gap-6">

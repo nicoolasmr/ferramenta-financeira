@@ -8,21 +8,27 @@ import { LoadingState } from "@/components/states/LoadingState";
 import { getAgingReport, exportAgingReport, type AgingBucket } from "@/actions/aging";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 export default function AgingReportPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [buckets, setBuckets] = useState<AgingBucket[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getAgingReport("org-1")
+        if (!activeOrganization) return;
+
+        getAgingReport(activeOrganization.id)
             .then(setBuckets)
             .catch(() => toast.error("Failed to load aging report"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleExport = async () => {
+        if (!activeOrganization) return;
         try {
-            const csv = await exportAgingReport("org-1");
+            const csv = await exportAgingReport(activeOrganization.id);
             const blob = new Blob([csv], { type: "text/csv" });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -35,7 +41,8 @@ export default function AgingReportPage() {
         }
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     const totalValue = buckets.reduce((sum, bucket) => sum + bucket.total_value, 0);
 
@@ -83,8 +90,8 @@ export default function AgingReportPage() {
                             <XAxis dataKey="range" />
                             <YAxis />
                             <Tooltip
-                                formatter={(value: number) =>
-                                    `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                                formatter={(value: number | undefined) =>
+                                    `R$ ${(value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
                                 }
                             />
                             <Bar dataKey="total_value" fill="#3b82f6" />

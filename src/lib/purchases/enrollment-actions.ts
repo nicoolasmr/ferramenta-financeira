@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/actions/notifications";
 
 /*
  renegociateInstallments Action
@@ -80,6 +81,15 @@ export async function renegotiateInstallments(
 
     revalidatePath(`/app/enrollments/${enrollmentId}`);
     revalidatePath(`/app/projects/${projectId}/dashboard`);
+
+    await createNotification({
+        org_id: orgId,
+        title: "Reparcelamento Realizado",
+        message: `O plano de pagamento da matrícula foi renegociado com sucesso.`,
+        type: "warning",
+        link: `/app/enrollments/${enrollmentId}`
+    });
+
     return { success: true };
 }
 
@@ -137,5 +147,14 @@ export async function markInstallmentPaid(
     });
 
     revalidatePath(`/app/enrollments/${enrollmentId}`);
+
+    await createNotification({
+        org_id: orgId,
+        title: "Pagamento Confirmado",
+        message: `Um pagamento foi marcado como pago manualmente via sistema.`,
+        type: "success",
+        link: `/app/enrollments/${enrollmentId}`
+    });
+
     return { success: true };
 }

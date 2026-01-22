@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/actions/notifications";
 
 export type GatewayIntegration = {
     id: string;
@@ -83,6 +84,16 @@ export async function saveIntegrationConfig(orgId: string, providerId: string, f
     }
 
     revalidatePath('/app/integrations');
+
+    // Mock notification for testing
+    await createNotification({
+        org_id: orgId,
+        title: "Integração Atualizada",
+        message: `A integração com ${providerId} foi configurada com sucesso.`,
+        type: "success",
+        link: "/app/integrations"
+    });
+
     return { success: true };
 }
 

@@ -15,25 +15,34 @@ import {
     type APIKey,
 } from "@/actions/api-keys";
 import { toast } from "sonner";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 export default function APIKeysPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
     const [loading, setLoading] = useState(true);
     const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
     useEffect(() => {
-        getAPIKeys("org-1")
+        if (!activeOrganization) return;
+
+        getAPIKeys(activeOrganization.id)
             .then(setApiKeys)
             .catch(() => toast.error("Failed to load API keys"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleCreate = async (data: Record<string, string>) => {
+        if (!activeOrganization) {
+            toast.error("Organização não encontrada");
+            return;
+        }
         try {
             const result = await createAPIKey({
                 name: data.name,
-                org_id: "org-1",
+                org_id: activeOrganization.id,
             });
             toast.success("API Key created! Copy it now - it won't be shown again.");
             // Show the key in a dialog or copy to clipboard
@@ -88,7 +97,8 @@ export default function APIKeysPage() {
         return `${key.substring(0, 7)}${"•".repeat(48)}${key.substring(key.length - 4)}`;
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     return (
         <div className="flex flex-col gap-6">
@@ -131,8 +141,8 @@ export default function APIKeysPage() {
                                 </div>
                                 <span
                                     className={`px-2 py-1 rounded text-xs font-medium ${apiKey.status === "active"
-                                            ? "bg-green-100 text-green-700"
-                                            : "bg-red-100 text-red-700"
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-red-100 text-red-700"
                                         }`}
                                 >
                                     {apiKey.status}

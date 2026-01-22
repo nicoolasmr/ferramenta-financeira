@@ -26,8 +26,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 export default function BillingPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [plans, setPlans] = useState<Plan[]>([]);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [loading, setLoading] = useState(true);
@@ -43,10 +46,11 @@ export default function BillingPage() {
     });
 
     const fetchData = async () => {
+        if (!activeOrganization) return;
         try {
             const [plansData, subData] = await Promise.all([
                 getAvailablePlans(),
-                getBillingInfo("org-1"),
+                getBillingInfo(activeOrganization.id),
             ]);
             setPlans(plansData);
             setSubscription(subData);
@@ -58,13 +62,16 @@ export default function BillingPage() {
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (activeOrganization) {
+            fetchData();
+        }
+    }, [activeOrganization]);
 
     const handleUpdatePlan = async (planId: string) => {
+        if (!activeOrganization) return;
         setIsUpdating(true);
         try {
-            await updatePlan("org-1", planId);
+            await updatePlan(activeOrganization.id, planId);
             toast.success("Plan updated successfully!");
             fetchData();
         } catch (error) {
@@ -75,10 +82,11 @@ export default function BillingPage() {
     };
 
     const handleCancel = async () => {
+        if (!activeOrganization) return;
         if (!confirm("Are you sure you want to cancel your subscription?")) return;
         setIsUpdating(true);
         try {
-            await cancelSubscription("org-1");
+            await cancelSubscription(activeOrganization.id);
             toast.success("Subscription canceled");
             fetchData();
         } catch (error) {
@@ -97,7 +105,8 @@ export default function BillingPage() {
         }, 1000);
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     const currentPlan = subscription?.plan;
 

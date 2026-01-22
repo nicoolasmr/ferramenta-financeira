@@ -8,14 +8,17 @@ import { Copy, FileText, ListChecks, MessageSquare, AlertTriangle } from "lucide
 import { fetchFinancialMetrics } from "@/actions/copilot/finance-actions";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 
 export function CollectionsInterface() {
+    const { activeOrganization } = useOrganization();
     const [metrics, setMetrics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchFinancialMetrics("org-1").then(setMetrics).catch(() => toast.error("Failed to load metrics")).finally(() => setLoading(false));
-    }, []);
+        if (!activeOrganization) return;
+        fetchFinancialMetrics(activeOrganization.id).then(setMetrics).catch(() => toast.error("Failed to load metrics")).finally(() => setLoading(false));
+    }, [activeOrganization]);
 
     const templates = {
         "1-30": "Olá! Notamos que o pagamento da sua parcela está em aberto (até 30 dias). Houve algum imprevisto? Podemos ajudar?",

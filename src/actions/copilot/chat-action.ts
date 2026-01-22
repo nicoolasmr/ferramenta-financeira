@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getAIProvider, AIContext } from "@/lib/ai/provider";
 import { AIMessage } from "@/lib/ai/schemas";
+import { createNotification } from "@/actions/notifications";
 
 export async function processChatMessage(
     messages: AIMessage[],
@@ -24,6 +25,14 @@ export async function processChatMessage(
 
         // If we have at least Name and Amount, offer Preview
         if (extracted.customer?.name && extracted.plan?.total_amount) {
+            await createNotification({
+                org_id: orgId,
+                title: "IA: Novo Plano Proposto",
+                message: `Identificamos uma oportunidade de matrícula para ${extracted.customer.name} no valor de R$ ${extracted.plan.total_amount}.`,
+                type: "info",
+                link: `/app/copilot`
+            });
+
             return {
                 text: "I've drafted a new enrollment based on your request. Please review and confirm.",
                 intent: "PREVIEW_ENROLLMENT",

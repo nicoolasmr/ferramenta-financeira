@@ -30,9 +30,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/actions/auth";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { activeOrganization, loading: orgLoading } = useOrganization();
 
     const links = [
         {
@@ -152,11 +154,13 @@ export function Sidebar() {
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-                                U
+                                {activeOrganization?.name?.[0] || 'U'}
                             </div>
                             <div className="text-sm flex-1 min-w-0">
                                 <p className="font-medium text-slate-900 truncate">User</p>
-                                <p className="text-xs text-slate-500 truncate">My Organization</p>
+                                <p className="text-xs text-slate-500 truncate">
+                                    {orgLoading ? 'Carregando...' : activeOrganization?.name || 'Nenhuma Organização'}
+                                </p>
                             </div>
                         </div>
 
@@ -176,12 +180,13 @@ export function Sidebar() {
                                         Tem certeza que deseja encerrar sua sessão? Você precisará fazer login novamente para acessar seus dados.
                                     </DialogDescription>
                                 </DialogHeader>
-                                <DialogFooter className="gap-2 sm:gap-0">
+                                <DialogFooter className="flex items-center gap-3 mt-6">
                                     <DialogClose asChild>
-                                        <Button variant="outline">Cancelar</Button>
+                                        <Button variant="outline" className="flex-1">Cancelar</Button>
                                     </DialogClose>
                                     <Button
                                         variant="destructive"
+                                        className="flex-1 shadow-md hover:shadow-lg transition-all"
                                         onClick={async () => {
                                             await signOut();
                                         }}

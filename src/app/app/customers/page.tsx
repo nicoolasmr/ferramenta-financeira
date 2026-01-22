@@ -18,6 +18,8 @@ import { DeleteDialog } from "@/components/dialogs/DeleteDialog";
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, type Customer } from "@/actions/customers";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 const columns: ColumnDef<Customer>[] = [
     {
@@ -126,24 +128,29 @@ function CustomerActions({ customer }: { customer: Customer }) {
 }
 
 export default function CustomersPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getCustomers("org-1")
+        if (!activeOrganization) return;
+
+        getCustomers(activeOrganization.id)
             .then(setCustomers)
             .catch(() => toast.error("Failed to load customers"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleCreate = async (data: Record<string, string>) => {
+        if (!activeOrganization) return;
+
         try {
             await createCustomer({
                 name: data.name,
                 email: data.email,
                 phone: data.phone,
                 document: data.document,
-                org_id: "org-1",
+                org_id: activeOrganization.id,
             });
             toast.success("Customer created successfully!");
             window.location.reload();
@@ -152,7 +159,8 @@ export default function CustomersPage() {
         }
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || (loading && customers.length === 0)) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     return (
         <div className="flex flex-col gap-6">

@@ -10,6 +10,7 @@ import { parseCSV } from "@/lib/import/csv";
 import { validateImportData, ImportRow } from "@/lib/import/mapping";
 import { processBulkImport } from "@/actions/copilot/bulk-import";
 import { toast } from "sonner";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 import {
     Table,
     TableBody,
@@ -21,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 export function ImportInterface() {
+    const { activeOrganization } = useOrganization();
     const [csvText, setCsvText] = useState("");
     const [previewData, setPreviewData] = useState<{ valid: ImportRow[], errors: any[] } | null>(null);
     const [loading, setLoading] = useState(false);
@@ -43,7 +45,7 @@ export function ImportInterface() {
         setLoading(true);
         try {
             // Hardcoded org/proj for MVP context
-            const res = await processBulkImport(previewData.valid, "org-1", "proj-1");
+            const res = await processBulkImport(previewData.valid, activeOrganization?.id || "org-1", "proj-1");
             setStats({ processed: res.processed, failed: res.failed });
             setStep("done");
             toast.success(`Import complete: ${res.processed} processed`);

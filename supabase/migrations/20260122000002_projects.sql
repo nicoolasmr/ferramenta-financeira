@@ -1,6 +1,15 @@
--- Create project environment and region enums
-CREATE TYPE project_environment AS ENUM ('production', 'development', 'staging');
-CREATE TYPE project_region AS ENUM ('gru1', 'us-east-1');
+-- Create project environment and region enums (idempotent)
+DO $$ BEGIN
+    CREATE TYPE project_environment AS ENUM ('production', 'development', 'staging');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE project_region AS ENUM ('gru1', 'us-east-1');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Create projects table
 CREATE TABLE IF NOT EXISTS public.projects (

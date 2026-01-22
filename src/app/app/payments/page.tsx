@@ -9,16 +9,21 @@ import { LoadingState } from "@/components/states/LoadingState";
 import { getPayments, getPaymentsSummary, exportPayments, type Payment } from "@/actions/payments";
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 export default function PaymentsPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [summary, setSummary] = useState({ total_received: 0, total_pending: 0, total_failed: 0 });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!activeOrganization) return;
+
         Promise.all([
-            getPayments("org-1"),
-            getPaymentsSummary("org-1"),
+            getPayments(activeOrganization.id),
+            getPaymentsSummary(activeOrganization.id),
         ])
             .then(([paymentsData, summaryData]) => {
                 setPayments(paymentsData);
@@ -26,11 +31,12 @@ export default function PaymentsPage() {
             })
             .catch(() => toast.error("Failed to load payments"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleExport = async () => {
+        if (!activeOrganization) return;
         try {
-            const csv = await exportPayments("org-1");
+            const csv = await exportPayments(activeOrganization.id);
             const blob = new Blob([csv], { type: "text/csv" });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -85,7 +91,8 @@ export default function PaymentsPage() {
         },
     ];
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     return (
         <div className="flex flex-col gap-6">

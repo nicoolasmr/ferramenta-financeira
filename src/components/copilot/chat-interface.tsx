@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Send, Sparkles, User, Bot, Check, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 
 type Message = {
     role: "user" | "assistant";
@@ -27,6 +28,7 @@ export function ChatInterface({
     mode?: "global" | "project" | "wizard",
     projectId?: string
 }) {
+    const { activeOrganization } = useOrganization();
     const [messages, setMessages] = useState<Message[]>([
         { role: "assistant", content: "Hello! I am your Financial Copilot. How can I help you today?" }
     ]);
@@ -51,7 +53,7 @@ export function ChatInterface({
             const history: AIMessage[] = messages.concat(newMsg).map(m => ({ role: m.role, content: m.content }));
 
             // Pass context to server action
-            const response = await processChatMessage(history, "org-1", mode, projectId);
+            const response = await processChatMessage(history, activeOrganization?.id || "org-1", mode, projectId);
 
             setMessages(prev => [...prev, {
                 role: "assistant",
@@ -68,7 +70,7 @@ export function ChatInterface({
 
     const handleConfirmEnrollment = async (data: any) => {
         try {
-            const result = await createEnrollmentPlan(data, "org-1");
+            const result = await createEnrollmentPlan(data, activeOrganization?.id || "org-1");
             if (result.success) {
                 toast.success("Enrollment created successfully!");
                 setMessages(prev => [...prev, { role: "assistant", content: "Enrollment Confirmed & Created! 🚀" }]);

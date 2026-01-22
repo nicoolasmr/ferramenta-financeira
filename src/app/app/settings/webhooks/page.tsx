@@ -23,24 +23,33 @@ import {
     type Webhook,
 } from "@/actions/webhooks";
 import { toast } from "sonner";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 export default function WebhooksPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [webhooks, setWebhooks] = useState<Webhook[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getWebhooks("org-1")
+        if (!activeOrganization) return;
+
+        getWebhooks(activeOrganization.id)
             .then(setWebhooks)
             .catch(() => toast.error("Failed to load webhooks"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleCreate = async (data: Record<string, string>) => {
+        if (!activeOrganization) {
+            toast.error("Organização não encontrada");
+            return;
+        }
         try {
             await createWebhook({
                 url: data.url,
                 events: data.events.split(",").map((e) => e.trim()),
-                org_id: "org-1",
+                org_id: activeOrganization.id,
             });
             toast.success("Webhook created!");
             window.location.reload();
@@ -85,7 +94,8 @@ export default function WebhooksPage() {
         }
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     return (
         <div className="flex flex-col gap-6">
@@ -127,8 +137,8 @@ export default function WebhooksPage() {
                                         <h3 className="font-semibold">{webhook.url}</h3>
                                         <span
                                             className={`px-2 py-1 rounded text-xs font-medium ${webhook.status === "active"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-slate-100 text-slate-700"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-slate-100 text-slate-700"
                                                 }`}
                                         >
                                             {webhook.status}

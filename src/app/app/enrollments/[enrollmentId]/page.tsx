@@ -18,11 +18,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MarkPaidDialog } from "@/components/enrollments/MarkPaidDialog";
 import { RenegotiateDialog } from "@/components/enrollments/RenegotiateDialog";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
+import { LoadingState } from "@/components/states/LoadingState";
 
 export default function EnrollmentProfilePage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const params = useParams();
     const enrollmentId = params.enrollmentId as string;
-
+    if (orgLoading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
     // Mock Data
     const enrollment = {
         id: enrollmentId,
@@ -174,7 +179,7 @@ export default function EnrollmentProfilePage() {
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                             {inst.status !== 'paid' && (
-                                                                <MarkPaidDialog orgId="org-1" installmentId={inst.id} enrollmentId={enrollmentId} amount={inst.amountNumeric}>
+                                                                <MarkPaidDialog orgId={activeOrganization.id} installmentId={inst.id} enrollmentId={enrollmentId} amount={inst.amountNumeric}>
                                                                     <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-green-600 cursor-pointer">
                                                                         <CheckCircle className="mr-2 h-4 w-4" /> Mark as Paid
                                                                     </DropdownMenuItem>
@@ -184,7 +189,7 @@ export default function EnrollmentProfilePage() {
                                                                 <CalendarDays className="mr-2 h-4 w-4" /> Change Due Date
                                                             </DropdownMenuItem>
                                                             <DropdownMenuSeparator />
-                                                            <RenegotiateDialog orgId="org-1" enrollmentId={enrollmentId} projectId="proj-1" selectedInstallments={[inst]}>
+                                                            <RenegotiateDialog orgId={activeOrganization.id} enrollmentId={enrollmentId} projectId="proj-1" selectedInstallments={[inst]}>
                                                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-orange-600 cursor-pointer">
                                                                     <DollarSign className="mr-2 h-4 w-4" /> Renegotiate
                                                                 </DropdownMenuItem>

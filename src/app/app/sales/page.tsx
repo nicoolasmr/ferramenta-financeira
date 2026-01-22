@@ -23,21 +23,30 @@ import {
     type SalesOpportunity,
 } from "@/actions/sales";
 import { toast } from "sonner";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { ErrorState } from "@/components/states/ErrorState";
 
 const STAGES = ["Lead", "Qualified", "Proposal", "Negotiation", "Closed Won", "Closed Lost"];
 
 export default function SalesPage() {
+    const { activeOrganization, loading: orgLoading } = useOrganization();
     const [opportunities, setOpportunities] = useState<SalesOpportunity[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getOpportunities("org-1")
+        if (!activeOrganization) return;
+
+        getOpportunities(activeOrganization.id)
             .then(setOpportunities)
             .catch(() => toast.error("Failed to load opportunities"))
             .finally(() => setLoading(false));
-    }, []);
+    }, [activeOrganization]);
 
     const handleCreate = async (data: Record<string, string>) => {
+        if (!activeOrganization) {
+            toast.error("Organização não encontrada");
+            return;
+        }
         try {
             await createOpportunity({
                 name: data.name,
@@ -46,7 +55,7 @@ export default function SalesPage() {
                 stage: data.stage,
                 probability: parseInt(data.probability),
                 expected_close_date: data.expected_close_date,
-                org_id: "org-1",
+                org_id: activeOrganization.id,
             });
             toast.success("Opportunity created!");
             window.location.reload();
@@ -91,7 +100,8 @@ export default function SalesPage() {
         }
     };
 
-    if (loading) return <LoadingState />;
+    if (orgLoading || loading) return <LoadingState />;
+    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
 
     const opportunitiesByStage = STAGES.reduce((acc, stage) => {
         acc[stage] = opportunities.filter((opp) => opp.stage === stage);

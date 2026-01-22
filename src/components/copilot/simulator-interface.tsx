@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Calculator, RefreshCw, TrendingDown, TrendingUp } from "lucide-react";
 import { processSimulation } from "@/actions/copilot/finance-actions";
 import { toast } from "sonner";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 
 export function SimulatorInterface() {
+    const { activeOrganization } = useOrganization();
     const [rate, setRate] = useState([10]); // 10%
     const [delay, setDelay] = useState([15]); // 15 days
     const [result, setResult] = useState<any>(null);
@@ -18,7 +20,7 @@ export function SimulatorInterface() {
     const handleRun = async () => {
         setLoading(true);
         try {
-            const res = await processSimulation("org-1", {
+            const res = await processSimulation(activeOrganization?.id || "org-1", {
                 monthsHorizon: 30,
                 defaultRate: rate[0] / 100,
                 delayDaysAvg: delay[0]
