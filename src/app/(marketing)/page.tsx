@@ -152,9 +152,11 @@ export default function LandingPage() {
                                 </Link>
                             </div>
                             <div className="bg-white p-2 rounded-xl border shadow-lg -rotate-1 hover:rotate-0 transition-transform duration-500">
-                                <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-300">
-                                    <p className="text-slate-400 font-medium text-sm">Screenshot: Reconciliation Delta Visual</p>
-                                </div>
+                                <img
+                                    src="/integrations-screenshot.png"
+                                    alt="RevenueOS Integrations Dashboard"
+                                    className="rounded-lg w-full"
+                                />
                             </div>
                         </div>
                     </div>
