@@ -113,11 +113,14 @@ DROP POLICY IF EXISTS "Org owners/admins can manage integrations" ON public.inte
 CREATE POLICY "Integrations_Select" ON public.integrations FOR SELECT USING (is_master_admin() OR is_org_member(org_id));
 CREATE POLICY "Integrations_Manage" ON public.integrations FOR ALL USING (is_master_admin() OR is_org_member(org_id));
 
-IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'webhook_inbox') THEN
-    ALTER TABLE public.webhook_inbox ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "Org owners/admins can view webhooks" ON public.webhook_inbox;
-    CREATE POLICY "Webhooks_Select" ON public.webhook_inbox FOR SELECT USING (is_master_admin() OR is_org_member(org_id));
-END IF;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'webhook_inbox') THEN
+        ALTER TABLE public.webhook_inbox ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "Org owners/admins can view webhooks" ON public.webhook_inbox;
+        CREATE POLICY "Webhooks_Select" ON public.webhook_inbox FOR SELECT USING (is_master_admin() OR is_org_member(org_id));
+    END IF;
+END $$;
 
 
 -- 9. AUDIT LOGS
