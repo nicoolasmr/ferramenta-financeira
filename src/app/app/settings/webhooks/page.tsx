@@ -1,91 +1,190 @@
 "use client";
 
-import { Webhook, Plus, CheckCircle, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, MoreHorizontal, Pencil, Trash2, TestTube } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CreateDialog } from "@/components/dialogs/CreateDialog";
+import { EditDialog } from "@/components/dialogs/EditDialog";
+import { DeleteDialog } from "@/components/dialogs/DeleteDialog";
+import { LoadingState } from "@/components/states/LoadingState";
 import { EmptyState } from "@/components/states/EmptyState";
-
-const webhooks = [
-    {
-        id: 1,
-        url: "https://api.example.com/webhooks/revenue",
-        events: ["payment.created", "payment.updated"],
-        status: "active",
-        lastDelivery: "2024-01-22 08:30:00",
-        successRate: 98.5,
-    },
-];
+import {
+    getWebhooks,
+    createWebhook,
+    updateWebhook,
+    deleteWebhook,
+    testWebhook,
+    type Webhook,
+} from "@/actions/webhooks";
+import { toast } from "sonner";
 
 export default function WebhooksPage() {
+    const [webhooks, setWebhooks] = useState<Webhook[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getWebhooks("org-1")
+            .then(setWebhooks)
+            .catch(() => toast.error("Failed to load webhooks"))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleCreate = async (data: Record<string, string>) => {
+        try {
+            await createWebhook({
+                url: data.url,
+                events: data.events.split(",").map((e) => e.trim()),
+                org_id: "org-1",
+            });
+            toast.success("Webhook created!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to create webhook");
+        }
+    };
+
+    const handleUpdate = async (id: string, data: Record<string, string>) => {
+        try {
+            await updateWebhook(id, {
+                url: data.url,
+                events: data.events.split(",").map((e) => e.trim()),
+            });
+            toast.success("Webhook updated!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to update webhook");
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteWebhook(id);
+            toast.success("Webhook deleted!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to delete webhook");
+        }
+    };
+
+    const handleTest = async (id: string) => {
+        try {
+            const result = await testWebhook(id);
+            if (result.success) {
+                toast.success("Webhook test successful!");
+            } else {
+                toast.error(`Webhook test failed: ${result.error || result.status}`);
+            }
+        } catch (error) {
+            toast.error("Failed to test webhook");
+        }
+    };
+
+    if (loading) return <LoadingState />;
+
     return (
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Webhooks</h1>
-                    <p className="text-slate-500">Receive real-time notifications</p>
+                    <p className="text-slate-500">Manage webhook endpoints and event subscriptions</p>
                 </div>
-                <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Webhook
-                </Button>
+                <CreateDialog
+                    title="Create Webhook"
+                    description="Add a new webhook endpoint"
+                    fields={[
+                        { name: "url", label: "Endpoint URL", type: "text", required: true },
+                        {
+                            name: "events",
+                            label: "Events (comma-separated)",
+                            type: "text",
+                            required: true,
+                            placeholder: "payment.created, payment.updated",
+                        },
+                    ]}
+                    onSubmit={handleCreate}
+                    triggerLabel="Add Webhook"
+                />
             </div>
 
             {webhooks.length === 0 ? (
                 <EmptyState
                     title="No webhooks configured"
-                    description="Create your first webhook to receive real-time notifications"
-                    icon={<Webhook className="w-6 h-6 text-slate-400" />}
-                    action={
-                        <Button>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Webhook
-                        </Button>
-                    }
+                    description="Start by adding your first webhook endpoint"
                 />
             ) : (
-                <div className="space-y-4">
+                <div className="grid gap-4">
                     {webhooks.map((webhook) => (
-                        <Card key={webhook.id}>
-                            <CardHeader>
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <CardTitle className="text-lg">{webhook.url}</CardTitle>
-                                            {webhook.status === "active" ? (
-                                                <Badge className="bg-green-100 text-green-700">
-                                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                                    Active
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="secondary">
-                                                    <XCircle className="h-3 w-3 mr-1" />
-                                                    Inactive
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <CardDescription>
-                                            Events: {webhook.events.join(", ")}
-                                        </CardDescription>
+                        <div key={webhook.id} className="bg-white rounded-lg border p-6">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <h3 className="font-semibold">{webhook.url}</h3>
+                                        <span
+                                            className={`px-2 py-1 rounded text-xs font-medium ${webhook.status === "active"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-slate-100 text-slate-700"
+                                                }`}
+                                        >
+                                            {webhook.status}
+                                        </span>
                                     </div>
-                                    <Button variant="outline" size="sm">
-                                        Configure
+                                    <p className="text-sm text-slate-600 mb-2">
+                                        Events: {webhook.events.join(", ")}
+                                    </p>
+                                    <div className="flex items-center gap-4 text-sm text-slate-500">
+                                        <span>Success Rate: {webhook.success_rate}%</span>
+                                        {webhook.last_delivery_at && (
+                                            <span>
+                                                Last Delivery: {new Date(webhook.last_delivery_at).toLocaleString()}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleTest(webhook.id)}
+                                    >
+                                        <TestTube className="h-4 w-4 mr-2" />
+                                        Test
                                     </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    handleUpdate(webhook.id, {
+                                                        url: webhook.url,
+                                                        events: webhook.events.join(", "),
+                                                    })
+                                                }
+                                            >
+                                                <Pencil className="h-4 w-4 mr-2" />
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => handleDelete(webhook.id)}
+                                                className="text-red-600"
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <p className="text-slate-500">Last Delivery</p>
-                                        <p className="font-medium">{webhook.lastDelivery}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-500">Success Rate</p>
-                                        <p className="font-medium">{webhook.successRate}%</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
                     ))}
                 </div>
             )}

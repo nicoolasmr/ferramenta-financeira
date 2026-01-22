@@ -1,65 +1,202 @@
 "use client";
 
-import { TrendingUp, Users, DollarSign } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { Plus, MoreHorizontal, Pencil, Trash2, MoveRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CreateDialog } from "@/components/dialogs/CreateDialog";
+import { EditDialog } from "@/components/dialogs/EditDialog";
+import { DeleteDialog } from "@/components/dialogs/DeleteDialog";
+import { LoadingState } from "@/components/states/LoadingState";
+import { EmptyState } from "@/components/states/EmptyState";
+import {
+    getOpportunities,
+    createOpportunity,
+    updateOpportunity,
+    deleteOpportunity,
+    moveOpportunityStage,
+    type SalesOpportunity,
+} from "@/actions/sales";
+import { toast } from "sonner";
 
-const funnelStages = [
-    { name: "Leads", count: 150, value: 0, icon: Users },
-    { name: "Qualified", count: 80, value: 0, icon: TrendingUp },
-    { name: "Proposal", count: 45, value: 225000, icon: DollarSign },
-    { name: "Negotiation", count: 25, value: 187500, icon: DollarSign },
-    { name: "Closed Won", count: 15, value: 150000, icon: DollarSign },
-];
+const STAGES = ["Lead", "Qualified", "Proposal", "Negotiation", "Closed Won", "Closed Lost"];
 
-export default function SalesFunnelPage() {
+export default function SalesPage() {
+    const [opportunities, setOpportunities] = useState<SalesOpportunity[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getOpportunities("org-1")
+            .then(setOpportunities)
+            .catch(() => toast.error("Failed to load opportunities"))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleCreate = async (data: Record<string, string>) => {
+        try {
+            await createOpportunity({
+                name: data.name,
+                customer_id: data.customer_id || "cust-1",
+                value: parseFloat(data.value),
+                stage: data.stage,
+                probability: parseInt(data.probability),
+                expected_close_date: data.expected_close_date,
+                org_id: "org-1",
+            });
+            toast.success("Opportunity created!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to create opportunity");
+        }
+    };
+
+    const handleUpdate = async (id: string, data: Record<string, string>) => {
+        try {
+            await updateOpportunity(id, {
+                name: data.name,
+                value: parseFloat(data.value),
+                stage: data.stage,
+                probability: parseInt(data.probability),
+                expected_close_date: data.expected_close_date,
+            });
+            toast.success("Opportunity updated!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to update opportunity");
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteOpportunity(id);
+            toast.success("Opportunity deleted!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to delete opportunity");
+        }
+    };
+
+    const handleMoveStage = async (id: string, newStage: string) => {
+        try {
+            await moveOpportunityStage(id, newStage);
+            toast.success("Stage updated!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to move stage");
+        }
+    };
+
+    if (loading) return <LoadingState />;
+
+    const opportunitiesByStage = STAGES.reduce((acc, stage) => {
+        acc[stage] = opportunities.filter((opp) => opp.stage === stage);
+        return acc;
+    }, {} as Record<string, SalesOpportunity[]>);
+
+    const totalValue = opportunities.reduce((sum, opp) => sum + opp.value, 0);
+
     return (
         <div className="flex flex-col gap-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Sales Funnel</h1>
-                <p className="text-slate-500">Track your sales pipeline</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Sales Funnel</h1>
+                    <p className="text-slate-500">
+                        Total Pipeline: R$ {totalValue.toLocaleString("pt-BR")}
+                    </p>
+                </div>
+                <CreateDialog
+                    title="Create Opportunity"
+                    description="Add a new sales opportunity"
+                    fields={[
+                        { name: "name", label: "Opportunity Name", type: "text", required: true },
+                        { name: "value", label: "Value (R$)", type: "number", required: true },
+                        { name: "probability", label: "Probability (%)", type: "number", required: true },
+                        { name: "expected_close_date", label: "Expected Close Date", type: "text", required: true },
+                    ]}
+                    onSubmit={handleCreate}
+                    triggerLabel="Add Opportunity"
+                />
             </div>
 
-            <div className="grid gap-4">
-                {funnelStages.map((stage, index) => {
-                    const Icon = stage.icon;
-                    const conversionRate = index > 0
-                        ? ((stage.count / funnelStages[index - 1].count) * 100).toFixed(1)
-                        : "100.0";
+            {opportunities.length === 0 ? (
+                <EmptyState
+                    title="No opportunities yet"
+                    description="Start by creating your first sales opportunity"
+                />
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    {STAGES.map((stage) => (
+                        <div key={stage} className="bg-white rounded-lg border p-4">
+                            <h3 className="font-semibold mb-4">{stage}</h3>
+                            <div className="space-y-2">
+                                {opportunitiesByStage[stage]?.map((opp) => (
+                                    <OpportunityCard
+                                        key={opp.id}
+                                        opportunity={opp}
+                                        onUpdate={handleUpdate}
+                                        onDelete={handleDelete}
+                                        onMoveStage={handleMoveStage}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
-                    return (
-                        <Card key={stage.name}>
-                            <CardHeader className="pb-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                                            <Icon className="w-5 h-5 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-lg">{stage.name}</CardTitle>
-                                            <p className="text-sm text-slate-500">
-                                                {stage.count} opportunities
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-2xl font-bold">
-                                            {stage.value > 0
-                                                ? new Intl.NumberFormat("pt-BR", {
-                                                    style: "currency",
-                                                    currency: "BRL",
-                                                }).format(stage.value)
-                                                : "-"}
-                                        </div>
-                                        <p className="text-sm text-slate-500">
-                                            {conversionRate}% conversion
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                        </Card>
-                    );
-                })}
+function OpportunityCard({
+    opportunity,
+    onUpdate,
+    onDelete,
+    onMoveStage,
+}: {
+    opportunity: SalesOpportunity;
+    onUpdate: (id: string, data: Record<string, string>) => void;
+    onDelete: (id: string) => void;
+    onMoveStage: (id: string, newStage: string) => void;
+}) {
+    return (
+        <div className="p-3 border rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
+            <div className="flex items-start justify-between mb-2">
+                <p className="font-medium text-sm">{opportunity.name}</p>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem
+                            onClick={() =>
+                                onUpdate(opportunity.id, {
+                                    name: opportunity.name,
+                                    value: String(opportunity.value),
+                                    stage: opportunity.stage,
+                                    probability: String(opportunity.probability),
+                                    expected_close_date: opportunity.expected_close_date,
+                                })
+                            }
+                        >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDelete(opportunity.id)} className="text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
+            <p className="text-sm text-slate-600">R$ {opportunity.value.toLocaleString("pt-BR")}</p>
+            <p className="text-xs text-slate-500">{opportunity.probability}% probability</p>
         </div>
     );
 }
