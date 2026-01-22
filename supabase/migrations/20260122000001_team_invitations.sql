@@ -33,7 +33,7 @@ CREATE POLICY "Users can view invitations for their organizations"
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid()
     )
   );
@@ -44,7 +44,7 @@ CREATE POLICY "Owners and admins can create invitations"
   WITH CHECK (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
     )
@@ -56,7 +56,7 @@ CREATE POLICY "Owners and admins can delete invitations"
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
     )
@@ -82,7 +82,7 @@ BEGIN
 
   -- Check if user is already a member
   IF EXISTS (
-    SELECT 1 FROM organization_members
+    SELECT 1 FROM memberships
     WHERE org_id = invitation.org_id
     AND user_id = auth.uid()
   ) THEN
@@ -90,7 +90,7 @@ BEGIN
   END IF;
 
   -- Add user as member
-  INSERT INTO organization_members (org_id, user_id, role, invited_by)
+  INSERT INTO memberships (org_id, user_id, role, invited_by)
   VALUES (invitation.org_id, auth.uid(), invitation.role, invitation.created_by)
   RETURNING id INTO new_member_id;
 

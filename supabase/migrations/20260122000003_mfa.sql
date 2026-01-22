@@ -43,7 +43,7 @@ CREATE POLICY "Users can view security settings of their organizations"
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid()
     )
   );
@@ -54,7 +54,7 @@ CREATE POLICY "Owners can update security settings"
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid() 
       AND role = 'owner'
     )

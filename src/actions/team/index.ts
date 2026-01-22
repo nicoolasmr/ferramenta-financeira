@@ -26,7 +26,7 @@ export interface TeamMember {
 export async function getTeamMembers(orgId: string): Promise<TeamMember[]> {
     const supabase = await createClient();
     const { data, error } = await supabase
-        .from("organization_members")
+        .from("memberships")
         .select("*")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false });
@@ -75,7 +75,7 @@ export async function inviteTeamMember(formData: {
 export async function updateMemberRole(memberId: string, role: "owner" | "admin" | "member") {
     const supabase = await createClient();
     const { error } = await supabase
-        .from("organization_members")
+        .from("memberships")
         .update({ role })
         .eq("id", memberId);
 
@@ -86,7 +86,7 @@ export async function updateMemberRole(memberId: string, role: "owner" | "admin"
 export async function removeMember(memberId: string) {
     const supabase = await createClient();
     const { error } = await supabase
-        .from("organization_members")
+        .from("memberships")
         .delete()
         .eq("id", memberId);
 
@@ -141,7 +141,7 @@ export async function acceptInvitation(token: string) {
     if (!user) throw new Error("Not authenticated");
 
     // 4. Create membership
-    const { error: memError } = await supabase.from("organization_members").insert({
+    const { error: memError } = await supabase.from("memberships").insert({
         org_id: invitation.org_id,
         user_id: user.id,
         role: invitation.role,

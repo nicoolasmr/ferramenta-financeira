@@ -47,7 +47,7 @@ export async function getUserOrganizations(): Promise<Organization[]> {
         .from('organizations')
         .select(`
       *,
-      organization_members!inner(user_id)
+      memberships!inner(user_id)
     `)
         .order('created_at', { ascending: false });
 
@@ -78,7 +78,7 @@ export async function getOrganizationMembers(
     const supabase = await createClient();
 
     const { data, error } = await supabase
-        .from('organization_members')
+        .from('memberships')
         .select('*')
         .eq('org_id', organizationId)
         .order('created_at', { ascending: true });
@@ -156,7 +156,7 @@ export async function removeMember(memberId: string): Promise<void> {
     const supabase = await createClient();
 
     const { error } = await supabase
-        .from('organization_members')
+        .from('memberships')
         .delete()
         .eq('id', memberId);
 
@@ -170,7 +170,7 @@ export async function updateMemberRole(
     const supabase = await createClient();
 
     const { data, error } = await supabase
-        .from('organization_members')
+        .from('memberships')
         .update({ role })
         .eq('id', memberId)
         .select()

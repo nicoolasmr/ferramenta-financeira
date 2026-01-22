@@ -74,7 +74,7 @@ CREATE POLICY "Users can view projects from their organizations"
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid()
     )
   );
@@ -85,7 +85,7 @@ CREATE POLICY "Owners and admins can create projects"
   WITH CHECK (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
     )
@@ -97,7 +97,7 @@ CREATE POLICY "Owners and admins can update projects"
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
     )
@@ -109,7 +109,7 @@ CREATE POLICY "Owners can delete projects"
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid() 
       AND role = 'owner'
     )
@@ -123,7 +123,7 @@ CREATE POLICY "Users can view API keys for their projects"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.org_id = p.org_id
+      JOIN memberships om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid()
     )
   );
@@ -135,7 +135,7 @@ CREATE POLICY "Owners and admins can manage API keys"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.org_id = p.org_id
+      JOIN memberships om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid() 
       AND om.role IN ('owner', 'admin')
     )

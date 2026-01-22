@@ -29,39 +29,31 @@ BEGIN
     END IF;
 END $$;
 
--- Create organization_members table
-CREATE TABLE IF NOT EXISTS public.organization_members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Ensure correct column name in organization_members (idempotent rename)
+-- Ensure memberships table has required columns for advanced features
 DO $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organization_members' AND column_name='organization_id') THEN
-        ALTER TABLE public.organization_members RENAME COLUMN organization_id TO org_id;
+    -- Rename column if needed (already handled previously but good to keep for safety)
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='memberships' AND column_name='organization_id') THEN
+        ALTER TABLE public.memberships RENAME COLUMN organization_id TO org_id;
     END IF;
-    
-    -- Also ensure other expected columns exist if they was missing from an older version
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organization_members' AND column_name='invited_by') THEN
-        ALTER TABLE public.organization_members ADD COLUMN invited_by UUID REFERENCES auth.users(id);
+
+    -- Add missing columns for invitations and joining
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='memberships' AND column_name='invited_by') THEN
+        ALTER TABLE public.memberships ADD COLUMN invited_by UUID REFERENCES auth.users(id);
     END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organization_members' AND column_name='joined_at') THEN
-        ALTER TABLE public.organization_members ADD COLUMN joined_at TIMESTAMPTZ DEFAULT NOW();
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='memberships' AND column_name='joined_at') THEN
+        ALTER TABLE public.memberships ADD COLUMN joined_at TIMESTAMPTZ DEFAULT NOW();
     END IF;
 END $$;
 
 -- Create indexes for performance
-CREATE INDEX IF NOT EXISTS idx_org_members_org_id ON organization_members(org_id);
-CREATE INDEX IF NOT EXISTS idx_org_members_user_id ON organization_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_memberships_org_id ON memberships(org_id);
+CREATE INDEX IF NOT EXISTS idx_memberships_user_id ON memberships(user_id);
 CREATE INDEX IF NOT EXISTS idx_organizations_tax_id ON organizations(tax_id) WHERE tax_id IS NOT NULL;
 
 -- Enable RLS
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE organization_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE memberships ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for organizations
 DROP POLICY IF EXISTS "Users can view organizations they are members of" ON organizations;
@@ -70,7 +62,7 @@ CREATE POLICY "Users can view organizations they are members of"
   USING (
     id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid()
     )
   );
@@ -81,7 +73,7 @@ CREATE POLICY "Owners and admins can update their organization"
   USING (
     id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
     )
@@ -92,25 +84,25 @@ CREATE POLICY "Authenticated users can create organizations"
   ON organizations FOR INSERT
   WITH CHECK (auth.uid() IS NOT NULL);
 
--- RLS Policies for organization_members
-DROP POLICY IF EXISTS "Users can view members of their organizations" ON organization_members;
+-- RLS Policies for memberships
+DROP POLICY IF EXISTS "Users can view members of their organizations" ON memberships;
 CREATE POLICY "Users can view members of their organizations"
-  ON organization_members FOR SELECT
+  ON memberships FOR SELECT
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid()
     )
   );
 
-DROP POLICY IF EXISTS "Owners and admins can manage members" ON organization_members;
+DROP POLICY IF EXISTS "Owners and admins can manage members" ON memberships;
 CREATE POLICY "Owners and admins can manage members"
-  ON organization_members FOR ALL
+  ON memberships FOR ALL
   USING (
     org_id IN (
       SELECT org_id 
-      FROM organization_members 
+      FROM memberships 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
     )
@@ -120,7 +112,7 @@ CREATE POLICY "Owners and admins can manage members"
 CREATE OR REPLACE FUNCTION add_creator_as_owner()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO organization_members (org_id, user_id, role)
+  INSERT INTO memberships (org_id, user_id, role)
   VALUES (NEW.id, auth.uid(), 'owner');
   RETURN NEW;
 END;
