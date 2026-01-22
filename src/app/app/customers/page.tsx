@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -15,6 +15,7 @@ import { LoadingState } from "@/components/states/LoadingState";
 import { CreateDialog } from "@/components/dialogs/CreateDialog";
 import { EditDialog } from "@/components/dialogs/EditDialog";
 import { DeleteDialog } from "@/components/dialogs/DeleteDialog";
+import { ExportDialog } from "@/components/customers/export-dialog";
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, type Customer } from "@/actions/customers";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
@@ -169,18 +170,25 @@ export default function CustomersPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
                     <p className="text-slate-500">Manage your customer database</p>
                 </div>
-                <CreateDialog
-                    title="Add Customer"
-                    description="Create a new customer record"
-                    fields={[
-                        { name: "name", label: "Name", type: "text", required: true },
-                        { name: "email", label: "Email", type: "email" },
-                        { name: "phone", label: "Phone", type: "text" },
-                        { name: "document", label: "Document (CPF/CNPJ)", type: "text" },
-                    ]}
-                    onSubmit={handleCreate}
-                    triggerLabel="Add Customer"
-                />
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={() => window.location.href = '/app/customers/import'}>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Import CSV
+                    </Button>
+                    <ExportDialog orgId={activeOrganization.id} />
+                    <CreateDialog
+                        title="Add Customer"
+                        description="Create a new customer record"
+                        fields={[
+                            { name: "name", label: "Name", type: "text", required: true },
+                            { name: "email", label: "Email", type: "email" },
+                            { name: "phone", label: "Phone", type: "text" },
+                            { name: "document", label: "Document (CPF/CNPJ)", type: "text" },
+                        ]}
+                        onSubmit={handleCreate}
+                        triggerLabel="Add Customer"
+                    />
+                </div>
             </div>
 
             {customers.length === 0 ? (
