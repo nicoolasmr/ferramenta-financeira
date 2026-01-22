@@ -80,7 +80,7 @@ export async function getOrganizationMembers(
     const { data, error } = await supabase
         .from('organization_members')
         .select('*')
-        .eq('organization_id', organizationId)
+        .eq('org_id', organizationId)
         .order('created_at', { ascending: true });
 
     if (error) throw error;
@@ -95,7 +95,7 @@ export async function inviteTeamMember(
     const { data, error } = await supabase
         .from('team_invitations')
         .insert({
-            organization_id: input.organization_id,
+            org_id: input.org_id,
             email: input.email,
             role: input.role,
         })
@@ -114,7 +114,7 @@ export async function getTeamInvitations(
     const { data, error } = await supabase
         .from('team_invitations')
         .select('*')
-        .eq('organization_id', organizationId)
+        .eq('org_id', organizationId)
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
@@ -125,7 +125,7 @@ export async function getTeamInvitations(
 
 export async function acceptInvitation(token: string): Promise<{
     success: boolean;
-    organization_id?: string;
+    org_id?: string;
     error?: string;
 }> {
     const supabase = await createClient();

@@ -1,7 +1,7 @@
 -- Create team invitations table
 CREATE TABLE IF NOT EXISTS team_invitations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
   token TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
@@ -9,12 +9,12 @@ CREATE TABLE IF NOT EXISTS team_invitations (
   created_by UUID REFERENCES auth.users(id),
   accepted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(organization_id, email)
+  UNIQUE(org_id, email)
 );
 
 -- Create index for token lookups
 CREATE INDEX IF NOT EXISTS idx_team_invitations_token ON team_invitations(token) WHERE accepted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_team_invitations_org_id ON team_invitations(organization_id);
+CREATE INDEX IF NOT EXISTS idx_team_invitations_org_id ON team_invitations(org_id);
 
 -- Enable RLS
 ALTER TABLE team_invitations ENABLE ROW LEVEL SECURITY;
@@ -24,8 +24,8 @@ DROP POLICY IF EXISTS "Users can view invitations for their organizations" ON te
 CREATE POLICY "Users can view invitations for their organizations"
   ON team_invitations FOR SELECT
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid()
     )
@@ -35,8 +35,8 @@ DROP POLICY IF EXISTS "Owners and admins can create invitations" ON team_invitat
 CREATE POLICY "Owners and admins can create invitations"
   ON team_invitations FOR INSERT
   WITH CHECK (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
@@ -47,8 +47,8 @@ DROP POLICY IF EXISTS "Owners and admins can delete invitations" ON team_invitat
 CREATE POLICY "Owners and admins can delete invitations"
   ON team_invitations FOR DELETE
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
@@ -76,15 +76,15 @@ BEGIN
   -- Check if user is already a member
   IF EXISTS (
     SELECT 1 FROM organization_members
-    WHERE organization_id = invitation.organization_id
+    WHERE org_id = invitation.org_id
     AND user_id = auth.uid()
   ) THEN
     RETURN jsonb_build_object('success', false, 'error', 'Already a member');
   END IF;
 
   -- Add user as member
-  INSERT INTO organization_members (organization_id, user_id, role, invited_by)
-  VALUES (invitation.organization_id, auth.uid(), invitation.role, invitation.created_by)
+  INSERT INTO organization_members (org_id, user_id, role, invited_by)
+  VALUES (invitation.org_id, auth.uid(), invitation.role, invitation.created_by)
   RETURNING id INTO new_member_id;
 
   -- Mark invitation as accepted
@@ -94,7 +94,7 @@ BEGIN
 
   RETURN jsonb_build_object(
     'success', true,
-    'organization_id', invitation.organization_id,
+    'org_id', invitation.org_id,
     'member_id', new_member_id
   );
 END;

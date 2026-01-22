@@ -9,7 +9,7 @@ export async function getDashboardMetrics(orgId: string) {
     const { count: projectsCount } = await supabase
         .from("projects")
         .select("*", { count: "exact", head: true })
-        .eq("organization_id", orgId);
+        .eq("org_id", orgId);
 
     // Get total customers
     const { count: customersCount } = await supabase
@@ -28,7 +28,7 @@ export async function getDashboardMetrics(orgId: string) {
     const { data: recentProjects } = await supabase
         .from("projects")
         .select("id, name, status, created_at")
-        .eq("organization_id", orgId)
+        .eq("org_id", orgId)
         .order("created_at", { ascending: false })
         .limit(5);
 

@@ -3,7 +3,7 @@ export type ProjectRegion = 'gru1' | 'us-east-1';
 
 export interface Project {
     id: string;
-    organization_id: string;
+    org_id: string;
     name: string;
     slug: string;
     environment: ProjectEnvironment;
@@ -37,7 +37,7 @@ export interface ProjectApiKey {
 }
 
 export interface CreateProjectInput {
-    organization_id: string;
+    org_id: string;
     name: string;
     environment?: ProjectEnvironment;
     region?: ProjectRegion;

@@ -48,7 +48,7 @@ CREATE POLICY "Users can view integrations for their projects"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid()
     )
   );
@@ -60,7 +60,7 @@ CREATE POLICY "Admins can manage integrations"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid() 
       AND om.role IN ('owner', 'admin')
     )
@@ -74,7 +74,7 @@ CREATE POLICY "Users can view events for their integrations"
       SELECT gi.id 
       FROM gateway_integrations gi
       JOIN projects p ON p.id = gi.project_id
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid()
     )
   );

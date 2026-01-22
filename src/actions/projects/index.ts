@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 export interface Project {
     id: string;
-    organization_id: string;
+    org_id: string;
     name: string;
     description: string | null;
     status: string;
@@ -20,7 +20,7 @@ export async function getProjects(orgId: string): Promise<Project[]> {
     const { data, error } = await supabase
         .from("projects")
         .select("*")
-        .eq("organization_id", orgId)
+        .eq("org_id", orgId)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -51,7 +51,7 @@ export async function getProjectById(id: string): Promise<Project | null> {
 export async function createProject(formData: {
     name: string;
     description?: string;
-    organization_id: string;
+    org_id: string;
 }) {
     const supabase = await createClient();
 
@@ -60,7 +60,7 @@ export async function createProject(formData: {
         .insert({
             name: formData.name,
             description: formData.description || null,
-            organization_id: formData.organization_id,
+            org_id: formData.org_id,
             status: "active",
             settings: {},
         })

@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS copilot_suggestions (
 -- Create audit logs table
 CREATE TABLE IF NOT EXISTS audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   user_id UUID REFERENCES auth.users(id),
   action TEXT NOT NULL,
   resource_type TEXT NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS system_settings (
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_copilot_suggestions_project ON copilot_suggestions(project_id) WHERE dismissed_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_audit_logs_org ON audit_logs(organization_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_org ON audit_logs(org_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_system_settings_project ON system_settings(project_id);
 
@@ -59,7 +59,7 @@ CREATE POLICY "Users can view copilot suggestions for their projects"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid()
     )
   );
@@ -68,8 +68,8 @@ DROP POLICY IF EXISTS "Users can view audit logs for their organizations" ON aud
 CREATE POLICY "Users can view audit logs for their organizations"
   ON audit_logs FOR SELECT
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid()
     )
@@ -82,7 +82,7 @@ CREATE POLICY "Admins can manage system settings"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid()
       AND om.role IN ('owner', 'admin')
     )
@@ -90,7 +90,7 @@ CREATE POLICY "Admins can manage system settings"
 
 -- Function to log audit events
 CREATE OR REPLACE FUNCTION log_audit_event(
-  p_organization_id UUID,
+  p_org_id UUID,
   p_action TEXT,
   p_resource_type TEXT,
   p_resource_id UUID DEFAULT NULL,
@@ -101,14 +101,14 @@ DECLARE
   v_log_id UUID;
 BEGIN
   INSERT INTO audit_logs (
-    organization_id,
+    org_id,
     user_id,
     action,
     resource_type,
     resource_id,
     metadata
   ) VALUES (
-    p_organization_id,
+    p_org_id,
     auth.uid(),
     p_action,
     p_resource_type,

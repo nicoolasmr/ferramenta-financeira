@@ -14,13 +14,13 @@ export async function createProject(input: CreateProjectInput): Promise<Project>
     // Generate slug
     const { data: slugData } = await supabase.rpc('generate_project_slug', {
         project_name: input.name,
-        org_id: input.organization_id,
+        org_id: input.org_id,
     });
 
     const { data, error } = await supabase
         .from('projects')
         .insert({
-            organization_id: input.organization_id,
+            org_id: input.org_id,
             name: input.name,
             slug: slugData,
             environment: input.environment || 'production',
@@ -52,7 +52,7 @@ export async function getOrganizationProjects(organizationId: string): Promise<P
     const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('organization_id', organizationId)
+        .eq('org_id', organizationId)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 

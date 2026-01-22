@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS user_mfa_secrets (
 
 -- Create organization security settings
 CREATE TABLE IF NOT EXISTS organization_security_settings (
-  organization_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
+  org_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
   enforce_mfa BOOLEAN DEFAULT FALSE,
   mfa_grace_period_days INT DEFAULT 7,
   session_timeout_minutes INT DEFAULT 480, -- 8 hours
@@ -33,8 +33,8 @@ DROP POLICY IF EXISTS "Users can view security settings of their organizations" 
 CREATE POLICY "Users can view security settings of their organizations"
   ON organization_security_settings FOR SELECT
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid()
     )
@@ -44,8 +44,8 @@ DROP POLICY IF EXISTS "Owners can update security settings" ON organization_secu
 CREATE POLICY "Owners can update security settings"
   ON organization_security_settings FOR ALL
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid() 
       AND role = 'owner'

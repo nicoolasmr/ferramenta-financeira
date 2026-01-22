@@ -43,7 +43,7 @@ CREATE POLICY "Users can manage webhooks for their projects"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid()
       AND om.role IN ('owner', 'admin', 'developer')
     )
@@ -57,7 +57,7 @@ CREATE POLICY "Users can view deliveries for their webhooks"
       SELECT we.id 
       FROM webhook_endpoints we
       JOIN projects p ON p.id = we.project_id
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid()
     )
   );

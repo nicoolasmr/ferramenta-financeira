@@ -30,7 +30,7 @@ export interface Organization {
 
 export interface OrganizationMember {
     id: string;
-    organization_id: string;
+    org_id: string;
     user_id: string;
     role: OrganizationRole;
     invited_by: string | null;
@@ -40,7 +40,7 @@ export interface OrganizationMember {
 
 export interface TeamInvitation {
     id: string;
-    organization_id: string;
+    org_id: string;
     email: string;
     role: OrganizationRole;
     token: string;
@@ -68,7 +68,7 @@ export interface UpdateOrganizationInput {
 }
 
 export interface InviteTeamMemberInput {
-    organization_id: string;
+    org_id: string;
     email: string;
     role: OrganizationRole;
 }

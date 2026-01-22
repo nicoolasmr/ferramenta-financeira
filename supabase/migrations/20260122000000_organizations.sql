@@ -32,17 +32,17 @@ END $$;
 -- Create organization_members table
 CREATE TABLE IF NOT EXISTS organization_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
   invited_by UUID REFERENCES auth.users(id),
   joined_at TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(organization_id, user_id)
+  UNIQUE(org_id, user_id)
 );
 
 -- Create indexes for performance
-CREATE INDEX IF NOT EXISTS idx_org_members_org_id ON organization_members(organization_id);
+CREATE INDEX IF NOT EXISTS idx_org_members_org_id ON organization_members(org_id);
 CREATE INDEX IF NOT EXISTS idx_org_members_user_id ON organization_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_organizations_tax_id ON organizations(tax_id) WHERE tax_id IS NOT NULL;
 
@@ -56,7 +56,7 @@ CREATE POLICY "Users can view organizations they are members of"
   ON organizations FOR SELECT
   USING (
     id IN (
-      SELECT organization_id 
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid()
     )
@@ -67,7 +67,7 @@ CREATE POLICY "Owners and admins can update their organization"
   ON organizations FOR UPDATE
   USING (
     id IN (
-      SELECT organization_id 
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
@@ -84,8 +84,8 @@ DROP POLICY IF EXISTS "Users can view members of their organizations" ON organiz
 CREATE POLICY "Users can view members of their organizations"
   ON organization_members FOR SELECT
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid()
     )
@@ -95,8 +95,8 @@ DROP POLICY IF EXISTS "Owners and admins can manage members" ON organization_mem
 CREATE POLICY "Owners and admins can manage members"
   ON organization_members FOR ALL
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
@@ -107,7 +107,7 @@ CREATE POLICY "Owners and admins can manage members"
 CREATE OR REPLACE FUNCTION add_creator_as_owner()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO organization_members (organization_id, user_id, role)
+  INSERT INTO organization_members (org_id, user_id, role)
   VALUES (NEW.id, auth.uid(), 'owner');
   RETURN NEW;
 END;

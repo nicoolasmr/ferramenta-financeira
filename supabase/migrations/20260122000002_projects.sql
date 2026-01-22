@@ -5,7 +5,7 @@ CREATE TYPE project_region AS ENUM ('gru1', 'us-east-1');
 -- Create projects table
 CREATE TABLE IF NOT EXISTS public.projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS project_api_keys (
 );
 
 -- Create indexes
-CREATE INDEX IF NOT EXISTS idx_projects_org_id ON projects(organization_id);
-CREATE INDEX IF NOT EXISTS idx_projects_slug ON projects(organization_id, slug);
+CREATE INDEX IF NOT EXISTS idx_projects_org_id ON projects(org_id);
+CREATE INDEX IF NOT EXISTS idx_projects_slug ON projects(org_id, slug);
 CREATE INDEX IF NOT EXISTS idx_project_api_keys_project_id ON project_api_keys(project_id);
 CREATE INDEX IF NOT EXISTS idx_project_api_keys_hash ON project_api_keys(key_hash) WHERE revoked_at IS NULL;
 
@@ -64,8 +64,8 @@ DROP POLICY IF EXISTS "Users can view projects from their organizations" ON proj
 CREATE POLICY "Users can view projects from their organizations"
   ON projects FOR SELECT
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid()
     )
@@ -75,8 +75,8 @@ DROP POLICY IF EXISTS "Owners and admins can create projects" ON projects;
 CREATE POLICY "Owners and admins can create projects"
   ON projects FOR INSERT
   WITH CHECK (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
@@ -87,8 +87,8 @@ DROP POLICY IF EXISTS "Owners and admins can update projects" ON projects;
 CREATE POLICY "Owners and admins can update projects"
   ON projects FOR UPDATE
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid() 
       AND role IN ('owner', 'admin')
@@ -99,8 +99,8 @@ DROP POLICY IF EXISTS "Owners can delete projects" ON projects;
 CREATE POLICY "Owners can delete projects"
   ON projects FOR DELETE
   USING (
-    organization_id IN (
-      SELECT organization_id 
+    org_id IN (
+      SELECT org_id 
       FROM organization_members 
       WHERE user_id = auth.uid() 
       AND role = 'owner'
@@ -115,7 +115,7 @@ CREATE POLICY "Users can view API keys for their projects"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid()
     )
   );
@@ -127,7 +127,7 @@ CREATE POLICY "Owners and admins can manage API keys"
     project_id IN (
       SELECT p.id 
       FROM projects p
-      JOIN organization_members om ON om.organization_id = p.organization_id
+      JOIN organization_members om ON om.org_id = p.org_id
       WHERE om.user_id = auth.uid() 
       AND om.role IN ('owner', 'admin')
     )
@@ -148,7 +148,7 @@ BEGIN
   final_slug := base_slug;
   
   -- Check for uniqueness and append counter if needed
-  WHILE EXISTS (SELECT 1 FROM projects WHERE organization_id = org_id AND slug = final_slug) LOOP
+  WHILE EXISTS (SELECT 1 FROM projects WHERE org_id = org_id AND slug = final_slug) LOOP
     counter := counter + 1;
     final_slug := base_slug || '-' || counter;
   END LOOP;
