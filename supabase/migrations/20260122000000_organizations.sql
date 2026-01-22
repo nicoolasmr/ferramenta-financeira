@@ -1,15 +1,33 @@
 -- Create organizations table
-CREATE TABLE IF NOT EXISTS organizations (
+CREATE TABLE IF NOT EXISTS public.organizations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  legal_name TEXT,
-  tax_id TEXT UNIQUE, -- CNPJ/Tax ID
-  address JSONB,
-  fiscal_data JSONB, -- Additional fiscal information
-  settings JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  slug TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure extended columns exist (idempotent)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organizations' AND column_name='legal_name') THEN
+        ALTER TABLE public.organizations ADD COLUMN legal_name TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organizations' AND column_name='tax_id') THEN
+        ALTER TABLE public.organizations ADD COLUMN tax_id TEXT UNIQUE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organizations' AND column_name='address') THEN
+        ALTER TABLE public.organizations ADD COLUMN address JSONB;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organizations' AND column_name='fiscal_data') THEN
+        ALTER TABLE public.organizations ADD COLUMN fiscal_data JSONB;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organizations' AND column_name='settings') THEN
+        ALTER TABLE public.organizations ADD COLUMN settings JSONB DEFAULT '{}'::jsonb;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organizations' AND column_name='updated_at') THEN
+        ALTER TABLE public.organizations ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+END $$;
 
 -- Create organization_members table
 CREATE TABLE IF NOT EXISTS organization_members (
@@ -33,6 +51,7 @@ ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE organization_members ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for organizations
+DROP POLICY IF EXISTS "Users can view organizations they are members of" ON organizations;
 CREATE POLICY "Users can view organizations they are members of"
   ON organizations FOR SELECT
   USING (
@@ -43,6 +62,7 @@ CREATE POLICY "Users can view organizations they are members of"
     )
   );
 
+DROP POLICY IF EXISTS "Owners and admins can update their organization" ON organizations;
 CREATE POLICY "Owners and admins can update their organization"
   ON organizations FOR UPDATE
   USING (
@@ -54,11 +74,13 @@ CREATE POLICY "Owners and admins can update their organization"
     )
   );
 
+DROP POLICY IF EXISTS "Authenticated users can create organizations" ON organizations;
 CREATE POLICY "Authenticated users can create organizations"
   ON organizations FOR INSERT
   WITH CHECK (auth.uid() IS NOT NULL);
 
 -- RLS Policies for organization_members
+DROP POLICY IF EXISTS "Users can view members of their organizations" ON organization_members;
 CREATE POLICY "Users can view members of their organizations"
   ON organization_members FOR SELECT
   USING (
@@ -69,6 +91,7 @@ CREATE POLICY "Users can view members of their organizations"
     )
   );
 
+DROP POLICY IF EXISTS "Owners and admins can manage members" ON organization_members;
 CREATE POLICY "Owners and admins can manage members"
   ON organization_members FOR ALL
   USING (
