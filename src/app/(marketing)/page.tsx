@@ -194,12 +194,8 @@ export default function LandingPage() {
                         <div className="grid md:grid-cols-3 gap-8 mb-16">
                             {landingContent.integrations.tier1.map((integ, i) => (
                                 <div key={i} className="bg-white p-8 rounded-xl border shadow-sm flex flex-col items-center hover:shadow-lg transition-all hover:-translate-y-1">
-                                    <div className="h-16 w-full flex items-center justify-center mb-6">
-                                        {integ.isImage ? (
-                                            <img src={integ.logo} alt={integ.name} className="h-12 object-contain" />
-                                        ) : (
-                                            <span className={`text-4xl font-bold tracking-tighter ${integ.color}`}>{integ.textLogo}</span>
-                                        )}
+                                    <div className="h-16 w-full flex items-center justify-center mb-6 px-4">
+                                        <img src={integ.logo} alt={integ.name} className="max-h-10 max-w-full object-contain grayscale-0 hover:grayscale-0 transition-all text-transparent" />
                                     </div>
                                     <h3 className="text-xl font-bold text-slate-900 mb-4">{integ.name}</h3>
                                     <div className="flex gap-2 flex-wrap justify-center">

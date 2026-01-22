@@ -45,7 +45,7 @@ export function IntegrationCard({ provider, integration, orgId, onConfigure }: I
                     <img
                         src={provider.logo}
                         alt={provider.name}
-                        className="w-8 h-8 object-contain"
+                        className="max-w-[85%] max-h-[85%] object-contain"
                         onError={(e) => e.currentTarget.style.display = 'none'}
                     />
                 </div>
