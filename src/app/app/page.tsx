@@ -1,129 +1,141 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getPortfolioFinancials, getTopProjects } from "@/actions/dashboard/global-actions";
-import { BarChart3, TrendingUp, AlertCircle, CheckCircle2, DollarSign } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DollarSign, Users, Plug, FolderKanban } from "lucide-react";
+import { getDashboardMetrics } from "@/actions/dashboard";
+import { LoadingState } from "@/components/states/LoadingState";
+import { ErrorState } from "@/components/states/ErrorState";
+import Link from "next/link";
 
-export default function CommandCenterPage() {
-    const [financials, setFinancials] = useState<any>(null);
-    const [projects, setProjects] = useState<any[]>([]);
+interface DashboardMetrics {
+    projectsCount: number;
+    customersCount: number;
+    integrationsCount: number;
+    recentProjects: Array<{
+        id: string;
+        name: string;
+        status: string;
+        created_at: string;
+    }>;
+}
+
+export default function DashboardPage() {
+    const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Hardcoded org-1 for MVP context
-        Promise.all([
-            getPortfolioFinancials("org-1"),
-            getTopProjects("org-1")
-        ]).then(([finData, projData]) => {
-            setFinancials(finData || {
-                total_volume_cents: 0,
-                total_received_cents: 0,
-                total_overdue_cents: 0,
-                total_open_cents: 0
-            });
-            setProjects(projData || []);
-            setLoading(false);
-        });
+        getDashboardMetrics("org-1")
+            .then(setMetrics)
+            .catch((err) => {
+                console.error("Error loading dashboard:", err);
+                setError("Failed to load dashboard data");
+            })
+            .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <div className="space-y-4 p-8">
-        <Skeleton className="h-[200px] w-full" />
-        <div className="grid grid-cols-4 gap-4"><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /></div>
-    </div>;
+    if (loading) return <LoadingState />;
+    if (error) return <ErrorState message={error} retry={() => window.location.reload()} />;
+    if (!metrics) return null;
 
-    const formatCurrency = (cents: number) => {
-        return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
+    const kpis = [
+        {
+            title: "Total Projects",
+            value: metrics.projectsCount,
+            icon: FolderKanban,
+            color: "text-blue-600",
+            bgColor: "bg-blue-50",
+        },
+        {
+            title: "Total Customers",
+            value: metrics.customersCount,
+            icon: Users,
+            color: "text-green-600",
+            bgColor: "bg-green-50",
+        },
+        {
+            title: "Active Integrations",
+            value: metrics.integrationsCount,
+            icon: Plug,
+            color: "text-purple-600",
+            bgColor: "bg-purple-50",
+        },
+        {
+            title: "Total Revenue",
+            value: "R$ 0",
+            icon: DollarSign,
+            color: "text-emerald-600",
+            bgColor: "bg-emerald-50",
+        },
+    ];
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Command Center</h1>
-                <p className="text-muted-foreground">Global financial overview across all projects.</p>
+                <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+                <p className="text-slate-500">Welcome back! Here's your overview.</p>
             </div>
 
-            {/* KPI Grid */}
+            {/* KPI Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Volume</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(financials.total_volume_cents)}</div>
-                        <p className="text-xs text-muted-foreground">All time contracted</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Received</CardTitle>
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600">{formatCurrency(financials.total_received_cents)}</div>
-                        <p className="text-xs text-muted-foreground">Successfully collected</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Overdue (Risk)</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-red-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-red-600">{formatCurrency(financials.total_overdue_cents)}</div>
-                        <p className="text-xs text-muted-foreground">Requires attention</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Open Receivables</CardTitle>
-                        <DollarSign className="h-4 w-4 text-blue-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">{formatCurrency(financials.total_open_cents)}</div>
-                        <p className="text-xs text-muted-foreground">Future revenue flow</p>
-                    </CardContent>
-                </Card>
+                {kpis.map((kpi) => {
+                    const Icon = kpi.icon;
+                    return (
+                        <Card key={kpi.title}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-slate-600">
+                                    {kpi.title}
+                                </CardTitle>
+                                <div className={`w-8 h-8 rounded-lg ${kpi.bgColor} flex items-center justify-center`}>
+                                    <Icon className={`h-4 w-4 ${kpi.color}`} />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{kpi.value}</div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
-                    <CardHeader>
-                        <CardTitle>Revenue Trend</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pl-2">
-                        <div className="h-[200px] flex items-center justify-center text-muted-foreground border border-dashed rounded-md bg-slate-50">
-                            Chart Component Placeholder (Recharts)
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="col-span-3">
-                    <CardHeader>
-                        <CardTitle>Top Projects</CardTitle>
-                        <CardDescription>By enrollment volume</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+            {/* Recent Projects */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Projects</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {metrics.recentProjects.length === 0 ? (
+                        <p className="text-sm text-slate-500 text-center py-8">
+                            No projects yet. <Link href="/app/projects" className="text-blue-600 hover:underline">Create your first project</Link>
+                        </p>
+                    ) : (
                         <div className="space-y-4">
-                            {projects.map((proj: any) => (
-                                <div key={proj.id} className="flex items-center">
-                                    <div className="ml-4 space-y-1">
-                                        <p className="text-sm font-medium leading-none">{proj.name}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {proj.enrollments[0]?.count || 0} enrollments
+                            {metrics.recentProjects.map((project) => (
+                                <div
+                                    key={project.id}
+                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50 transition-colors"
+                                >
+                                    <div>
+                                        <p className="font-medium">{project.name}</p>
+                                        <p className="text-sm text-slate-500">
+                                            Created {new Date(project.created_at).toLocaleDateString()}
                                         </p>
                                     </div>
-                                    <div className="ml-auto font-medium">
-                                        {/* Ideally fetch revenue per project */}
-                                    </div>
+                                    <span
+                                        className={`px-2 py-1 rounded text-xs font-medium ${project.status === "active"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-slate-100 text-slate-700"
+                                            }`}
+                                    >
+                                        {project.status}
+                                    </span>
                                 </div>
                             ))}
-                            {projects.length === 0 && <p className="text-sm text-muted-foreground">No projects found.</p>}
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }
