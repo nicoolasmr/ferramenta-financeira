@@ -1,20 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,7 +12,187 @@ import {
 import { DataTable } from "@/components/data-table/DataTable";
 import { EmptyState } from "@/components/states/EmptyState";
 import { LoadingState } from "@/components/states/LoadingState";
-import { ErrorState } from "@/components/states/ErrorState";
-import { createProject, updateProject, deleteProject, type Project } from "@/actions/projects";
-import { ColumnDef } from "@tantml:parameter>
-<parameter name="Complexity">8
+import { CreateDialog } from "@/components/dialogs/CreateDialog";
+import { EditDialog } from "@/components/dialogs/EditDialog";
+import { DeleteDialog } from "@/components/dialogs/DeleteDialog";
+import { getProjects, createProject, updateProject, deleteProject, type Project } from "@/actions/projects";
+import { ColumnDef } from "@tanstack/react-table";
+import { toast } from "sonner";
+
+const columns: ColumnDef<Project>[] = [
+    {
+        accessorKey: "name",
+        header: "Name",
+    },
+    {
+        accessorKey: "description",
+        header: "Description",
+    },
+    {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+            <span className={`px-2 py-1 rounded text-xs font-medium ${row.original.status === 'active'
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-slate-100 text-slate-700'
+                }`}>
+                {row.original.status}
+            </span>
+        ),
+    },
+    {
+        accessorKey: "created_at",
+        header: "Created",
+        cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+    },
+    {
+        id: "actions",
+        cell: ({ row }) => <ProjectActions project={row.original} />,
+    },
+];
+
+function ProjectActions({ project }: { project: Project }) {
+    const [showEdit, setShowEdit] = useState(false);
+    const [showDelete, setShowDelete] = useState(false);
+
+    const handleUpdate = async (data: Record<string, string>) => {
+        try {
+            await updateProject(project.id, data);
+            toast.success("Project updated successfully!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to update project");
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            await deleteProject(project.id);
+            toast.success("Project deleted successfully!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to delete project");
+        }
+    };
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowEdit(true)}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowDelete(true)} className="text-red-600">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            {showEdit && (
+                <EditDialog
+                    title="Edit Project"
+                    description="Update project information"
+                    fields={[
+                        { name: "name", label: "Project Name", type: "text" },
+                        { name: "description", label: "Description", type: "textarea" },
+                    ]}
+                    initialData={{ name: project.name, description: project.description || "" }}
+                    onSubmit={handleUpdate}
+                    trigger={<div />}
+                />
+            )}
+
+            {showDelete && (
+                <DeleteDialog
+                    title="Delete Project"
+                    description="Are you sure you want to delete this project?"
+                    itemName={project.name}
+                    onConfirm={handleDelete}
+                    trigger={<div />}
+                />
+            )}
+        </>
+    );
+}
+
+export default function ProjectsPage() {
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getProjects("org-1")
+            .then(setProjects)
+            .catch(() => toast.error("Failed to load projects"))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleCreate = async (data: Record<string, string>) => {
+        try {
+            await createProject({
+                name: data.name,
+                description: data.description,
+                organization_id: "org-1",
+            });
+            toast.success("Project created successfully!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to create project");
+        }
+    };
+
+    if (loading) return <LoadingState />;
+
+    return (
+        <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+                    <p className="text-slate-500">Manage your projects and configurations</p>
+                </div>
+                <CreateDialog
+                    title="Create Project"
+                    description="Add a new project to your organization"
+                    fields={[
+                        { name: "name", label: "Project Name", type: "text", required: true },
+                        { name: "description", label: "Description", type: "textarea" },
+                    ]}
+                    onSubmit={handleCreate}
+                    triggerLabel="Add Project"
+                />
+            </div>
+
+            {projects.length === 0 ? (
+                <EmptyState
+                    title="No projects yet"
+                    description="Start by creating your first project"
+                    action={
+                        <CreateDialog
+                            title="Create Project"
+                            description="Add a new project to your organization"
+                            fields={[
+                                { name: "name", label: "Project Name", type: "text", required: true },
+                                { name: "description", label: "Description", type: "textarea" },
+                            ]}
+                            onSubmit={handleCreate}
+                            triggerLabel="Add Project"
+                        />
+                    }
+                />
+            ) : (
+                <DataTable
+                    columns={columns}
+                    data={projects}
+                    searchKey="name"
+                    searchPlaceholder="Search projects..."
+                />
+            )}
+        </div>
+    );
+}
