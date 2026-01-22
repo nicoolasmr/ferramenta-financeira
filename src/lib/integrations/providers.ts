@@ -42,7 +42,7 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
         description: "Conecte sua conta Stripe para importar vendas, assinaturas e acompanhar recebimentos em tempo real.",
         modes: ["oauth", "api_key"],
         defaultMode: "oauth",
-        logo: "/logos/stripe.svg",
+        logo: "/logos/stripe.png",
         docsUrl: "/help/integrations/stripe",
         features: ["Pagamentos", "Assinaturas", "Reembolsos", "Webhooks"],
         steps: [
@@ -79,7 +79,7 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
         description: "Conecte sua conta Asaas para importar cobranças (PIX, boleto, cartão) e acompanhar inadimplência.",
         modes: ["api_key"],
         defaultMode: "api_key",
-        logo: "/logos/asaas.svg",
+        logo: "/logos/asaas.png",
         docsUrl: "/help/integrations/asaas",
         features: ["Cobranças", "PIX", "Boletos", "Cartão"],
         steps: [
@@ -125,7 +125,7 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
         description: "Conecte o Mercado Pago para importar pagamentos e acompanhar status (aprovado, recusado, estornado).",
         modes: ["oauth", "api_key"],
         defaultMode: "oauth",
-        logo: "/logos/mercadopago.svg",
+        logo: "/logos/mercadopago.png",
         docsUrl: "/help/integrations/mercadopago",
         features: ["Pagamentos", "Status em tempo real"],
         steps: [
@@ -177,7 +177,7 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
         description: "Conecte a Eduzz para importar vendas, reembolsos e status de pagamento.",
         modes: ["oauth", "api_key"],
         defaultMode: "oauth",
-        logo: "/logos/eduzz.svg",
+        logo: "/logos/eduzz.png",
         docsUrl: "/help/integrations/eduzz",
         features: ["Vendas", "Reembolsos", "Parcelamentos"],
         steps: [
@@ -230,7 +230,7 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
         description: "Conecte a Hotmart para importar vendas, comissões, reembolsos e status de pagamento.",
         modes: ["oauth", "webhook_only"],
         defaultMode: "oauth",
-        logo: "/logos/hotmart.svg",
+        logo: "/logos/hotmart.png",
         docsUrl: "/help/integrations/hotmart",
         features: ["Vendas", "Comissões", "Status"],
         steps: [
@@ -275,7 +275,7 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
         description: "Conecte sua conta Kiwify para importar vendas e acompanhar pagamentos automaticamente.",
         modes: ["api_key"],
         defaultMode: "api_key",
-        logo: "/logos/kiwify.svg",
+        logo: "/logos/kiwify.png",
         docsUrl: "/help/integrations/kiwify",
         features: ["Vendas", "Upsells", "Reembolsos"],
         steps: [
@@ -330,7 +330,7 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
         description: "Conecte a Lastlink para receber eventos de vendas e pagamentos automaticamente.",
         modes: ["webhook_only"],
         defaultMode: "webhook_only",
-        logo: "/logos/lastlink.svg",
+        logo: "/logos/lastlink.png",
         docsUrl: "/help/integrations/lastlink",
         features: ["Vendas", "Assinaturas"],
         steps: [

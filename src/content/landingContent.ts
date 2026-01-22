@@ -136,50 +136,50 @@ export const landingContent = {
         tier1: [
             {
                 name: "Stripe",
-                logo: "/logos/stripe.svg",
+                logo: "/logos/stripe.png",
                 tags: ["Billing", "Webhooks", "Conciliação"],
                 color: "text-[#635BFF]",
                 isImage: true
             },
             {
                 name: "Hotmart",
-                logo: "/logos/hotmart.svg",
+                logo: "/logos/hotmart.png",
                 tags: ["Vendas", "Comissões", "Cancelamento"],
                 isImage: true
             },
             {
                 name: "Asaas",
-                logo: "/logos/asaas.svg",
+                logo: "/logos/asaas.png",
                 tags: ["PIX", "Boleto", "Status"],
                 isImage: true
             },
             {
                 name: "Mercado Pago",
-                logo: "/logos/mercadopago.svg",
+                logo: "/logos/mercadopago.png",
                 tags: ["Checkouts", "Carteira", "QR Code"],
                 isImage: true
             },
             {
                 name: "Kiwify",
-                logo: "/logos/kiwify.svg",
+                logo: "/logos/kiwify.png",
                 tags: ["Infoprodutos", "Checkout", "Upsell"],
                 isImage: true
             },
             {
                 name: "Eduzz",
-                logo: "/logos/eduzz.svg",
+                logo: "/logos/eduzz.png",
                 tags: ["Vendas", "Cursos", "Taxas"],
                 isImage: true
             },
             {
                 name: "Lastlink",
-                logo: "/logos/lastlink.svg",
+                logo: "/logos/lastlink.png",
                 tags: ["Comunidades", "Recorrência", "Churn"],
                 isImage: true
             },
             {
                 name: "PagSeguro",
-                logo: "/logos/pagseguro.svg",
+                logo: "/logos/pagseguro.png",
                 tags: ["Vendas On/Off", "Cartão", "Recebíveis"],
                 isImage: true
             }
