@@ -1,0 +1,28 @@
+---
+title: "Guia de Conexão: Integrando Gateways de Pagamento"
+excerpt: "Como conectar Stripe, Hotmart, Asaas e outros gateways ao RevenueOS."
+category: "Integrações"
+updatedAt: "2026-01-22"
+keywords: ["integração", "stripe", "hotmart", "asaas", "gateway"]
+---
+
+# Guia de Conexão: Integrando Gateways de Pagamento
+
+Para que o RevenueOS centralize seus dados, você precisa conectar suas fontes de receita.
+
+## Conectando um novo Provedor
+1. Vá para a página **Integrations**.
+2. Escolha o provedor (ex: **Stripe** ou **Hotmart**) e clique em **Connect**.
+3. Um modal abrirá solicitando as credenciais necessárias (ex: API Keys, Client Secret).
+
+## Testando a Conexão
+Após preencher as credenciais, você pode verificar se tudo está correto clicando no ícone de **Proveta (Test Connection)** no card da integração.
+O sistema tentará estabelecer um handshake com o gateway e retornará um status de sucesso ou erro.
+
+## Gerenciando Integrações Existentes
+- **Desativar Temporariamente**: Clique no ícone de **Power** para pausar a sincronização sem excluir as credenciais.
+- **Configurar**: Clique em **Configure** para atualizar chaves expiradas.
+- **Remover**: Clique no ícone de **Lixeira** para desconectar completamente o gateway.
+
+## Webhooks
+Para garantir o recebimento de dados em tempo real, certifique-se de configurar a URL de Webhook fornecida pelo RevenueOS dentro do dashboard do seu gateway. Essas URLs geralmente seguem o padrão `https://seu-dominio.com/api/webhooks/nome-do-gateway`.

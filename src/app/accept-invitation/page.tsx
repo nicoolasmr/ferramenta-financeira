@@ -22,13 +22,13 @@ function AcceptInvitationContent() {
         }
 
         // Accept invitation
-        acceptInvitation();
+        acceptInvitationAction();
     }, [token]);
 
-    const acceptInvitation = async () => {
+    const acceptInvitationAction = async () => {
         try {
-            // TODO: Implement API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const { acceptInvitation } = await import('@/actions/team');
+            await acceptInvitation(token!);
 
             setStatus('success');
             setMessage('Convite aceito com sucesso!');
@@ -37,9 +37,9 @@ function AcceptInvitationContent() {
             setTimeout(() => {
                 router.push('/app');
             }, 2000);
-        } catch (error) {
+        } catch (error: any) {
             setStatus('error');
-            setMessage('Erro ao aceitar convite. O link pode ter expirado.');
+            setMessage(error.message || 'Erro ao aceitar convite. O link pode ter expirado.');
         }
     };
 

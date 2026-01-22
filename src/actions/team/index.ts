@@ -111,3 +111,51 @@ export async function resendInvitation(invitationId: string) {
 
     // TODO: Resend invitation email
 }
+
+export async function acceptInvitation(token: string) {
+    const supabase = await createClient();
+
+    // 1. Find the invitation
+    const { data: invitation, error: invError } = await supabase
+        .from("team_invitations")
+        .select("*")
+        .eq("id", token) // Using ID as token for simplicity in this MVP
+        .eq("status", "pending")
+        .single();
+
+    if (invError || !invitation) {
+        throw new Error("Invalid or expired invitation");
+    }
+
+    // 2. Check expiration
+    if (new Date(invitation.expires_at) < new Date()) {
+        await supabase
+            .from("team_invitations")
+            .update({ status: "expired" })
+            .eq("id", token);
+        throw new Error("Invitation has expired");
+    }
+
+    // 3. Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
+    // 4. Create membership
+    const { error: memError } = await supabase.from("organization_members").insert({
+        org_id: invitation.org_id,
+        user_id: user.id,
+        role: invitation.role,
+        status: "active",
+    });
+
+    if (memError) throw memError;
+
+    // 5. Mark invitation as accepted
+    await supabase
+        .from("team_invitations")
+        .update({ status: "accepted", accepted_at: new Date().toISOString() })
+        .eq("id", token);
+
+    revalidatePath("/app/settings/team");
+    return { success: true };
+}

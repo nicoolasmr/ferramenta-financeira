@@ -1,0 +1,32 @@
+---
+title: "Auditoria de Dados e Exportação de Logs"
+excerpt: "Como rastrear atividades da organização e exportar dados para auditoria externa."
+category: "Segurança & Permissões"
+updatedAt: "2026-01-22"
+keywords: ["audit", "logs", "export", "csv", "segurança"]
+---
+
+# Auditoria de Dados e Exportação de Logs
+
+Transparência é fundamental em operações financeiras. O sistema de Audit Logs do RevenueOS registra cada mudança crítica realizada no dashboard.
+
+## O que é registrado?
+- Alterações em projetos (criação, edição, exclusão).
+- Conexão e desconexão de integrações.
+- Alterações em planos de assinatura.
+- Convites de membros e mudanças de permissão.
+
+## Filtrando Logs
+Acesse **Settings > Audit Logs**. Você pode usar os filtros no topo da página para refinar sua busca por:
+- **Search**: Busca por palavras-chave na ação ou recurso.
+- **Action**: Filtre por tipos específicos como `INSERT`, `UPDATE` ou `DELETE`.
+- **Resource**: Filtre por tabelas/áreas como `projects`, `integrations`, etc.
+
+## Exportando para CSV
+Para auditorias externas ou análises em Excel:
+1. Vá até a página de **Audit Logs**.
+2. Clique no botão **Export CSV**.
+3. O sistema gerará um arquivo com todas as colunas de auditoria (ID, Ator, Ação, Recurso, Detalhes e Data).
+
+> [!TIP]
+> Você também pode exportar dados de **Payments** e **Aging Reports** em suas respectivas páginas para uma visão consolidada de recebíveis.

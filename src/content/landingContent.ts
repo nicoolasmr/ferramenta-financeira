@@ -39,8 +39,8 @@ export const landingContent = {
             "Copilot determinístico: Top 3 ações da semana (GPT opcional)"
         ],
         ctaPrimary: { label: "Comece agora", href: "/precos" },
-        ctaSecondary: { label: "Ver demo", href: "#demo" },
-        dashboardImage: "/dashboard-preview.png"
+        ctaSecondary: { label: "Ver demo", href: "/demo" },
+        dashboardImage: "/dashboard-hero.png"
     },
     trust: {
         title: "Feito para operações que vendem em múltiplos canais",
