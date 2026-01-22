@@ -20,6 +20,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Rocket } from 'lucide-react';
+import { createProject } from '@/actions/projects';
+import { toast } from 'sonner';
 
 interface CreateProjectDialogProps {
     open: boolean;
@@ -41,15 +43,28 @@ export function CreateProjectDialog({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!organizationId) {
+            toast.error('Organização não encontrada');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            // TODO: Implement API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await createProject({
+                name: formData.name,
+                environment: formData.environment,
+                region: formData.region,
+                orgId: organizationId,
+            });
+
+            toast.success('Projeto criado com sucesso!');
             onOpenChange(false);
             setFormData({ name: '', environment: 'production', region: 'gru1' });
-        } catch (error) {
-            alert('Erro ao criar projeto');
+        } catch (error: any) {
+            console.error('Create project error:', error);
+            toast.error(error.message || 'Erro ao criar projeto');
         } finally {
             setLoading(false);
         }

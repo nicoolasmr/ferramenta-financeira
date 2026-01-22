@@ -89,16 +89,7 @@ export default function LandingPage() {
                             </Link>
                         </div>
 
-                        {/* Dashboard Preview */}
-                        <div className="relative mx-auto max-w-4xl rounded-2xl border bg-slate-900 p-2 lg:p-4 shadow-2xl">
-                            <div className="aspect-[16/9] bg-slate-800 rounded-xl overflow-hidden shadow-inner">
-                                <img
-                                    src={landingContent.hero.dashboardImage}
-                                    alt="RevenueOS Dashboard Preview"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        </div>
+                        {/* Dashboard Preview Removed - User Request */}
                     </div>
                 </section>
 
@@ -220,9 +211,6 @@ export default function LandingPage() {
                             ))}
                         </div>
                         <div className="inline-flex flex-col items-center gap-2">
-                            <div className="px-4 py-2 bg-slate-200 rounded-full text-sm text-slate-700 font-medium">
-                                Em breve: {landingContent.integrations.roadmap}
-                            </div>
                             <p className="text-xs text-slate-500 mt-2 font-mono">{landingContent.integrations.techProof}</p>
                         </div>
                     </div>
@@ -318,9 +306,9 @@ export default function LandingPage() {
                             </p>
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-20">
+                        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-20 items-stretch">
                             {landingContent.pricing.plans.map((plan, i) => (
-                                <div key={i} className={`p-8 rounded-2xl border bg-white flex flex-col relative ${plan.highlight ? 'border-2 border-indigo-600 shadow-xl scale-105' : 'border-slate-200'}`}>
+                                <div key={i} className={`p-8 rounded-2xl border bg-white flex flex-col relative h-full transition-all ${plan.highlight ? 'border-2 border-indigo-600 shadow-xl scale-105 z-10' : 'border-slate-200 hover:shadow-lg'}`}>
                                     {plan.highlight && (
                                         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
                                             {plan.highlight}
@@ -343,7 +331,7 @@ export default function LandingPage() {
                                     <Link href={plan.ctaLink} className="w-full">
                                         <Button
                                             variant={plan.ctaVariant as "default" | "outline"}
-                                            className={`w-full ${plan.highlight ? 'bg-indigo-600 hover:bg-indigo-700' : ''}`}
+                                            className={`w-full ${plan.highlight ? 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold' : ''}`}
                                         >
                                             {plan.cta}
                                         </Button>
@@ -358,18 +346,18 @@ export default function LandingPage() {
                                 <thead className="bg-slate-50 text-slate-900 font-bold border-b">
                                     <tr>
                                         <th className="p-4">Recurso</th>
-                                        <th className="p-4 text-center">Starter</th>
-                                        <th className="p-4 text-center text-indigo-700">Pro</th>
-                                        <th className="p-4 text-center">Enterprise</th>
+                                        <th className="p-4 text-center w-1/4">Starter</th>
+                                        <th className="p-4 text-center text-indigo-700 w-1/4 bg-indigo-50/30">Pro</th>
+                                        <th className="p-4 text-center w-1/4">Enterprise</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y">
                                     {landingContent.pricing.comparison.map((row, i) => (
                                         <tr key={i} className="hover:bg-slate-50/50">
                                             <td className="p-4 font-medium text-slate-700">{row.feature}</td>
-                                            <td className="p-4 text-center text-slate-600">{row.starter}</td>
-                                            <td className="p-4 text-center text-indigo-700 font-medium">{row.pro}</td>
-                                            <td className="p-4 text-center text-slate-600">{row.ent}</td>
+                                            <td className="p-4 text-center text-slate-600 w-1/4">{row.starter}</td>
+                                            <td className="p-4 text-center text-indigo-700 font-medium w-1/4 bg-indigo-50/10">{row.pro}</td>
+                                            <td className="p-4 text-center text-slate-600 w-1/4">{row.ent}</td>
                                         </tr>
                                     ))}
                                 </tbody>

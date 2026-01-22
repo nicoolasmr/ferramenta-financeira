@@ -136,10 +136,10 @@ export const landingContent = {
         tier1: [
             {
                 name: "Stripe",
-                logo: "/stripe-logo.png", // Usando texto estilizado na page se img falhar, mas aqui ref
+                logo: "/stripe-logo.png",
                 tags: ["Billing", "Webhooks", "Conciliação"],
                 color: "text-[#635BFF]",
-                isImage: false, // Flag para controle de render
+                isImage: false,
                 textLogo: "stripe"
             },
             {
@@ -152,6 +152,36 @@ export const landingContent = {
                 name: "Asaas",
                 logo: "/asaas-logo.svg",
                 tags: ["PIX", "Boleto", "Status"],
+                isImage: true
+            },
+            {
+                name: "Mercado Pago",
+                logo: "/mercado-pago-logo.png",
+                tags: ["Checkouts", "Carteira", "QR Code"],
+                isImage: true
+            },
+            {
+                name: "Kiwify",
+                logo: "/kiwify-logo.png",
+                tags: ["Infoprodutos", "Checkout", "Upsell"],
+                isImage: true
+            },
+            {
+                name: "Eduzz",
+                logo: "/eduzz-logo.png",
+                tags: ["Vendas", "Cursos", "Taxas"],
+                isImage: true
+            },
+            {
+                name: "Lastlink",
+                logo: "/lastlink-logo.png",
+                tags: ["Comunidades", "Recorrência", "Churn"],
+                isImage: true
+            },
+            {
+                name: "PagSeguro",
+                logo: "/pagseguro-logo.png",
+                tags: ["Vendas On/Off", "Cartão", "Recebíveis"],
                 isImage: true
             }
         ],
