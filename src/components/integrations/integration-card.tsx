@@ -7,6 +7,7 @@ import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { ProviderSpec } from "@/lib/integrations/providers";
 import { GatewayIntegration, toggleIntegration } from "@/actions/integrations";
 import { Switch } from "@/components/ui/switch";
+import { ConnectionStatus } from "./connection-status";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -79,29 +80,38 @@ export function IntegrationCard({ provider, integration, orgId, onConfigure }: I
                     </p>
                 )}
             </CardContent>
-            <CardFooter className="pt-2 flex items-center justify-between gap-2 border-t bg-slate-50/50">
-                {isConnected ? (
-                    <>
-                        <div className="flex items-center gap-2">
-                            <Switch
-                                checked={isActive}
-                                onCheckedChange={handleToggle}
-                                disabled={toggling}
-                                className="scale-75 origin-left"
-                            />
-                            <span className="text-xs text-muted-foreground font-medium">
-                                {isActive ? 'On' : 'Off'}
-                            </span>
-                        </div>
-                        <Button variant="outline" size="sm" onClick={onConfigure} className="h-8 text-xs">
-                            Configurar
-                        </Button>
-                    </>
-                ) : (
-                    <Button variant="default" size="sm" onClick={onConfigure} className="w-full h-8 text-xs">
-                        Conectar
-                    </Button>
+            <CardFooter className="pt-2 flex flex-col gap-2 border-t bg-slate-50/50">
+                {isConnected && (
+                    <div className="w-full">
+                        <ConnectionStatus status={isActive ? 'connected' : 'disconnected'} />
+                    </div>
                 )}
+                <div className="w-full flex items-center justify-between gap-2">
+                    {isConnected ? (
+                        <>
+                            <div className="flex items-center gap-2">
+                                <Switch
+                                    checked={isActive}
+                                    onCheckedChange={handleToggle}
+                                    disabled={toggling}
+                                    className="scale-75 origin-left"
+                                />
+                                <span className="text-xs text-muted-foreground font-medium">
+                                    {isActive ? 'On' : 'Off'}
+                                </span>
+                            </div>
+                            <div className="flex gap-1">
+                                <Button variant="outline" size="sm" onClick={onConfigure} className="h-8 text-xs">
+                                    Configurar
+                                </Button>
+                            </div>
+                        </>
+                    ) : (
+                        <Button variant="default" size="sm" onClick={onConfigure} className="w-full h-8 text-xs">
+                            Conectar
+                        </Button>
+                    )}
+                </div>
             </CardFooter>
         </Card>
     );
