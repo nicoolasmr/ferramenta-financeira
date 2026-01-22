@@ -182,13 +182,13 @@ CREATE TABLE IF NOT EXISTS payment_events (
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_memberships_org_user ON memberships(org_id, user_id);
-CREATE INDEX idx_customers_org ON customers(org_id);
-CREATE INDEX idx_customers_email ON customers(email);
-CREATE INDEX idx_orders_org ON orders(org_id);
-CREATE INDEX idx_orders_customer ON orders(customer_id);
-CREATE INDEX idx_payments_org ON payments(org_id);
-CREATE INDEX idx_payments_order ON payments(order_id);
-CREATE INDEX idx_audit_logs_org ON audit_logs(org_id);
+CREATE INDEX IF NOT EXISTS idx_customers_org ON customers(org_id);
+CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
+CREATE INDEX IF NOT EXISTS idx_orders_org ON orders(org_id);
+CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_payments_org ON payments(org_id);
+CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_org ON audit_logs(org_id);
 
 
 -- Row Level Security (RLS)
@@ -235,6 +235,7 @@ ALTER TABLE payment_events ENABLE ROW LEVEL SECURITY;
 
 -- Organizations
 -- Users can see organizations they belong to
+DROP POLICY IF EXISTS "Users can view own organizations" ON organizations;
 CREATE POLICY "Users can view own organizations" ON organizations
 FOR SELECT USING (
   EXISTS (
@@ -244,55 +245,74 @@ FOR SELECT USING (
   )
 );
 -- Only users can create organizations (logic handled usually by app/functions, but allow insert for authenticated)
+DROP POLICY IF EXISTS "Authenticated users can create organizations" ON organizations;
 CREATE POLICY "Authenticated users can create organizations" ON organizations
 FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 
 -- Users
 -- Users can view their own profile
+DROP POLICY IF EXISTS "Users can view own profile" ON users;
 CREATE POLICY "Users can view own profile" ON users
 FOR SELECT USING (auth.uid() = id);
 -- Users can update their own profile
+DROP POLICY IF EXISTS "Users can update own profile" ON users;
 CREATE POLICY "Users can update own profile" ON users
 FOR UPDATE USING (auth.uid() = id);
 
 -- Memberships
 -- Members can view memberships of their org
+DROP POLICY IF EXISTS "Members can view org memberships" ON memberships;
 CREATE POLICY "Members can view org memberships" ON memberships
 FOR SELECT USING (is_org_member(org_id));
 
 -- Products
+DROP POLICY IF EXISTS "Org members can view products" ON products;
 CREATE POLICY "Org members can view products" ON products FOR SELECT USING (is_org_member(org_id));
+DROP POLICY IF EXISTS "Org admins/owners can manage products" ON products;
 CREATE POLICY "Org admins/owners can manage products" ON products FOR ALL USING (get_user_role(org_id) IN ('owner', 'admin'));
 
 -- Customers
+DROP POLICY IF EXISTS "Org members can view customers" ON customers;
 CREATE POLICY "Org members can view customers" ON customers FOR SELECT USING (is_org_member(org_id));
+DROP POLICY IF EXISTS "Org members can manage customers" ON customers;
 CREATE POLICY "Org members can manage customers" ON customers FOR ALL USING (get_user_role(org_id) IN ('owner', 'admin', 'member'));
 
 -- Orders
+DROP POLICY IF EXISTS "Org members can view orders" ON orders;
 CREATE POLICY "Org members can view orders" ON orders FOR SELECT USING (is_org_member(org_id));
+DROP POLICY IF EXISTS "Org members can manage orders" ON orders;
 CREATE POLICY "Org members can manage orders" ON orders FOR ALL USING (get_user_role(org_id) IN ('owner', 'admin', 'member'));
 
 -- Order Items
+DROP POLICY IF EXISTS "Org members can view order items" ON order_items;
 CREATE POLICY "Org members can view order items" ON order_items FOR SELECT USING (is_org_member(org_id));
 
 -- Payments
+DROP POLICY IF EXISTS "Org members can view payments" ON payments;
 CREATE POLICY "Org members can view payments" ON payments FOR SELECT USING (is_org_member(org_id));
 
 -- Refunds
+DROP POLICY IF EXISTS "Org members can view refunds" ON refunds;
 CREATE POLICY "Org members can view refunds" ON refunds FOR SELECT USING (is_org_member(org_id));
 
 -- Payouts
+DROP POLICY IF EXISTS "Org owners/admins can view payouts" ON payouts;
 CREATE POLICY "Org owners/admins can view payouts" ON payouts FOR SELECT USING (get_user_role(org_id) IN ('owner', 'admin'));
 
 -- Integrations
+DROP POLICY IF EXISTS "Org owners/admins can view integrations" ON integrations;
 CREATE POLICY "Org owners/admins can view integrations" ON integrations FOR SELECT USING (get_user_role(org_id) IN ('owner', 'admin'));
+DROP POLICY IF EXISTS "Org owners/admins can manage integrations" ON integrations;
 CREATE POLICY "Org owners/admins can manage integrations" ON integrations FOR ALL USING (get_user_role(org_id) IN ('owner', 'admin'));
 
 -- Audit Logs
+DROP POLICY IF EXISTS "Org owners/admins can view logs" ON audit_logs;
 CREATE POLICY "Org owners/admins can view logs" ON audit_logs FOR SELECT USING (get_user_role(org_id) IN ('owner', 'admin'));
 
 -- Sync Runs & Webhooks
+DROP POLICY IF EXISTS "Org owners/admins can view ops" ON sync_runs;
 CREATE POLICY "Org owners/admins can view ops" ON sync_runs FOR SELECT USING (get_user_role(org_id) IN ('owner', 'admin'));
+DROP POLICY IF EXISTS "Org owners/admins can view webhooks" ON webhook_inbox;
 CREATE POLICY "Org owners/admins can view webhooks" ON webhook_inbox FOR SELECT USING (get_user_role(org_id) IN ('owner', 'admin'));
 
