@@ -28,11 +28,25 @@ export async function getOrganization(orgId: string): Promise<Organization | nul
 
 export async function getUserOrganizations(): Promise<Organization[]> {
     const supabase = await createClient();
+
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+        console.error('Error getting user:', userError);
+        return [];
+    }
+
+    // Get user's memberships
     const { data: memberships, error: memError } = await supabase
         .from("memberships")
-        .select("org_id");
+        .select("org_id")
+        .eq("user_id", user.id);
 
-    if (memError) throw memError;
+    if (memError) {
+        console.error('Error getting memberships:', memError);
+        return [];
+    }
+
     if (!memberships || memberships.length === 0) return [];
 
     const orgIds = memberships.map(m => m.org_id);
@@ -41,7 +55,11 @@ export async function getUserOrganizations(): Promise<Organization[]> {
         .select("*")
         .in("id", orgIds);
 
-    if (error) throw error;
+    if (error) {
+        console.error('Error getting organizations:', error);
+        return [];
+    }
+
     return data || [];
 }
 

@@ -18,12 +18,17 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
 
     useEffect(() => {
         async function loadActiveOrg() {
+            console.log('[OrganizationProvider] Starting to load active organization...');
             try {
                 const org = await getActiveOrganization();
+                console.log('[OrganizationProvider] Loaded organization:', org);
                 setActiveOrg(org);
             } catch (error) {
-                console.error('Error loading active organization:', error);
+                console.error('[OrganizationProvider] Error loading active organization:', error);
+                // Set to null on error so pages can handle "no org" state
+                setActiveOrg(null);
             } finally {
+                console.log('[OrganizationProvider] Finished loading, setting loading to false');
                 setLoading(false);
             }
         }
