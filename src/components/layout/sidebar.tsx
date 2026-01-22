@@ -11,6 +11,11 @@ import {
     LayoutDashboard,
     ShoppingCart,
     Sparkles,
+    FolderKanban,
+    Plug,
+    Calendar,
+    TrendingUp,
+    Shield,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -18,29 +23,14 @@ export function Sidebar() {
 
     const links = [
         {
-            href: "/app/dashboard",
+            href: "/app",
             label: "Dashboard",
             icon: LayoutDashboard,
         },
         {
             href: "/app/projects",
             label: "Projects",
-            icon: ShoppingCart, // Keeping icon as is for now, or use relevant project icon
-        },
-        {
-            href: "/app/integrations",
-            label: "Integrations",
-            icon: Settings,
-        },
-        {
-            href: "/app/billing",
-            label: "Billing",
-            icon: CreditCard,
-        },
-        {
-            href: "/app/sales",
-            label: "Sales",
-            icon: ShoppingCart,
+            icon: FolderKanban,
         },
         {
             href: "/app/customers",
@@ -48,88 +38,112 @@ export function Sidebar() {
             icon: Users,
         },
         {
-            href: "/app/payments",
-            label: "Payments",
-            icon: CreditCard,
+            href: "/app/integrations",
+            label: "Integrations",
+            icon: Plug,
+        },
+        {
+            href: "/app/receivables/aging",
+            label: "Aging Report",
+            icon: Calendar,
+        },
+        {
+            href: "/app/sales",
+            label: "Sales Funnel",
+            icon: TrendingUp,
         },
         {
             href: "/app/copilot",
-            label: "Copilot",
+            label: "IA Copilot",
             icon: Sparkles,
         },
     ];
 
-    const adminLinks = [
+    const settingsLinks = [
         {
-            href: "/ops/overview",
-            label: "Operations",
+            href: "/app/settings/organization",
+            label: "Organization",
             icon: Settings,
+        },
+        {
+            href: "/app/settings/team",
+            label: "Team",
+            icon: Users,
+        },
+        {
+            href: "/app/settings/security/mfa",
+            label: "Security",
+            icon: Shield,
         },
     ];
 
     return (
-        <aside className="w-64 border-r bg-muted/40 hidden md:flex flex-col h-screen fixed left-0 top-0">
-            <div className="h-14 flex items-center border-b px-4 lg:h-[60px] lg:px-6">
-                <Link href="/" className="flex items-center gap-2 font-semibold">
-                    <span className="">RevenueOS</span>
-                </Link>
-            </div>
-            <div className="flex-1 overflow-auto py-2">
-                <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-                    <div className="text-muted-foreground px-3 py-2 text-xs font-semibold uppercase">
-                        Platform
-                    </div>
-                    {links.map((link) => {
-                        const Icon = link.icon;
-                        const isActive = pathname.startsWith(link.href);
-                        return (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                className={cn(
-                                    "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
-                                    isActive
-                                        ? "bg-muted text-primary"
-                                        : "text-muted-foreground"
-                                )}
-                            >
-                                <Icon className="h-4 w-4" />
-                                {link.label}
-                            </Link>
-                        );
-                    })}
+        <aside className="hidden border-r bg-slate-50/50 md:block">
+            <div className="flex h-full max-h-screen flex-col gap-2">
+                <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+                    <Link href="/" className="flex items-center gap-2 font-semibold">
+                        <BarChart3 className="h-6 w-6 text-blue-600" />
+                        <span className="text-lg">RevenueOS</span>
+                    </Link>
+                </div>
+                <div className="flex-1 overflow-auto">
+                    <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-1">
+                        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mt-2">
+                            Platform
+                        </div>
+                        {links.map((link) => {
+                            const Icon = link.icon;
+                            const isActive = pathname === link.href || (link.href !== "/app" && pathname.startsWith(link.href));
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={cn(
+                                        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all hover:bg-slate-100",
+                                        isActive
+                                            ? "bg-blue-50 text-blue-700 font-medium"
+                                            : "text-slate-700 hover:text-slate-900"
+                                    )}
+                                >
+                                    <Icon className="h-4 w-4" />
+                                    {link.label}
+                                </Link>
+                            );
+                        })}
 
-                    <div className="mt-6 text-muted-foreground px-3 py-2 text-xs font-semibold uppercase">
-                        Admin
-                    </div>
-                    {adminLinks.map((link) => {
-                        const Icon = link.icon;
-                        const isActive = pathname.startsWith(link.href);
-                        return (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                className={cn(
-                                    "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
-                                    isActive
-                                        ? "bg-muted text-primary"
-                                        : "text-muted-foreground"
-                                )}
-                            >
-                                <Icon className="h-4 w-4" />
-                                {link.label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-            </div>
-            <div className="mt-auto p-4 border-t">
-                {/* User Profile Stub */}
-                <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-slate-200"></div>
-                    <div className="text-sm">
-                        <p className="font-medium">User</p>
-                        <p className="text-xs text-muted-foreground">My Org</p>
+                        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mt-4">
+                            Settings
+                        </div>
+                        {settingsLinks.map((link) => {
+                            const Icon = link.icon;
+                            const isActive = pathname.startsWith(link.href);
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={cn(
+                                        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all hover:bg-slate-100",
+                                        isActive
+                                            ? "bg-blue-50 text-blue-700 font-medium"
+                                            : "text-slate-700 hover:text-slate-900"
+                                    )}
+                                >
+                                    <Icon className="h-4 w-4" />
+                                    {link.label}
+                                </Link>
+                            );
+                        })}
+                    </nav>
+                </div>
+                <div className="mt-auto p-4 border-t bg-white">
+                    <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                            U
+                        </div>
+                        <div className="text-sm flex-1 min-w-0">
+                            <p className="font-medium text-slate-900 truncate">User</p>
+                            <p className="text-xs text-slate-500 truncate">My Organization</p>
+                        </div>
                     </div>
                 </div>
             </div>
