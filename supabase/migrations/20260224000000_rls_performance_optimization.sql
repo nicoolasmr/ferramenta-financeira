@@ -3,7 +3,8 @@
 -- It also ensures the master admin has global access to all tables for support/ops.
 
 -- 1. Ensure helper functions are updated and SECURE
-DROP FUNCTION IF EXISTS public.get_my_org_ids();
+-- Use CASCADE to drop dependent policies automatically, we will recreate them all.
+DROP FUNCTION IF EXISTS public.get_my_org_ids() CASCADE;
 CREATE OR REPLACE FUNCTION public.get_my_org_ids()
 RETURNS SETOF UUID AS $$
 BEGIN
@@ -11,7 +12,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-DROP FUNCTION IF EXISTS public.is_org_member(UUID);
+DROP FUNCTION IF EXISTS public.is_org_member(UUID) CASCADE;
 CREATE OR REPLACE FUNCTION public.is_org_member(p_org_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
@@ -138,5 +139,27 @@ BEGIN
         ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own subscriptions" ON public.subscriptions;
         CREATE POLICY "Subscriptions_Select" ON public.subscriptions FOR SELECT USING (is_master_admin() OR is_org_member(org_id));
+    END IF;
+END $$;
+
+
+-- 11. NOTIFICATIONS
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'notifications') THEN
+        ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "Users can view notifications for their org" ON public.notifications;
+        DROP POLICY IF EXISTS "Users can mark their own org notifications as read" ON public.notifications;
+        DROP POLICY IF EXISTS "Master admin manage notifications" ON public.notifications;
+        
+        CREATE POLICY "Notifications_Select" ON public.notifications FOR SELECT
+        USING (is_master_admin() OR org_id IN (SELECT get_my_org_ids()) OR user_id = auth.uid());
+        
+        CREATE POLICY "Notifications_Update" ON public.notifications FOR UPDATE
+        USING (is_master_admin() OR org_id IN (SELECT get_my_org_ids()) OR user_id = auth.uid())
+        WITH CHECK (read_at IS NOT NULL);
+        
+        CREATE POLICY "Notifications_Master" ON public.notifications FOR ALL
+        USING (is_master_admin());
     END IF;
 END $$;
