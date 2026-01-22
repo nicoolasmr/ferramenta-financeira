@@ -160,6 +160,7 @@ GROUP BY org_id, project_id;
 
 -- Integrations
 ALTER TABLE public.integrations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can manage integrations provided org_id matches" ON public.integrations;
 CREATE POLICY "Users can manage integrations provided org_id matches" ON public.integrations
     USING ( (select auth.uid()) = org_id ) 
     WITH CHECK ( (select auth.uid()) = org_id );

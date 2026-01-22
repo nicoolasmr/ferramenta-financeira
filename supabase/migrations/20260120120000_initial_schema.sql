@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS payment_events (
 
 
 -- Indexes
-CREATE INDEX idx_memberships_org_user ON memberships(org_id, user_id);
+CREATE INDEX IF NOT EXISTS idx_memberships_org_user ON memberships(org_id, user_id);
 CREATE INDEX idx_customers_org ON customers(org_id);
 CREATE INDEX idx_customers_email ON customers(email);
 CREATE INDEX idx_orders_org ON orders(org_id);

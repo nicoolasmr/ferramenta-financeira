@@ -119,6 +119,7 @@ USING (
   )
 );
 -- Delete policy same as update
+DROP POLICY IF EXISTS "Admins can delete documents" ON storage.objects;
 CREATE POLICY "Admins can delete documents" ON storage.objects
 FOR DELETE TO authenticated
 USING (

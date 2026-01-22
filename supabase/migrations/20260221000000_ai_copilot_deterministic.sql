@@ -51,6 +51,7 @@ ALTER TABLE public.actions_queue ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_settings ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Orgs view own insights" ON public.insights;
 CREATE POLICY "Orgs view own insights" ON public.insights
     FOR SELECT USING (org_id IN (SELECT org_id FROM public.memberships WHERE user_id = auth.uid()));
 
