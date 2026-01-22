@@ -30,16 +30,29 @@ BEGIN
 END $$;
 
 -- Create organization_members table
-CREATE TABLE IF NOT EXISTS organization_members (
+CREATE TABLE IF NOT EXISTS public.organization_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
-  invited_by UUID REFERENCES auth.users(id),
-  joined_at TIMESTAMPTZ DEFAULT NOW(),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(org_id, user_id)
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure correct column name in organization_members (idempotent rename)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organization_members' AND column_name='organization_id') THEN
+        ALTER TABLE public.organization_members RENAME COLUMN organization_id TO org_id;
+    END IF;
+    
+    -- Also ensure other expected columns exist if they was missing from an older version
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organization_members' AND column_name='invited_by') THEN
+        ALTER TABLE public.organization_members ADD COLUMN invited_by UUID REFERENCES auth.users(id);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organization_members' AND column_name='joined_at') THEN
+        ALTER TABLE public.organization_members ADD COLUMN joined_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+END $$;
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_org_members_org_id ON organization_members(org_id);

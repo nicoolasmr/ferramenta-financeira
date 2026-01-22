@@ -10,6 +10,14 @@ CREATE TABLE IF NOT EXISTS public.projects (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ensure correct column name in projects (idempotent rename)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='projects' AND column_name='organization_id') THEN
+        ALTER TABLE public.projects RENAME COLUMN organization_id TO org_id;
+    END IF;
+END $$;
+
 -- Ensure extended columns exist (idempotent)
 DO $$
 BEGIN

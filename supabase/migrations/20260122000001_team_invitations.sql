@@ -11,10 +11,17 @@ CREATE TABLE IF NOT EXISTS team_invitations (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(org_id, email)
 );
-
 -- Create index for token lookups
 CREATE INDEX IF NOT EXISTS idx_team_invitations_token ON team_invitations(token) WHERE accepted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_team_invitations_org_id ON team_invitations(org_id);
+
+-- Ensure correct column name in team_invitations (idempotent rename)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='team_invitations' AND column_name='organization_id') THEN
+        ALTER TABLE public.team_invitations RENAME COLUMN organization_id TO org_id;
+    END IF;
+END $$;
 
 -- Enable RLS
 ALTER TABLE team_invitations ENABLE ROW LEVEL SECURITY;

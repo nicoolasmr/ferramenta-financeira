@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS user_mfa_secrets (
 );
 
 -- Create organization security settings
-CREATE TABLE IF NOT EXISTS organization_security_settings (
+CREATE TABLE IF NOT EXISTS public.organization_security_settings (
   org_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
   enforce_mfa BOOLEAN DEFAULT FALSE,
   mfa_grace_period_days INT DEFAULT 7,
@@ -17,6 +17,14 @@ CREATE TABLE IF NOT EXISTS organization_security_settings (
   ip_whitelist INET[],
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure correct column name in organization_security_settings (idempotent rename)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organization_security_settings' AND column_name='organization_id') THEN
+        ALTER TABLE public.organization_security_settings RENAME COLUMN organization_id TO org_id;
+    END IF;
+END $$;
 
 -- Enable RLS
 ALTER TABLE user_mfa_secrets ENABLE ROW LEVEL SECURITY;

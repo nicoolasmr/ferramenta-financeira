@@ -13,8 +13,7 @@ CREATE TABLE IF NOT EXISTS copilot_suggestions (
 );
 
 -- Create audit logs table
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS public.audit_logs (
   org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   user_id UUID REFERENCES auth.users(id),
   action TEXT NOT NULL,
@@ -25,6 +24,14 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   user_agent TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure correct column name in audit_logs (idempotent rename)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='audit_logs' AND column_name='organization_id') THEN
+        ALTER TABLE public.audit_logs RENAME COLUMN organization_id TO org_id;
+    END IF;
+END $$;
 
 -- Create system settings table
 CREATE TABLE IF NOT EXISTS system_settings (
