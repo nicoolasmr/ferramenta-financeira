@@ -3,6 +3,7 @@
 -- It also ensures the master admin has global access to all tables for support/ops.
 
 -- 1. Ensure helper functions are updated and SECURE
+DROP FUNCTION IF EXISTS public.get_my_org_ids();
 CREATE OR REPLACE FUNCTION public.get_my_org_ids()
 RETURNS SETOF UUID AS $$
 BEGIN
@@ -10,6 +11,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.is_org_member(UUID);
 CREATE OR REPLACE FUNCTION public.is_org_member(p_org_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
