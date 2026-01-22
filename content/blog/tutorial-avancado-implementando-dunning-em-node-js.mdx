@@ -1,51 +1,65 @@
 ---
-title: "Tutorial Avançado: Implementando Dunning em Node.js"
-excerpt: "Análise profunda sobre Tutorial Avançado: Implementando Dunning em Node.js para líderes de SaaS."
-date: "2025-03-22T03:00:00.000Z"
-category: "SaaS Growth"
-tags: ["Strategy","Finance","Ops"]
-readingTime: "8 min"
+title: "Implementando Dunning em Node.js: Webhooks e Queues"
+excerpt: "Tutorial mão na massa: Construindo um sistema de recuperação de falhas resiliente usando BullMQ, Stripe Webhooks e Node.js."
+date: "2026-04-18T03:00:00.000Z"
+category: "Tech & Engenharia"
+tags: ["Node.js", "Dunning", "Webhooks", "Stripe"]
+readingTime: "12 min"
+author: "RevenueOS Team"
 ---
 
-## Contexto Estratégico
-No cenário atual de alta eficiência de capital, dominar este tópico não é opcional. É uma questão de sobrevivência.
-Empresas que falham aqui perdem, em média, **15% da margem líquida** anualmente.
+# Code-Level Dunning
 
-## A Realidade Técnica
-Muitos fundadores tratam isso como um problema operacional, mas é um problema de **Arquitetura de Dados**.
-Sem uma fonte única de verdade (Single Source of Truth), suas decisões são baseadas em ruído.
+Você vai construir um worker que escuta falhas de pagamento e age.
 
-### O Modelo Mental Correto
-1. **Ingestão**: Capture dados brutos.
-2. **Normalização**: Padronize formatos (e.g., converta "cents" do Stripe para "float").
-3. **Ação**: Automatize a resposta.
+## 1. O Gatilho (Webhook)
 
-<Callout type="info" title="Insight">
-A automação remove o erro humano da equação. Em testes, o RevenueOS reduziu incidentes manuais em 99%.
-</Callout>
-
-## Benchmark 2026
-Analisando nossa base de 76 milhões de eventos, vimos que:
-- **Top Performers**: Resolvem incidentes em < 1h.
-- **Média de Mercado**: Leva 3 dias.
-- **Laggards**: Só descobrem no fechamento do mês.
-
-## Implementação Prática
-Não tente construir isso do zero. Utilize APIs robustas que já abstraem a complexidade bancária.
-
-### Exemplo de Código (Node.js)
 ```javascript
-const revenueos = require('revenueos');
-
-// Automatizando a reconciliação
-await revenueos.reconciliation.autoMatch({
-  tolerance: 0.05, // 5 centavos
-  sources: ['stripe', 'itaú']
+// route.ts
+app.post('/webhooks', (req, res) => {
+  const event = req.body;
+  if (event.type === 'invoice.payment_failed') {
+    await dunningQueue.add('handle-failure', {
+      customerId: event.data.object.customer,
+      attemptCount: event.data.object.attempt_count
+    });
+  }
+  res.send(200);
 });
 ```
 
-## Conclusão
-O jogo mudou. Não é mais sobre quem vende mais, é sobre quem opera melhor.
-Comece hoje auditando seu processo atual e identificando os gargalos manuais.
+## 2. O Processador (Worker)
 
-<CTABox title="Auditoria Gratuita" subtitle="Conecte seus dados no RevenueOS e receba um diagnóstico em 5 minutos." />
+O worker decide a lógica baseada na tentativa.
+
+```javascript
+// worker.ts
+new Worker('DunningQueue', async job => {
+  const { customerId, attemptCount } = job.data;
+  const user = await db.getUser(customerId);
+
+  if (attemptCount === 1) {
+    await emailService.send(user.email, 'payment-failed-soft');
+  } 
+  else if (attemptCount === 3) {
+    await emailService.send(user.email, 'payment-failed-hard');
+    await subscriptionService.pause(user.id); // Degradação de serviço
+  }
+});
+```
+
+## 3. Dealing com "Card Updated"
+
+Quando o usuário atualiza o cartão, você deve:
+1.  Tentar cobrar as faturas atrasadas imediatamente (Retry).
+2.  Se funcionar, restaurar o serviço (`subscriptionService.resume`).
+3.  Cancelar os jobs de dunning futuros na fila.
+
+O RevenueOS abstrai toda essa máquina de estados complexa pra você.
+
+<CTABox 
+  title="Não code isso do zero" 
+  subtitle="Use a API de Dunning do RevenueOS e economize 3 meses de desenvolvimento." 
+  buttonText="API Docs" 
+  href="/docs/dunning" 
+/>

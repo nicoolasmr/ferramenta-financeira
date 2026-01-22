@@ -1,51 +1,36 @@
 ---
-title: "A verdade sobre Hotmart que ninguém te conta"
-excerpt: "Análise profunda sobre A verdade sobre Hotmart que ninguém te conta para líderes de SaaS."
-date: "2025-04-01T03:00:00.000Z"
+title: "Hotmart vs SaaS Próprio: Quando migrar?"
+excerpt: "Hotmart é excelente para infoprodutos, mas terrível para SaaS recorrente. As taxas ocultas e a falta de controle do cliente."
+date: "2026-04-26T03:00:00.000Z"
 category: "SaaS Growth"
-tags: ["Strategy","Finance","Ops"]
-readingTime: "8 min"
+tags: ["Hotmart", "Migração", "Gateway", "Estratégia"]
+readingTime: "10 min"
+author: "RevenueOS Team"
 ---
 
-## Contexto Estratégico
-No cenário atual de alta eficiência de capital, dominar este tópico não é opcional. É uma questão de sobrevivência.
-Empresas que falham aqui perdem, em média, **15% da margem líquida** anualmente.
+# O "Imposto" de 10%
 
-## A Realidade Técnica
-Muitos fundadores tratam isso como um problema operacional, mas é um problema de **Arquitetura de Dados**.
-Sem uma fonte única de verdade (Single Source of Truth), suas decisões são baseadas em ruído.
+A Hotmart cobra ~10% + R$ 1,00 por venda.
+Para um curso de R$ 1.000 (Launch), vale a pena pela gestão de afiliados.
+Para um SaaS de R$ 50/mês (Recorrência), isso destrói sua margem.
+Em 12 meses (LTV R$ 600), você pagou R$ 72 pra Hotmart.
+Num gateway direto (RevenueOS/Stripe), você pagaria ~R$ 15.
 
-### O Modelo Mental Correto
-1. **Ingestão**: Capture dados brutos.
-2. **Normalização**: Padronize formatos (e.g., converta "cents" do Stripe para "float").
-3. **Ação**: Automatize a resposta.
+## A Propriedade do Cliente
 
-<Callout type="info" title="Insight">
-A automação remove o erro humano da equação. Em testes, o RevenueOS reduziu incidentes manuais em 99%.
-</Callout>
+Na Hotmart, o cliente é "deles". O checkout é deles. Os dados são deles.
+No seu SaaS, você precisa controlar a experiência completa.
+Você não consegue fazer um "Upsell One-Click" customizado dentro do seu app se o cartão está preso na Hotmart.
 
-## Benchmark 2026
-Analisando nossa base de 76 milhões de eventos, vimos que:
-- **Top Performers**: Resolvem incidentes em < 1h.
-- **Média de Mercado**: Leva 3 dias.
-- **Laggards**: Só descobrem no fechamento do mês.
+## Quando migrar?
 
-## Implementação Prática
-Não tente construir isso do zero. Utilize APIs robustas que já abstraem a complexidade bancária.
+Se você fatura > R$ 10k/mês em recorrência, migrar para um gateway dedicado economiza dinheiro suficiente para pagar o salário de um estagiário.
 
-### Exemplo de Código (Node.js)
-```javascript
-const revenueos = require('revenueos');
+O RevenueOS oferece ferramentas de migração de token para trazer seus assinantes sem eles precisarem redigitar o cartão.
 
-// Automatizando a reconciliação
-await revenueos.reconciliation.autoMatch({
-  tolerance: 0.05, // 5 centavos
-  sources: ['stripe', 'itaú']
-});
-```
-
-## Conclusão
-O jogo mudou. Não é mais sobre quem vende mais, é sobre quem opera melhor.
-Comece hoje auditando seu processo atual e identificando os gargalos manuais.
-
-<CTABox title="Auditoria Gratuita" subtitle="Conecte seus dados no RevenueOS e receba um diagnóstico em 5 minutos." />
+<CTABox 
+  title="Migre e Economize" 
+  subtitle="Calculadora de Economia: Veja quanto você deixa na mesa usando Hotmart para SaaS." 
+  buttonText="Calcular Economia" 
+  href="/calculator" 
+/>

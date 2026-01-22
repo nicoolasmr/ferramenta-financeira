@@ -1,51 +1,50 @@
 ---
-title: "Tutorial Avançado: Implementando Split de Pagamento em Node.js"
-excerpt: "Análise profunda sobre Tutorial Avançado: Implementando Split de Pagamento em Node.js para líderes de SaaS."
-date: "2025-04-05T03:00:00.000Z"
-category: "SaaS Growth"
-tags: ["Strategy","Finance","Ops"]
+title: "Construindo um Marketplace: Guia de Split de Pagamentos"
+excerpt: "Como dividir o dinheiro entre Vendedor, Marketplace e Parceiros em tempo real. Arquitetura de Split Payment em Node.js."
+date: "2026-04-23T03:00:00.000Z"
+category: "Tech & Engenharia"
+tags: ["Marketplace", "Split Payment", "Fintech", "Node.js"]
 readingTime: "12 min"
+author: "RevenueOS Team"
 ---
 
-## Contexto Estratégico
-No cenário atual de alta eficiência de capital, dominar este tópico não é opcional. É uma questão de sobrevivência.
-Empresas que falham aqui perdem, em média, **15% da margem líquida** anualmente.
+# O Desafio do Marketplace
 
-## A Realidade Técnica
-Muitos fundadores tratam isso como um problema operacional, mas é um problema de **Arquitetura de Dados**.
-Sem uma fonte única de verdade (Single Source of Truth), suas decisões são baseadas em ruído.
+O cliente paga R$ 100.
+R$ 80 vai para o Prestador de Serviço.
+R$ 20 fica com a Plataforma (Take Rate).
 
-### O Modelo Mental Correto
-1. **Ingestão**: Capture dados brutos.
-2. **Normalização**: Padronize formatos (e.g., converta "cents" do Stripe para "float").
-3. **Ação**: Automatize a resposta.
+Se o dinheiro cair todo na sua conta e você transferir depois, você paga imposto sobre R$ 100 (Bitributação) e assume risco trabalhista.
+A solução é o **Split na Origem**.
 
-<Callout type="info" title="Insight">
-A automação remove o erro humano da equação. Em testes, o RevenueOS reduziu incidentes manuais em 99%.
-</Callout>
+## O Fluxo de Split
 
-## Benchmark 2026
-Analisando nossa base de 76 milhões de eventos, vimos que:
-- **Top Performers**: Resolvem incidentes em < 1h.
-- **Média de Mercado**: Leva 3 dias.
-- **Laggards**: Só descobrem no fechamento do mês.
+O Gateway recebe os R$ 100 e já divide internamente.
+Na sua conta cai R$ 20. Na conta do prestador cai R$ 80.
+Fiscalmente, você só emite nota de R$ 20.
 
-## Implementação Prática
-Não tente construir isso do zero. Utilize APIs robustas que já abstraem a complexidade bancária.
+## Implementação Node.js
 
-### Exemplo de Código (Node.js)
 ```javascript
-const revenueos = require('revenueos');
-
-// Automatizando a reconciliação
-await revenueos.reconciliation.autoMatch({
-  tolerance: 0.05, // 5 centavos
-  sources: ['stripe', 'itaú']
+const charge = await revenue.charges.create({
+  amount: 10000,
+  split_rules: [
+    { recipient_id: 'seller_123', percentage: 80, liable: true },
+    { recipient_id: 'platform_acc', percentage: 20, liable: false }
+  ]
 });
 ```
 
-## Conclusão
-O jogo mudou. Não é mais sobre quem vende mais, é sobre quem opera melhor.
-Comece hoje auditando seu processo atual e identificando os gargalos manuais.
+## Chargeback Liability (Responsabilidade)
 
-<CTABox title="Auditoria Gratuita" subtitle="Conecte seus dados no RevenueOS e receba um diagnóstico em 5 minutos." />
+Quem paga o pato se o cliente contestar?
+No `split_rules`, definimos quem é `liable`. Se for o seller, o gateway tira os R$ 100 dele. Se ele não tiver saldo, tira da plataforma.
+
+O RevenueOS gerencia essa complexidade de saldos negativos e recuperação de dívida de sellers.
+
+<CTABox 
+  title="Infra para Marketplaces" 
+  subtitle="Crie o próximo Uber ou Airbnb com nosso motor de Split Payment nativo." 
+  buttonText="Soluções para Marketplace" 
+  href="/features/marketplace" 
+/>

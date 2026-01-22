@@ -19,6 +19,9 @@ DROP POLICY IF EXISTS "Users can view org memberships" ON public.memberships;
 DROP POLICY IF EXISTS "Members can view org memberships" ON public.memberships;
 
 -- 3. Create non-recursive policies
+-- Drop potentially conflicting policies first to ensure idempotency
+DROP POLICY IF EXISTS "Users can view own membership" ON public.memberships;
+DROP POLICY IF EXISTS "Users can view org teammates" ON public.memberships;
 -- Policy 1: I can see my own membership
 CREATE POLICY "Users can view own membership" ON public.memberships
 FOR SELECT USING (user_id = auth.uid());

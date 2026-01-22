@@ -1,51 +1,54 @@
 ---
-title: "Tutorial Avançado: Implementando Ledger em Node.js"
-excerpt: "Análise profunda sobre Tutorial Avançado: Implementando Ledger em Node.js para líderes de SaaS."
-date: "2025-03-15T03:00:00.000Z"
-category: "SaaS Growth"
-tags: ["Strategy","Finance","Ops"]
-readingTime: "11 min"
+title: "Ledger Design: Como modelar um Livro Razão em SQL"
+excerpt: "Contabilidade de Partidas Dobradas (Double Entry) para desenvolvedores. Como evitar destruir dinheiro no seu banco de dados."
+date: "2026-04-19T03:00:00.000Z"
+category: "Tech & Engenharia"
+tags: ["Ledger", "SQL", "Database", "Arquitetura"]
+readingTime: "14 min"
+author: "RevenueOS Team"
 ---
 
-## Contexto Estratégico
-No cenário atual de alta eficiência de capital, dominar este tópico não é opcional. É uma questão de sobrevivência.
-Empresas que falham aqui perdem, em média, **15% da margem líquida** anualmente.
+# Debit = Credit
 
-## A Realidade Técnica
-Muitos fundadores tratam isso como um problema operacional, mas é um problema de **Arquitetura de Dados**.
-Sem uma fonte única de verdade (Single Source of Truth), suas decisões são baseadas em ruído.
+Essa é a única regra que importa. A soma de todos os débitos deve ser igual a soma de todos os créditos. Sempre.
+Se não for, dinheiro foi criado ou destruído.
 
-### O Modelo Mental Correto
-1. **Ingestão**: Capture dados brutos.
-2. **Normalização**: Padronize formatos (e.g., converta "cents" do Stripe para "float").
-3. **Ação**: Automatize a resposta.
+## Schema Básico: Tabela Ledger
 
-<Callout type="info" title="Insight">
-A automação remove o erro humano da equação. Em testes, o RevenueOS reduziu incidentes manuais em 99%.
-</Callout>
-
-## Benchmark 2026
-Analisando nossa base de 76 milhões de eventos, vimos que:
-- **Top Performers**: Resolvem incidentes em < 1h.
-- **Média de Mercado**: Leva 3 dias.
-- **Laggards**: Só descobrem no fechamento do mês.
-
-## Implementação Prática
-Não tente construir isso do zero. Utilize APIs robustas que já abstraem a complexidade bancária.
-
-### Exemplo de Código (Node.js)
-```javascript
-const revenueos = require('revenueos');
-
-// Automatizando a reconciliação
-await revenueos.reconciliation.autoMatch({
-  tolerance: 0.05, // 5 centavos
-  sources: ['stripe', 'itaú']
-});
+```sql
+CREATE TABLE ledger_entries (
+  id UUID PRIMARY KEY,
+  transaction_id UUID,
+  account_id UUID,
+  direction ENUM('DEBIT', 'CREDIT'),
+  amount BIGINT, -- Cents!
+  created_at TIMESTAMP
+);
 ```
 
-## Conclusão
-O jogo mudou. Não é mais sobre quem vende mais, é sobre quem opera melhor.
-Comece hoje auditando seu processo atual e identificando os gargalos manuais.
+## Transação de Pagamento de Fatura
 
-<CTABox title="Auditoria Gratuita" subtitle="Conecte seus dados no RevenueOS e receba um diagnóstico em 5 minutos." />
+Quando o cliente paga R$ 100,00:
+1.  **DEBIT:** Conta "Gateway Cash" (Ativo) -> R$ 100.
+2.  **CREDIT:** Conta "Accounts Receivable" (Ativo) -> R$ 100 (Baixa a dívida).
+
+Se houver taxa do Stripe de R$ 3,00:
+3.  **CREDIT:** Conta "Gateway Cash" -> R$ 3.
+4.  **DEBIT:** Conta "Gateway Fees" (Despesa) -> R$ 3.
+
+Resultado líquido no Gateway: R$ 97.
+
+## Imutabilidade
+
+Nunca use `UPDATE ledger_entries`.
+Se houve erro, crie uma **Transação de Estorno** invertendo os lançamentos.
+Isso garante auditoria perfeita.
+
+O RevenueOS Ledger funciona assim. Nós damos a você um plano de contas (Chart of Accounts) pronto para SaaS.
+
+<CTABox 
+  title="Ledger as a Service" 
+  subtitle="Nosso motor contábil garante integridade financeira para sua aplicação." 
+  buttonText="Conhecer Ledger" 
+  href="/features/ledger" 
+/>

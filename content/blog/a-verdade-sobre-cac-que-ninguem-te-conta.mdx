@@ -1,51 +1,36 @@
 ---
-title: "A verdade sobre CAC que ninguém te conta"
-excerpt: "Análise profunda sobre A verdade sobre CAC que ninguém te conta para líderes de SaaS."
-date: "2025-01-28T03:00:00.000Z"
+title: "A Verdade sobre o CAC: Não confie no Facebook Ads"
+excerpt: "Por que as ferramentas de anúncios mentem sobre a conversão e como ter uma atribuição server-side real."
+date: "2026-04-24T03:00:00.000Z"
 category: "SaaS Growth"
-tags: ["Strategy","Finance","Ops"]
-readingTime: "10 min"
+tags: ["CAC", "Ads", "Atribuição", "Verdade"]
+readingTime: "9 min"
+author: "RevenueOS Team"
 ---
 
-## Contexto Estratégico
-No cenário atual de alta eficiência de capital, dominar este tópico não é opcional. É uma questão de sobrevivência.
-Empresas que falham aqui perdem, em média, **15% da margem líquida** anualmente.
+# O Pixel morreu
 
-## A Realidade Técnica
-Muitos fundadores tratam isso como um problema operacional, mas é um problema de **Arquitetura de Dados**.
-Sem uma fonte única de verdade (Single Source of Truth), suas decisões são baseadas em ruído.
+Com o iOS 14+ e ad blockers, o pixel do Facebook perde 30-50% das conversões.
+O Facebook reporta CAC de R$ 50.
+Seu banco diz que o CAC real é R$ 100.
 
-### O Modelo Mental Correto
-1. **Ingestão**: Capture dados brutos.
-2. **Normalização**: Padronize formatos (e.g., converta "cents" do Stripe para "float").
-3. **Ação**: Automatize a resposta.
+## Conversion API (CAPI)
 
-<Callout type="info" title="Insight">
-A automação remove o erro humano da equação. Em testes, o RevenueOS reduziu incidentes manuais em 99%.
-</Callout>
+A solução é enviar eventos **Server-side**.
+Quando o pagamento é confirmado no RevenueOS (Backend), nós enviamos um evento autenticado para o Facebook/Google:
+*"O usuário com e-mail hashed X comprou R$ 200."*
 
-## Benchmark 2026
-Analisando nossa base de 76 milhões de eventos, vimos que:
-- **Top Performers**: Resolvem incidentes em < 1h.
-- **Média de Mercado**: Leva 3 dias.
-- **Laggards**: Só descobrem no fechamento do mês.
+Isso recupera a visibilidade.
 
-## Implementação Prática
-Não tente construir isso do zero. Utilize APIs robustas que já abstraem a complexidade bancária.
+## Janela de Atribuição
 
-### Exemplo de Código (Node.js)
-```javascript
-const revenueos = require('revenueos');
+Cuidado com a janela "View-Through". O Facebook conta conversão se a pessoa *viu* o anúncio e comprou depois (mesmo sem clicar).
+Isso infla os números.
+No RevenueOS, focamos em **Click-Through** hard conversions. Dinheiro na conta.
 
-// Automatizando a reconciliação
-await revenueos.reconciliation.autoMatch({
-  tolerance: 0.05, // 5 centavos
-  sources: ['stripe', 'itaú']
-});
-```
-
-## Conclusão
-O jogo mudou. Não é mais sobre quem vende mais, é sobre quem opera melhor.
-Comece hoje auditando seu processo atual e identificando os gargalos manuais.
-
-<CTABox title="Auditoria Gratuita" subtitle="Conecte seus dados no RevenueOS e receba um diagnóstico em 5 minutos." />
+<CTABox 
+  title="Dados Confiáveis" 
+  subtitle="Integração CAPI nativa com Meta e Google Ads para você saber seu ROAS real." 
+  buttonText="Ver Integrações" 
+  href="/integrations" 
+/>
