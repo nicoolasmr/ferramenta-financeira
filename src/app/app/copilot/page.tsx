@@ -58,8 +58,14 @@ export default function CopilotPage() {
     };
 
     useEffect(() => {
-        loadSuggestions();
-    }, [activeOrganization]);
+        if (orgLoading) return;
+
+        if (activeOrganization) {
+            loadSuggestions();
+        } else {
+            setLoading(false);
+        }
+    }, [activeOrganization, orgLoading]);
 
     const handleDismiss = async (id: string) => {
         try {

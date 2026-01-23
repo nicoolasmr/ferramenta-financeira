@@ -17,13 +17,18 @@ export default function AgingReportPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!activeOrganization) return;
+        if (orgLoading) return;
+
+        if (!activeOrganization) {
+            setLoading(false);
+            return;
+        }
 
         getAgingReport(activeOrganization.id)
             .then(setBuckets)
             .catch(() => toast.error("Failed to load aging report"))
             .finally(() => setLoading(false));
-    }, [activeOrganization]);
+    }, [activeOrganization, orgLoading]);
 
     const handleExport = async () => {
         if (!activeOrganization) return;

@@ -130,13 +130,18 @@ export default function ProjectsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!activeOrganization) return;
+        if (orgLoading) return;
+
+        if (!activeOrganization) {
+            setLoading(false);
+            return;
+        }
 
         getProjects(activeOrganization.id)
             .then(setProjects)
             .catch(() => toast.error("Failed to load projects"))
             .finally(() => setLoading(false));
-    }, [activeOrganization]);
+    }, [activeOrganization, orgLoading]);
 
     const handleCreate = async (data: Record<string, string>) => {
         if (!activeOrganization) return;

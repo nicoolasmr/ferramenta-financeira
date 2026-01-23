@@ -19,6 +19,7 @@ import { GlobalExportDialog } from "@/components/shared/export-dialog";
 import { FilterBuilder } from "@/components/filters/filter-builder";
 import { useFilterState } from "@/hooks/use-filter-state";
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, type Customer } from "@/actions/customers";
+import { exportCustomers } from "@/actions/customers/export";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -175,7 +176,12 @@ export default function CustomersPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!activeOrganization) return;
+        if (orgLoading) return;
+
+        if (!activeOrganization) {
+            setLoading(false);
+            return;
+        }
 
         setLoading(true);
         getCustomers(activeOrganization.id, {
@@ -187,7 +193,7 @@ export default function CustomersPage() {
             .then(setCustomers)
             .catch(() => toast.error("Failed to load customers"))
             .finally(() => setLoading(false));
-    }, [activeOrganization, filters]);
+    }, [activeOrganization, filters, orgLoading]);
 
     const handleCreate = async (data: Record<string, string>) => {
         if (!activeOrganization) return;

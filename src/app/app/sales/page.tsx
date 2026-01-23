@@ -64,7 +64,12 @@ export default function SalesPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!activeOrganization) return;
+        if (orgLoading) return;
+
+        if (!activeOrganization) {
+            setLoading(false);
+            return;
+        }
 
         setLoading(true);
         getOpportunities(activeOrganization.id, {
@@ -76,7 +81,7 @@ export default function SalesPage() {
             .then(setOpportunities)
             .catch(() => toast.error("Failed to load opportunities"))
             .finally(() => setLoading(false));
-    }, [activeOrganization, filters]);
+    }, [activeOrganization, filters, orgLoading]);
 
     const handleCreate = async (data: Record<string, string>) => {
         if (!activeOrganization) {

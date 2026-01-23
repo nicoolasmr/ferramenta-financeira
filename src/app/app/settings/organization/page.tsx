@@ -29,7 +29,12 @@ export default function OrganizationSettingsPage() {
     });
 
     useEffect(() => {
-        if (!activeOrganization) return;
+        if (orgLoading) return;
+
+        if (!activeOrganization) {
+            setLoading(false);
+            return;
+        }
 
         getOrganization(activeOrganization.id)
             .then((org) => {
@@ -45,7 +50,7 @@ export default function OrganizationSettingsPage() {
             })
             .catch(() => toast.error("Failed to load organization"))
             .finally(() => setLoading(false));
-    }, [activeOrganization]);
+    }, [activeOrganization, orgLoading]);
 
     const handleSave = async (e: React.FormEvent) => {
         if (!activeOrganization) return;

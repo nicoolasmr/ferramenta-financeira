@@ -34,7 +34,12 @@ export default function DashboardPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!activeOrganization) return;
+        if (orgLoading) return;
+
+        if (!activeOrganization) {
+            setLoading(false);
+            return;
+        }
 
         getDashboardMetrics(activeOrganization.id)
             .then(setMetrics)
@@ -43,7 +48,7 @@ export default function DashboardPage() {
                 setError("Failed to load dashboard data");
             })
             .finally(() => setLoading(false));
-    }, [activeOrganization]);
+    }, [activeOrganization, orgLoading]);
 
     if (orgLoading || loading) return <LoadingState />;
     if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;

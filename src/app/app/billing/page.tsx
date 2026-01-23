@@ -62,10 +62,14 @@ export default function BillingPage() {
     };
 
     useEffect(() => {
+        if (orgLoading) return;
+
         if (activeOrganization) {
             fetchData();
+        } else {
+            setLoading(false);
         }
-    }, [activeOrganization]);
+    }, [activeOrganization, orgLoading]);
 
     const handleUpdatePlan = async (planId: string) => {
         if (!activeOrganization) return;
