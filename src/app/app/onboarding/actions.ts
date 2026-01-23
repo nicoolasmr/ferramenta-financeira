@@ -9,6 +9,7 @@ const onboardingSchema = z.object({
     orgSlug: z.string().min(3), // TODO: regex validation
     projectName: z.string().min(3),
     planCode: z.enum(["starter", "pro", "agency"]),
+    integration: z.string().optional(),
 });
 
 export async function completeOnboarding(formData: FormData) {
@@ -23,7 +24,8 @@ export async function completeOnboarding(formData: FormData) {
         orgName: formData.get("orgName") as string,
         orgSlug: formData.get("orgSlug") as string,
         projectName: formData.get("projectName") as string,
-        planCode: formData.get("planCode") as string || "starter"
+        planCode: formData.get("planCode") as string || "starter",
+        integration: formData.get("integration") as string,
     };
 
     const validation = onboardingSchema.safeParse(data);
@@ -72,6 +74,19 @@ export async function completeOnboarding(formData: FormData) {
             plan_id: plan.id,
             status: "active", // trial or active
             provider: "stripe"
+        });
+    }
+
+    // 6. Create Integration (if selected)
+    if (data.integration && data.integration !== 'skip') {
+        // Map integration to provider key (lowercase)
+        const provider = data.integration.toLowerCase();
+        await supabase.from("gateway_integrations").insert({
+            org_id: org.id,
+            provider: provider,
+            name: data.integration,
+            status: "active", // mock active for onboarding
+            credentials: {} // empty credentials for now
         });
     }
 

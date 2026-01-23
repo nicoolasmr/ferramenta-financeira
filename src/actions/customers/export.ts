@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export interface ExportOptions {
     columns: string[];
+    format?: 'csv' | 'json' | 'pdf';
     filters?: {
         search?: string;
         dateFrom?: string;

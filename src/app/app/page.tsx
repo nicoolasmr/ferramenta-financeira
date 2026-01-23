@@ -9,10 +9,16 @@ import { ErrorState } from "@/components/states/ErrorState";
 import Link from "next/link";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, TrendingDown } from "lucide-react";
+
 interface DashboardMetrics {
     projectsCount: number;
     customersCount: number;
     integrationsCount: number;
+    revenueThisMonth: number;
+    revenueMoM: number;
+    revenueTimeline: Array<{ date: string; amount: number }>;
     recentProjects: Array<{
         id: string;
         name: string;
@@ -46,40 +52,43 @@ export default function DashboardPage() {
 
     const kpis = [
         {
-            title: "Total Projects",
+            title: "Project Volume",
             value: metrics.projectsCount,
             icon: FolderKanban,
             color: "text-blue-600",
-            bgColor: "bg-blue-50",
+            bgColor: "bg-blue-50 dark:bg-blue-900/20",
         },
         {
             title: "Total Customers",
             value: metrics.customersCount,
             icon: Users,
             color: "text-green-600",
-            bgColor: "bg-green-50",
+            bgColor: "bg-green-50 dark:bg-green-900/20",
         },
         {
-            title: "Active Integrations",
+            title: "Revenue (Month)",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.revenueThisMonth),
+            icon: DollarSign,
+            color: "text-emerald-600",
+            bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+            mom: metrics.revenueMoM
+        },
+        {
+            title: "Integrations",
             value: metrics.integrationsCount,
             icon: Plug,
             color: "text-purple-600",
-            bgColor: "bg-purple-50",
-        },
-        {
-            title: "Total Revenue",
-            value: "R$ 0",
-            icon: DollarSign,
-            color: "text-emerald-600",
-            bgColor: "bg-emerald-50",
+            bgColor: "bg-purple-50 dark:bg-purple-900/20",
         },
     ];
 
     return (
         <div className="flex flex-col gap-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                <p className="text-slate-500">Welcome back! Here's your overview.</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+                    <p className="text-muted-foreground">Overview of your financial performance.</p>
+                </div>
             </div>
 
             {/* KPI Cards */}
@@ -89,7 +98,7 @@ export default function DashboardPage() {
                     return (
                         <Card key={kpi.title}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-600">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
                                     {kpi.title}
                                 </CardTitle>
                                 <div className={`w-8 h-8 rounded-lg ${kpi.bgColor} flex items-center justify-center`}>
@@ -98,49 +107,109 @@ export default function DashboardPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{kpi.value}</div>
+                                {kpi.mom !== undefined && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                        {kpi.mom >= 0 ? (
+                                            <TrendingUp className="h-3 w-3 text-emerald-500" />
+                                        ) : (
+                                            <TrendingDown className="h-3 w-3 text-red-500" />
+                                        )}
+                                        <span className={cn(
+                                            "text-xs font-medium",
+                                            kpi.mom >= 0 ? "text-emerald-500" : "text-red-500"
+                                        )}>
+                                            {kpi.mom.toFixed(1)}% vs last month
+                                        </span>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     );
                 })}
             </div>
 
-            {/* Recent Projects */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent Projects</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {metrics.recentProjects.length === 0 ? (
-                        <p className="text-sm text-slate-500 text-center py-8">
-                            No projects yet. <Link href="/app/projects" className="text-blue-600 hover:underline">Create your first project</Link>
-                        </p>
-                    ) : (
-                        <div className="space-y-4">
-                            {metrics.recentProjects.map((project) => (
-                                <div
-                                    key={project.id}
-                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50 transition-colors"
-                                >
-                                    <div>
-                                        <p className="font-medium">{project.name}</p>
-                                        <p className="text-sm text-slate-500">
-                                            Created {new Date(project.created_at).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <span
-                                        className={`px-2 py-1 rounded text-xs font-medium ${project.status === "active"
-                                            ? "bg-green-100 text-green-700"
-                                            : "bg-slate-100 text-slate-700"
-                                            }`}
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Revenue Chart */}
+                <Card className="col-span-1">
+                    <CardHeader>
+                        <CardTitle>Revenue Trend (30d)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={metrics.revenueTimeline}>
+                                <defs>
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <XAxis
+                                    dataKey="date"
+                                    tickFormatter={(str) => new Date(str).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(val) => `R$ ${val}`}
+                                />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    formatter={(value: any) => [`R$ ${Number(value || 0).toFixed(2)}`, 'Revenue']}
+                                    labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="amount"
+                                    stroke="#10b981"
+                                    strokeWidth={2}
+                                    fillOpacity={1}
+                                    fill="url(#colorRevenue)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+
+                {/* Recent Projects */}
+                <Card className="col-span-1">
+                    <CardHeader>
+                        <CardTitle>Recent Projects</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {metrics.recentProjects.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-8">
+                                No projects yet. <Link href="/app/projects" className="text-primary hover:underline">Create your first project</Link>
+                            </p>
+                        ) : (
+                            <div className="space-y-4">
+                                {metrics.recentProjects.map((project) => (
+                                    <div
+                                        key={project.id}
+                                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                                     >
-                                        {project.status}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                                        <div>
+                                            <p className="font-medium text-foreground">{project.name}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                Created {new Date(project.created_at).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <Badge variant={project.status === "active" ? "default" : "secondary"}>
+                                            {project.status}
+                                        </Badge>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
+
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";

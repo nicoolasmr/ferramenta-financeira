@@ -45,6 +45,27 @@ export async function getAgingReport(orgId: string): Promise<AgingBucket[]> {
     return Object.values(buckets);
 }
 
+export async function getOverdueReceivables(orgId: string) {
+    const supabase = await createClient();
+    const now = new Date().toISOString();
+
+    const { data, error } = await supabase
+        .from('receivables')
+        .select(`*, customer:customers(name, email, phone)`)
+        .eq('org_id', orgId)
+        .lt('due_date', now)
+        .neq('status', 'paid')
+        .order('due_date', { ascending: true }) // Oldest first
+        .limit(50);
+
+    if (error) {
+        console.error("Error fetching overdue receivables:", error);
+        return [];
+    }
+
+    return data || [];
+}
+
 export async function exportAgingReport(orgId: string): Promise<string> {
     const buckets = await getAgingReport(orgId);
 

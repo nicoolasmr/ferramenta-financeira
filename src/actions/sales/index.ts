@@ -16,13 +16,57 @@ export interface SalesOpportunity {
     updated_at: string;
 }
 
-export async function getOpportunities(orgId: string): Promise<SalesOpportunity[]> {
+export interface SalesFilters {
+    search?: string;
+    dateRange?: {
+        from: Date;
+        to: Date;
+    };
+    stage?: string[];
+    valueRange?: {
+        min?: number;
+        max?: number;
+    };
+}
+
+export async function getOpportunities(orgId: string, filters?: SalesFilters): Promise<SalesOpportunity[]> {
     const supabase = await createClient();
-    const { data, error } = await supabase
+
+    let query = supabase
         .from("sales_opportunities")
         .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false });
+        .eq("org_id", orgId);
+
+    // Apply search filter (name)
+    if (filters?.search) {
+        query = query.ilike("name", `%${filters.search}%`);
+    }
+
+    // Apply date range filter (created_at)
+    if (filters?.dateRange) {
+        query = query
+            .gte("created_at", filters.dateRange.from.toISOString())
+            .lte("created_at", filters.dateRange.to.toISOString());
+    }
+
+    // Apply stage filter
+    if (filters?.stage && filters.stage.length > 0) {
+        query = query.in("stage", filters.stage);
+    }
+
+    // Apply value range filter
+    if (filters?.valueRange) {
+        if (filters.valueRange.min !== undefined) {
+            query = query.gte("value", filters.valueRange.min);
+        }
+        if (filters.valueRange.max !== undefined) {
+            query = query.lte("value", filters.valueRange.max);
+        }
+    }
+
+    query = query.order("created_at", { ascending: false });
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return data || [];

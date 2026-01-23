@@ -14,6 +14,9 @@ import { EditDialog } from "@/components/dialogs/EditDialog";
 import { DeleteDialog } from "@/components/dialogs/DeleteDialog";
 import { LoadingState } from "@/components/states/LoadingState";
 import { EmptyState } from "@/components/states/EmptyState";
+import { FilterBuilder } from "@/components/filters/filter-builder";
+import { useFilterState } from "@/hooks/use-filter-state";
+import type { FilterConfig } from "@/components/filters/types";
 import {
     getOpportunities,
     createOpportunity,
@@ -28,19 +31,52 @@ import { ErrorState } from "@/components/states/ErrorState";
 
 const STAGES = ["Lead", "Qualified", "Proposal", "Negotiation", "Closed Won", "Closed Lost"];
 
+const FILTER_CONFIG: FilterConfig = {
+    search: {
+        placeholder: 'Search opportunities...',
+        fields: ['name']
+    },
+    dateRange: {
+        label: 'Created date',
+        field: 'created_at'
+    },
+    multiSelect: [
+        {
+            key: 'status', // mapped to stage in logic
+            label: 'Stage',
+            placeholder: 'Select stage...',
+            field: 'stage',
+            options: STAGES.map(s => ({ value: s, label: s }))
+        }
+    ],
+    numericRange: {
+        label: 'Value (R$)',
+        field: 'value',
+        min: 0,
+        step: 100
+    }
+};
+
 export default function SalesPage() {
     const { activeOrganization, loading: orgLoading } = useOrganization();
+    const { filters, setFilters } = useFilterState();
     const [opportunities, setOpportunities] = useState<SalesOpportunity[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!activeOrganization) return;
 
-        getOpportunities(activeOrganization.id)
+        setLoading(true);
+        getOpportunities(activeOrganization.id, {
+            search: filters.search,
+            dateRange: filters.dateRange,
+            stage: filters.status, // mapping status filter to stage
+            valueRange: filters.amountRange // mapping amountRange filter to value
+        })
             .then(setOpportunities)
             .catch(() => toast.error("Failed to load opportunities"))
             .finally(() => setLoading(false));
-    }, [activeOrganization]);
+    }, [activeOrganization, filters]);
 
     const handleCreate = async (data: Record<string, string>) => {
         if (!activeOrganization) {
@@ -132,6 +168,12 @@ export default function SalesPage() {
                     triggerLabel="Add Opportunity"
                 />
             </div>
+
+            <FilterBuilder
+                config={FILTER_CONFIG}
+                value={filters}
+                onChange={setFilters}
+            />
 
             {opportunities.length === 0 ? (
                 <EmptyState

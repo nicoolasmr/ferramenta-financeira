@@ -99,6 +99,81 @@ export default function AgingReportPage() {
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
+
+            {/* Proactive Aging List */}
+            {activeOrganization && <DetailedAgingList orgId={activeOrganization.id} />}
         </div>
+    );
+}
+
+// Inner component to handle data fetching for the list specifically
+import { getOverdueReceivables } from "@/actions/aging";
+import { Badge } from "@/components/ui/badge";
+import { ReminderDialog } from "@/components/receivables/reminder-dialog";
+
+function DetailedAgingList({ orgId }: { orgId: string }) {
+    const [receivables, setReceivables] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getOverdueReceivables(orgId)
+            .then(setReceivables)
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [orgId]);
+
+    if (loading) return <div className="p-4 text-center">Loading detailed list...</div>;
+
+    if (receivables.length === 0) return null; // No overdue items
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Overdue Receivables (Action Required)</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="rounded-md border">
+                    <table className="w-full text-sm">
+                        <thead className="bg-slate-50 border-b">
+                            <tr>
+                                <th className="p-3 text-left font-medium text-slate-500">Customer</th>
+                                <th className="p-3 text-left font-medium text-slate-500">Due Date</th>
+                                <th className="p-3 text-left font-medium text-slate-500">Amount</th>
+                                <th className="p-3 text-left font-medium text-slate-500">Days Overdue</th>
+                                <th className="p-3 text-right font-medium text-slate-500">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {receivables.map(r => {
+                                const daysOverdue = Math.floor((new Date().getTime() - new Date(r.due_date).getTime()) / (1000 * 60 * 60 * 24));
+                                return (
+                                    <tr key={r.id} className="border-b last:border-0 hover:bg-slate-50/50">
+                                        <td className="p-3">
+                                            <div className="font-medium">{r.customer?.name || "Unknown"}</div>
+                                            <div className="text-xs text-slate-500">{r.customer?.email}</div>
+                                        </td>
+                                        <td className="p-3 text-slate-600">{new Date(r.due_date).toLocaleDateString()}</td>
+                                        <td className="p-3 font-medium">
+                                            R$ {r.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                                        </td>
+                                        <td className="p-3">
+                                            <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
+                                                {daysOverdue} days
+                                            </Badge>
+                                        </td>
+                                        <td className="p-3 text-right">
+                                            <ReminderDialog
+                                                receivableId={r.id}
+                                                customerName={r.customer?.name || "Customer"}
+                                            />
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </CardContent>
+        </Card>
     );
 }

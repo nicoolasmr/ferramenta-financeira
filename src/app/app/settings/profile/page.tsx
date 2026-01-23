@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRef } from "react";
 import { getCurrentUser } from "@/actions/auth";
+import { updateUserProfile, uploadAvatar } from "@/actions/profile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingState } from "@/components/states/LoadingState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Upload } from "lucide-react";
+import { User, Mail, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProfilePage() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [formData, setFormData] = useState({
         full_name: "",
         email: "",
@@ -46,14 +49,38 @@ export default function ProfilePage() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            // TODO: Implement user profile update
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await updateUserProfile({
+                full_name: formData.full_name,
+                avatar_url: formData.avatar_url,
+            });
             toast.success('Perfil atualizado com sucesso!');
         } catch (error) {
             console.error('Error saving profile:', error);
             toast.error('Erro ao salvar perfil');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error("File size must be less than 2MB");
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const publicUrl = await uploadAvatar(file);
+            setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+            toast.success("Avatar uploaded successfully");
+        } catch (error) {
+            console.error("Avatar upload failed:", error);
+            toast.error("Failed to upload avatar");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -80,9 +107,16 @@ export default function ProfilePage() {
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col gap-2">
-                        <Button variant="outline" size="sm">
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload New Picture
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/png, image/jpeg, image/gif"
+                            onChange={handleAvatarUpload}
+                        />
+                        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                            {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                            {uploading ? "Uploading..." : "Upload New Picture"}
                         </Button>
                         <p className="text-xs text-slate-500">JPG, PNG or GIF. Max 2MB.</p>
                     </div>
@@ -150,7 +184,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex justify-between py-2 border-b">
                         <span className="text-sm text-slate-500">Account Created</span>
-                        <span className="text-sm">{new Date(user?.created_at).toLocaleDateString()}</span>
+                        <span className="text-sm">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</span>
                     </div>
                     <div className="flex justify-between py-2">
                         <span className="text-sm text-slate-500">Last Sign In</span>

@@ -77,8 +77,29 @@ export async function middleware(request: NextRequest) {
     if (request.nextUrl.pathname.startsWith('/app') ||
         request.nextUrl.pathname.startsWith('/ops') ||
         request.nextUrl.pathname.startsWith('/portal')) {
+
         if (!user) {
             return NextResponse.redirect(new URL('/login', request.url))
+        }
+
+        // MFA Check: Check for the verification cookie
+        // Note: We only check if the cookie exists. The database check for enrollment happens at login time (interstitial).
+        // If the user has enrollment but no cookie, we redirect to verify-status.
+        // We optimize by checking cookie existence first.
+
+        // However, we must know if the user HAS MFA enabled to decide if we block or pass.
+        // Checking DB in middleware is expensive (already called getUser though).
+        // Strategy: 
+        // 1. If cookie exists -> Pass.
+        // 2. If cookie missing -> Redirect to /auth/verify-mfa-status (which checks DB and redirects back or challenges).
+
+        // This relies on verify-mfa-status looping. 
+        // We avoid infinite loop because verify-mfa-status is NOT in the protected path prefix (it's /auth/).
+
+        const mfaVerified = request.cookies.get('x-mfa-verified');
+        if (!mfaVerified) {
+            // Redirect to status check which will either challenge or set cookie and redirect back
+            return NextResponse.redirect(new URL('/auth/verify-mfa-status', request.url));
         }
     }
 

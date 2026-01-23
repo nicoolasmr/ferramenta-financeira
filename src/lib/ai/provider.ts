@@ -5,6 +5,7 @@ export type AIContext = {
     mode: "global" | "project" | "wizard";
     projectId?: string;
     orgId: string;
+    path?: string; // Current URL path
 };
 
 export interface AIProvider {
@@ -62,7 +63,16 @@ class MockAIProvider implements AIProvider {
             return `[Project ${context.projectId}] I am your Project Analyst. Ask me about sales, overdue payments, or churn.`;
         }
 
-        // 3. Global Portfolio
+        // 3. Page-Specific Context (Heuristics)
+        if (context.path?.includes("/reconciliation")) {
+            return "I see you're in the Reconciliation dashboard. Remember to check if the 'match_id' is already linked to a payment to avoid duplicates.";
+        }
+
+        if (context.path?.includes("/sales")) {
+            return "分析 (Funil de Vendas): Suas taxas de conversão estão estáveis. Deseja ver uma simulação de aumento de preços?";
+        }
+
+        // 4. Global Portfolio
         if (lastMsg.includes("health") || lastMsg.includes("saúde")) {
             // Query the Truth Layer
             const { data: summary } = await supabase.from("reconciliation_summary_view")

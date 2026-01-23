@@ -32,7 +32,6 @@ export async function getUserOrganizations(): Promise<Organization[]> {
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-        console.error('Error getting user:', userError);
         return [];
     }
 
@@ -64,10 +63,15 @@ export async function getUserOrganizations(): Promise<Organization[]> {
 }
 
 export async function getActiveOrganization(): Promise<Organization | null> {
-    const orgs = await getUserOrganizations();
-    if (orgs.length === 0) return null;
-    // For now, return the first one as default active
-    return orgs[0];
+    try {
+        const orgs = await getUserOrganizations();
+        if (orgs.length === 0) return null;
+        // For now, return the first one as default active
+        return orgs[0];
+    } catch (error) {
+        console.error("Error fetching active organization:", error);
+        return null;
+    }
 }
 
 export async function updateOrganization(orgId: string, formData: Partial<Organization>) {

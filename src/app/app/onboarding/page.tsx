@@ -2,145 +2,114 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { completeOnboarding } from "./actions"; // Need to create this
-import { CheckCircle2, Rocket } from "lucide-react";
+import { completeOnboarding } from "./actions";
+import { StepIndicator } from "@/components/onboarding/step-indicator";
+import { StepWelcome } from "@/components/onboarding/steps/welcome-step";
+import { StepOrg } from "@/components/onboarding/steps/org-step";
+import { StepPlan } from "@/components/onboarding/steps/plan-step";
+import { StepIntegration } from "@/components/onboarding/steps/integration-step";
+import { StepProject } from "@/components/onboarding/steps/project-step";
+import { Loader2 } from "lucide-react";
 
 export default function OnboardingPage() {
-    const [step, setStep] = useState(1);
+    // Steps: 0=Welcome, 1=Org, 2=Plan, 3=Integration, 4=Project
+    const [step, setStep] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Simple state management for the wizard steps
-    // In a real app, use React Hook Form + Zod
     const [formData, setFormData] = useState({
         orgName: "",
         orgSlug: "",
         projectName: "",
         planCode: "starter",
-        integration: "" // Added state for integration
+        integration: ""
     });
 
     const handleNext = () => setStep(s => s + 1);
+    const handleBack = () => setStep(s => s - 1);
     const handleChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleSet = (key: string, value: string) => setFormData({ ...formData, [key]: value });
+
+    // Handle form submission via the server action
+    const handleSubmit = async (formDataPayload: FormData) => {
+        setIsSubmitting(true);
+        // The server action 'completeOnboarding' will handle the redirect
+        // We just need to ensure the form submits correctly
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <Card className="w-full max-w-lg">
-                <CardHeader>
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="p-2 bg-primary/10 rounded-full">
-                            <Rocket className="w-5 h-5 text-primary" />
-                        </div>
-                        <span className="text-sm font-medium text-muted-foreground">step {step} of 4</span>
-                    </div>
-                    <CardTitle className="text-2xl">
-                        {step === 1 && "Start your Organization"}
-                        {step === 2 && "Choose your Plan"}
-                        {step === 3 && "Connect Integration"}
-                        {step === 4 && "Create your First Project"}
-                    </CardTitle>
-                    <CardDescription>
-                        Let&apos;s get your workspace ready for business.
-                    </CardDescription>
-                </CardHeader>
+            <Card className="w-full max-w-lg shadow-xl">
+                {step > 0 && (
+                    <CardHeader>
+                        <StepIndicator currentStep={step} totalSteps={4} />
+                        <CardTitle className="text-center text-2xl">
+                            {step === 1 && "Start your Organization"}
+                            {step === 2 && "Choose your Plan"}
+                            {step === 3 && "Connect Integration"}
+                            {step === 4 && "Create your First Project"}
+                        </CardTitle>
+                        <CardDescription className="text-center">
+                            Let&apos;s get your workspace ready for business.
+                        </CardDescription>
+                    </CardHeader>
+                )}
 
-                <form action={completeOnboarding as any}>
-                    <CardContent className="space-y-4">
-                        {step === 1 && (
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label>Organization Name</Label>
-                                    <Input name="orgName" placeholder="Acme Corp" value={formData.orgName} onChange={handleChange} required />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Workspace URL</Label>
-                                    <div className="flex items-center">
-                                        <span className="bg-slate-100 border border-r-0 rounded-l-md px-3 py-2 text-sm text-muted-foreground">app.revenueos.com/</span>
-                                        <Input className="rounded-l-none" name="orgSlug" placeholder="acme" value={formData.orgSlug} onChange={handleChange} required />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                <CardContent className={step === 0 ? "pt-6" : ""}>
+                    {step === 0 && <StepWelcome onNext={handleNext} />}
 
-                        {step === 2 && (
-                            <div className="grid gap-4">
-                                {['starter', 'pro', 'agency'].map((plan) => (
-                                    <div key={plan}
-                                        className={`border rounded-lg p-4 cursor-pointer hover:border-primary transition-colors ${formData.planCode === plan ? 'border-primary bg-primary/5 ring-1 ring-primary' : ''}`}
-                                        onClick={() => setFormData({ ...formData, planCode: plan })}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-semibold capitalize">{plan}</span>
-                                            {formData.planCode === plan && <CheckCircle2 className="w-4 h-4 text-primary" />}
-                                        </div>
-                                        <input type="radio" name="planCode" value={plan} className="hidden" checked={formData.planCode === plan} readOnly />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                    {step === 1 && (
+                        <StepOrg data={formData} onChange={handleChange} />
+                    )}
 
-                        {step === 3 && (
-                            <div className="grid gap-4">
-                                <Label className="mb-2">Connect your Primary Integration</Label>
-                                {['Stripe', 'Hotmart', 'Asaas'].map((provider) => (
-                                    <div key={provider}
-                                        className={`border rounded-lg p-4 cursor-pointer hover:border-primary transition-colors ${formData.integration === provider ? 'border-primary bg-primary/5 ring-1 ring-primary' : ''}`}
-                                        onClick={() => setFormData({ ...formData, integration: provider })}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center gap-3">
-                                                {/* Placeholder icons */}
-                                                <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center font-bold text-xs text-slate-500">
-                                                    {provider[0]}
-                                                </div>
-                                                <span className="font-semibold">{provider}</span>
-                                            </div>
-                                            {formData.integration === provider && <CheckCircle2 className="w-4 h-4 text-primary" />}
-                                        </div>
-                                    </div>
-                                ))}
-                                {/* Skip option */}
-                                <div className="mt-4 text-center">
-                                    <Button type="button" variant="link" className="text-muted-foreground" onClick={() => setFormData({ ...formData, integration: 'skip' })}>
-                                        I'll connect later
-                                    </Button>
-                                </div>
-                                <input type="hidden" name="integration" value={formData.integration || 'skip'} />
-                            </div>
-                        )}
+                    {step === 2 && (
+                        <StepPlan value={formData.planCode} onChange={(val) => handleSet('planCode', val)} />
+                    )}
 
-                        {step === 4 && (
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label>First Project Name</Label>
-                                    <Input name="projectName" placeholder="My First Product Launch" value={formData.projectName} onChange={handleChange} required />
-                                </div>
-                                {/* Hidden fields to pass state from previous steps */}
+                    {step === 3 && (
+                        <StepIntegration value={formData.integration} onChange={(val) => handleSet('integration', val)} />
+                    )}
+
+                    {step === 4 && (
+                        <StepProject data={formData} onChange={handleChange} />
+                    )}
+                </CardContent>
+
+                {step > 0 && (
+                    <CardFooter className="flex justify-between border-t pt-6">
+                        <Button type="button" variant="ghost" onClick={handleBack} disabled={isSubmitting}>
+                            Back
+                        </Button>
+
+                        {step < 4 ? (
+                            <Button
+                                type="button"
+                                onClick={handleNext}
+                                disabled={
+                                    (step === 1 && (!formData.orgName || !formData.orgSlug)) ||
+                                    (step === 2 && !formData.planCode) ||
+                                    (step === 3 && !formData.integration && formData.integration !== 'skip')
+                                }
+                            >
+                                Continue
+                            </Button>
+                        ) : (
+                            <form action={completeOnboarding} onSubmit={() => setIsSubmitting(true)}>
+                                {/* Pass all state as hidden inputs */}
                                 <input type="hidden" name="orgName" value={formData.orgName} />
                                 <input type="hidden" name="orgSlug" value={formData.orgSlug} />
                                 <input type="hidden" name="planCode" value={formData.planCode} />
                                 <input type="hidden" name="integration" value={formData.integration} />
-                            </div>
+                                <input type="hidden" name="projectName" value={formData.projectName} />
+
+                                <Button type="submit" disabled={!formData.projectName || isSubmitting}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Complete Setup
+                                </Button>
+                            </form>
                         )}
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                        {step > 1 && (
-                            <Button type="button" variant="ghost" onClick={() => setStep(s => s - 1)}>Back</Button>
-                        )}
-                        <div className="ml-auto">
-                            {step < 4 ? (
-                                <Button type="button" onClick={handleNext} disabled={
-                                    (step === 1 && !formData.orgName) ||
-                                    (step === 2 && !formData.planCode) ||
-                                    (step === 3 && !formData.integration && formData.integration !== 'skip')
-                                }>Continue</Button>
-                            ) : (
-                                <Button type="submit">Complete Setup</Button>
-                            )}
-                        </div>
                     </CardFooter>
-                </form>
+                )}
             </Card>
         </div>
     );

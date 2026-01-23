@@ -15,14 +15,49 @@ export interface Customer {
     created_at: string;
 }
 
-export async function getCustomers(orgId: string): Promise<Customer[]> {
+export interface CustomerFilters {
+    search?: string;
+    dateRange?: {
+        from: Date;
+        to: Date;
+    };
+    tags?: string[];
+    source?: string[];
+}
+
+export async function getCustomers(orgId: string, filters?: CustomerFilters): Promise<Customer[]> {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    let query = supabase
         .from("customers")
         .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false });
+        .eq("org_id", orgId);
+
+    // Apply search filter
+    if (filters?.search) {
+        query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,document.ilike.%${filters.search}%`);
+    }
+
+    // Apply date range filter
+    if (filters?.dateRange) {
+        query = query
+            .gte("created_at", filters.dateRange.from.toISOString())
+            .lte("created_at", filters.dateRange.to.toISOString());
+    }
+
+    // Apply tags filter
+    if (filters?.tags && filters.tags.length > 0) {
+        query = query.overlaps("tags", filters.tags);
+    }
+
+    // Apply source filter
+    if (filters?.source && filters.source.length > 0) {
+        query = query.in("source", filters.source);
+    }
+
+    query = query.order("created_at", { ascending: false });
+
+    const { data, error } = await query;
 
     if (error) {
         console.error("Error fetching customers:", error);

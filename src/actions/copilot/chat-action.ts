@@ -9,10 +9,11 @@ export async function processChatMessage(
     messages: AIMessage[],
     orgId: string,
     contextMode: "global" | "project" | "wizard" = "global",
-    projectId?: string
+    projectId?: string,
+    path?: string
 ) {
     const ai = getAIProvider();
-    const context: AIContext = { mode: contextMode, orgId, projectId };
+    const context: AIContext = { mode: contextMode, orgId, projectId, path };
 
     // Log intent to DB (omitted for MVP speed, but part of spec)
 

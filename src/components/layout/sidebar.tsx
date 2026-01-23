@@ -81,17 +81,17 @@ export function Sidebar() {
     ];
 
     return (
-        <aside className="hidden border-r bg-slate-50/50 md:block">
+        <aside className="hidden border-r bg-muted/30 md:block">
             <div className="flex h-full max-h-screen flex-col gap-2">
                 <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                     <Link href="/" className="flex items-center gap-2 font-semibold">
-                        <BarChart3 className="h-6 w-6 text-blue-600" />
+                        <BarChart3 className="h-6 w-6 text-primary" />
                         <span className="text-lg font-bold tracking-tight">RevenueOS</span>
                     </Link>
                 </div>
                 <div className="flex-1 overflow-auto">
                     <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-1">
-                        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mt-2">
+                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2 mt-2">
                             Platform
                         </div>
                         {links.map((link) => {
@@ -102,19 +102,19 @@ export function Sidebar() {
                                     key={link.href}
                                     href={link.href}
                                     className={cn(
-                                        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all hover:bg-slate-100",
+                                        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all outline-none",
                                         isActive
-                                            ? "bg-blue-50 text-blue-700 font-bold"
-                                            : "text-slate-600 hover:text-slate-900"
+                                            ? "bg-primary/10 text-primary font-bold"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-accent"
                                     )}
                                 >
-                                    <Icon className={cn("h-4 w-4", isActive ? "text-blue-600" : "text-slate-400")} />
+                                    <Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground/60")} />
                                     {link.label}
                                 </Link>
                             );
                         })}
 
-                        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mt-4">
+                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2 mt-4">
                             Settings
                         </div>
                         {settingsLinks.map((link) => {
@@ -125,13 +125,13 @@ export function Sidebar() {
                                     key={link.href}
                                     href={link.href}
                                     className={cn(
-                                        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all hover:bg-slate-100",
+                                        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all outline-none",
                                         isActive
-                                            ? "bg-blue-50 text-blue-700 font-bold"
-                                            : "text-slate-600 hover:text-slate-900"
+                                            ? "bg-primary/10 text-primary font-bold"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-accent"
                                     )}
                                 >
-                                    <Icon className={cn("h-4 w-4", isActive ? "text-blue-600" : "text-slate-400")} />
+                                    <Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground/60")} />
                                     {link.label}
                                 </Link>
                             );

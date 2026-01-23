@@ -15,12 +15,15 @@ import { LoadingState } from "@/components/states/LoadingState";
 import { CreateDialog } from "@/components/dialogs/CreateDialog";
 import { EditDialog } from "@/components/dialogs/EditDialog";
 import { DeleteDialog } from "@/components/dialogs/DeleteDialog";
-import { ExportDialog } from "@/components/customers/export-dialog";
+import { GlobalExportDialog } from "@/components/shared/export-dialog";
+import { FilterBuilder } from "@/components/filters/filter-builder";
+import { useFilterState } from "@/hooks/use-filter-state";
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, type Customer } from "@/actions/customers";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 import { ErrorState } from "@/components/states/ErrorState";
+import type { FilterConfig } from "@/components/filters/types";
 
 const columns: ColumnDef<Customer>[] = [
     {
@@ -128,19 +131,63 @@ function CustomerActions({ customer }: { customer: Customer }) {
     );
 }
 
+const FILTER_CONFIG: FilterConfig = {
+    search: {
+        placeholder: 'Search by name, email, or document...',
+        fields: ['name', 'email', 'document']
+    },
+    dateRange: {
+        label: 'Created date',
+        field: 'created_at'
+    },
+    multiSelect: [
+        {
+            key: 'tags',
+            label: 'Tags',
+            placeholder: 'Select tags...',
+            field: 'tags',
+            options: [
+                { value: 'vip', label: 'VIP' },
+                { value: 'new', label: 'New' },
+                { value: 'churned', label: 'Churned' },
+                { value: 'active', label: 'Active' }
+            ]
+        },
+        {
+            key: 'source',
+            label: 'Source',
+            placeholder: 'Select source...',
+            field: 'source',
+            options: [
+                { value: 'manual', label: 'Manual' },
+                { value: 'import', label: 'Import' },
+                { value: 'api', label: 'API' },
+                { value: 'webhook', label: 'Webhook' }
+            ]
+        }
+    ]
+};
+
 export default function CustomersPage() {
     const { activeOrganization, loading: orgLoading } = useOrganization();
+    const { filters, setFilters } = useFilterState();
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!activeOrganization) return;
 
-        getCustomers(activeOrganization.id)
+        setLoading(true);
+        getCustomers(activeOrganization.id, {
+            search: filters.search,
+            dateRange: filters.dateRange,
+            tags: filters.tags,
+            source: filters.source
+        })
             .then(setCustomers)
             .catch(() => toast.error("Failed to load customers"))
             .finally(() => setLoading(false));
-    }, [activeOrganization]);
+    }, [activeOrganization, filters]);
 
     const handleCreate = async (data: Record<string, string>) => {
         if (!activeOrganization) return;
@@ -175,7 +222,18 @@ export default function CustomersPage() {
                         <Upload className="h-4 w-4 mr-2" />
                         Import CSV
                     </Button>
-                    <ExportDialog orgId={activeOrganization.id} />
+                    <GlobalExportDialog
+                        title="Export Customers"
+                        columns={[
+                            { label: 'Name', value: 'name' },
+                            { label: 'Email', value: 'email' },
+                            { label: 'Phone', value: 'phone' },
+                            { label: 'Document', value: 'document' },
+                            { label: 'Source', value: 'source' },
+                            { label: 'Created At', value: 'created_at' },
+                        ]}
+                        onExport={(cols, format) => exportCustomers(activeOrganization.id, { columns: cols, format })}
+                    />
                     <CreateDialog
                         title="Add Customer"
                         description="Create a new customer record"
@@ -190,6 +248,12 @@ export default function CustomersPage() {
                     />
                 </div>
             </div>
+
+            <FilterBuilder
+                config={FILTER_CONFIG}
+                value={filters}
+                onChange={setFilters}
+            />
 
             {customers.length === 0 ? (
                 <EmptyState

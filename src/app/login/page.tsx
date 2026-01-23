@@ -33,7 +33,9 @@ export default function LoginPage() {
             }
 
             toast.success("Logged in successfully");
-            router.push("/app/dashboard");
+            toast.success("Logged in successfully");
+            // Redirect to MFA status check instead of dashboard
+            router.push("/auth/verify-mfa-status");
             router.refresh();
         } catch (err) {
             toast.error("Something went wrong");

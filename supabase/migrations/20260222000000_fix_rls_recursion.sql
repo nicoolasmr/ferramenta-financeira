@@ -33,11 +33,11 @@ FOR SELECT USING (
 );
 
 -- 4. Update is_org_member to be safe
-CREATE OR REPLACE FUNCTION public.is_org_member(org_id UUID)
+CREATE OR REPLACE FUNCTION public.is_org_member(p_org_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
-  -- Check if the given org_id is in the list of my orgs
-  RETURN EXISTS (SELECT 1 FROM public.memberships WHERE memberships.org_id = $1 AND memberships.user_id = auth.uid());
+  -- Check if the given p_org_id is in the list of my orgs
+  RETURN EXISTS (SELECT 1 FROM public.memberships WHERE memberships.org_id = p_org_id AND memberships.user_id = auth.uid());
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 

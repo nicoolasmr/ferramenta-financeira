@@ -52,8 +52,9 @@ export function ChatInterface({
             // Convert to simple AIMessage for server
             const history: AIMessage[] = messages.concat(newMsg).map(m => ({ role: m.role, content: m.content }));
 
-            // Pass context to server action
-            const response = await processChatMessage(history, activeOrganization?.id || "org-1", mode, projectId);
+            // Pass context to server action, including current path
+            const path = typeof window !== 'undefined' ? window.location.pathname : undefined;
+            const response = await processChatMessage(history, activeOrganization?.id || "org-1", mode, projectId, path);
 
             setMessages(prev => [...prev, {
                 role: "assistant",
@@ -137,17 +138,23 @@ export function ChatInterface({
                 </div>
             </ScrollArea>
             <div className="p-4 border-t bg-white">
-                <div className="max-w-3xl mx-auto flex gap-2">
-                    <Input
-                        placeholder={mode === 'wizard' ? "Ex: Enrollment for Joao, 5000 in 10x" : "Type a message..."}
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && handleSend()}
-                        disabled={loading}
-                    />
-                    <Button onClick={handleSend} disabled={loading || !input.trim()}>
-                        <Send className="w-4 h-4" />
-                    </Button>
+                <div className="max-w-3xl mx-auto flex flex-col gap-2">
+                    <div className="flex items-center gap-2 px-2 py-1 bg-primary/5 rounded text-[10px] font-bold text-primary uppercase tracking-tight w-fit">
+                        <Sparkles className="w-3 h-3" />
+                        Context Aware: {typeof window !== 'undefined' ? window.location.pathname.split('/').pop() || 'Global' : 'Global'}
+                    </div>
+                    <div className="flex gap-2">
+                        <Input
+                            placeholder={mode === 'wizard' ? "Ex: Enrollment for Joao, 5000 in 10x" : "Type a message..."}
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && handleSend()}
+                            disabled={loading}
+                        />
+                        <Button onClick={handleSend} disabled={loading || !input.trim()}>
+                            <Send className="w-4 h-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, CreditCard, ShoppingCart, Activity } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 
 const data = [
     { name: 'Jan', total: 12000 },
@@ -18,6 +19,8 @@ export default function DashboardPage() {
     return (
         <div className="flex flex-col gap-6">
             <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+
+            <OnboardingChecklist />
 
             {/* KPI Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
