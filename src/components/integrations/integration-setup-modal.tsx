@@ -13,6 +13,14 @@ import { saveIntegrationConfig } from "@/actions/integrations"; // We will creat
 import { toast } from "sonner";
 import Image from "next/image";
 
+declare global {
+    interface Window {
+        belvoSDK: {
+            createWidget: (accessToken: string, options: any) => { build: () => void };
+        };
+    }
+}
+
 interface IntegrationSetupModalProps {
     providerId: string;
     isOpen: boolean;
@@ -25,6 +33,65 @@ export function IntegrationSetupModal({ providerId, isOpen, onOpenChange, orgId 
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Record<string, string>>({});
+
+    const handleBelvoConnect = async () => {
+        setLoading(true);
+        try {
+            // 1. Get Widget Token
+            const res = await fetch("/api/belvo/widget-token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ org_id: orgId })
+            });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Failed to get token");
+
+            // 2. Load Belvo Script if needed
+            if (!window.belvoSDK) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement("script");
+                    script.src = "https://cdn.belvo.io/belvo-widget-1-stable.js";
+                    script.async = true;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.body.appendChild(script);
+                });
+            }
+
+            // 3. Open Widget
+            // @ts-ignore
+            window.belvoSDK.createWidget(data.access, {
+                callback: async (link: string, institution: string) => {
+                    console.log("Belvo Success:", link, institution);
+                    setLoading(true);
+                    try {
+                        const { saveBelvoConnection } = await import("@/actions/integrations");
+                        await saveBelvoConnection(orgId, link, institution);
+                        toast.success(`Conectado com sucesso ao ${institution}!`);
+                        onOpenChange(false);
+                    } catch (error) {
+                        console.error(error);
+                        toast.error("Erro ao salvar conexão.");
+                    } finally {
+                        setLoading(false);
+                    }
+                },
+                onExit: () => {
+                    setLoading(false);
+                    toast.info("Conexão cancelada pelo usuário.");
+                },
+                onEvent: (data: any) => {
+                    console.log("Belvo Event:", data);
+                }
+            }).build();
+
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error.message || "Erro ao iniciar Belvo widget");
+            setLoading(false);
+        }
+    };
 
     if (!provider) return null;
 
@@ -102,22 +169,48 @@ export function IntegrationSetupModal({ providerId, isOpen, onOpenChange, orgId 
                         </ul>
                     )}
 
-                    {/* Step 1: Connect (Fields) */}
-                    {step === 1 && currentStep.fields && currentStep.fields.length > 0 && (
-                        <div className="space-y-4 mt-2">
-                            {currentStep.fields.map((field) => (
-                                <div key={field.key} className="space-y-1">
-                                    <Label>{field.label} {field.required && <span className="text-red-500">*</span>}</Label>
-                                    <Input
-                                        type={field.type}
-                                        placeholder={field.placeholder}
-                                        value={formData[field.key] || ""}
-                                        onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                                    />
-                                    {field.helperText && <p className="text-xs text-muted-foreground">{field.helperText}</p>}
+                    {/* Step 1: Connect (Fields or Widget) */}
+                    {step === 1 && (
+                        <>
+                            {providerId === "belvo" ? (
+                                <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg bg-slate-50">
+                                    <div className="text-center space-y-4">
+                                        <div className="p-3 bg-blue-100 rounded-full w-fit mx-auto">
+                                            <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.2-2.873.571-4.217" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900">Abrir Conector Bancário</h4>
+                                            <p className="text-sm text-slate-500 max-w-xs mx-auto mt-1">
+                                                Clique abaixo para abrir o widget seguro da Belvo e selecionar seu banco.
+                                            </p>
+                                        </div>
+                                        <Button onClick={handleBelvoConnect} disabled={loading} className="w-full max-w-xs">
+                                            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                                            Conectar Conta Bancária
+                                        </Button>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
+                            ) : (
+                                currentStep.fields && currentStep.fields.length > 0 && (
+                                    <div className="space-y-4 mt-2">
+                                        {currentStep.fields.map((field) => (
+                                            <div key={field.key} className="space-y-1">
+                                                <Label>{field.label} {field.required && <span className="text-red-500">*</span>}</Label>
+                                                <Input
+                                                    type={field.type}
+                                                    placeholder={field.placeholder}
+                                                    value={formData[field.key] || ""}
+                                                    onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                                                />
+                                                {field.helperText && <p className="text-xs text-muted-foreground">{field.helperText}</p>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )
+                            )}
+                        </>
                     )}
 
                     {/* Step 2: Webhooks (URL Display) */}
@@ -167,11 +260,13 @@ export function IntegrationSetupModal({ providerId, isOpen, onOpenChange, orgId 
                     {step > 0 && (
                         <Button variant="outline" onClick={() => setStep(step - 1)} disabled={loading}>Voltar</Button>
                     )}
-                    <Button onClick={handleNext} disabled={loading}>
-                        {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                        {step === steps.length - 1 ? "Finalizar" : "Continuar"}
-                        {step < steps.length - 1 && <ArrowRight className="w-4 h-4 ml-2" />}
-                    </Button>
+                    {providerId !== "belvo" && (
+                        <Button onClick={handleNext} disabled={loading}>
+                            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            {step === steps.length - 1 ? "Finalizar" : "Continuar"}
+                            {step < steps.length - 1 && <ArrowRight className="w-4 h-4 ml-2" />}
+                        </Button>
+                    )}
                 </div>
 
             </DialogContent>

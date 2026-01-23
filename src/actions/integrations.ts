@@ -126,3 +126,53 @@ export async function disconnectIntegration(integrationId: string) {
 
     revalidatePath('/app/integrations');
 }
+
+export async function saveBelvoConnection(orgId: string, linkId: string, institution: string) {
+    const supabase = await createClient();
+
+    // 1. Find the project for this org (default first project for now)
+    const { data: projects, error: projectError } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('org_id', orgId)
+        .limit(1);
+
+    if (projectError || !projects || projects.length === 0) {
+        throw new Error("Nenhum projeto encontrado para esta organização.");
+    }
+
+    const projectId = projects[0].id;
+
+    // 2. Insert/Update bank_connection
+    const { data: connection, error } = await supabase
+        .from('bank_connections')
+        .insert({
+            org_id: orgId,
+            project_id: projectId,
+            provider: 'belvo',
+            link_id: linkId,
+            institution: institution,
+            status: 'connected'
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Error saving Belvo connection:", error);
+        throw new Error("Falha ao salvar conexão bancária.");
+    }
+
+    // 3. Mark integration as active in gateway_integrations (optional, but good for UI consistency)
+    await supabase
+        .from('gateway_integrations')
+        .upsert({
+            project_id: projectId,
+            provider: 'belvo',
+            is_active: true,
+            credentials: { link_id: linkId }, // Minimal info
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'project_id, provider' });
+
+    revalidatePath('/app/integrations');
+    return { success: true, connectionId: connection.id };
+}

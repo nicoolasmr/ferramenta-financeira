@@ -12,9 +12,11 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
+import { BelvoDashboardBlock } from "@/components/dashboard/BelvoDashboardBlock";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 
 const data = [
     { name: 'Jan', total: 12000 },
@@ -29,6 +31,7 @@ const data = [
 export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState("portfolio");
     const { t } = useLanguage();
+    const { activeOrganization } = useOrganization();
 
     return (
         <div className="flex flex-col gap-8 min-h-screen grid-bg pb-12">
@@ -56,6 +59,9 @@ export default function DashboardPage() {
                     ))}
                 </div>
             </div>
+
+            {/* Belvo "Caixa Real" Block */}
+            {activeOrganization && <BelvoDashboardBlock orgId={activeOrganization.id} />}
 
             <OnboardingChecklist />
 

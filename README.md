@@ -34,6 +34,7 @@
 
 ### 🔌 **Integration Gateway**
 - **Multi-Gateway Support**: 6 pre-configured providers with secure credential management.
+- **Open Finance**: Integrated with **Belvo** for real-time bank statement aggregation ("Caixa Real").
 - **Connectivity Testing**: Built-in "Test Connection" engine for all integrated gateways.
 - **Reliable Webhooks**: Tested webhook delivery system with secret rotation support.
 

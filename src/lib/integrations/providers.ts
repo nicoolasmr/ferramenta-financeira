@@ -361,5 +361,32 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
                 description: "Clique em 'Testar' no painel da Lastlink (se existir) ou aguarde um evento real.",
             }
         ]
+    },
+    belvo: {
+        id: "belvo",
+        name: "Belvo (Open Finance)",
+        description: "Agregue suas contas bancárias brasileiras para conciliação automática de 'Caixa Real'.",
+        modes: ["oauth"],
+        defaultMode: "oauth",
+        logo: "/logos/belvo_blue.png",
+        docsUrl: "/help/integrations/belvo",
+        features: ["Extratos", "Saldos", "Conciliação"],
+        steps: [
+            {
+                title: "Visão Geral",
+                description: "Você vai autorizar o RevenueOS a ler seus extratos bancários via Belvo (Open Finance).",
+                checklist: [
+                    "Conexão segura via Hosted Widget",
+                    "Nós nunca salvamos suas senhas bancárias",
+                    "Importação automática de transações"
+                ],
+                alert: { type: "info", text: "🔒 Privacidade: processamos dados via canal criptografado e auditado." }
+            },
+            {
+                title: "Conectar",
+                description: "Clique no botão abaixo para abrir o widget seguro da Belvo e escolher seu banco.",
+                fields: [], // Widget flow
+            }
+        ]
     }
 };
