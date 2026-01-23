@@ -29,7 +29,7 @@ export function validateCustomers(data: Record<string, any>[]): ValidationResult
             invalid.push({
                 row: index + 2, // +2 because index is 0-based and we skip header
                 data: row,
-                errors: result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+                errors: result.error.issues.map(e => `${e.path.join('.')}: ${e.message}`)
             });
         }
     });
