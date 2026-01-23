@@ -18,16 +18,18 @@ import {
     Shield,
 } from "lucide-react";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { UserArea } from "./user-area";
 
 export function Sidebar() {
     const pathname = usePathname();
     const { activeOrganization, loading: orgLoading } = useOrganization();
+    const { t } = useLanguage();
 
     const links = [
         {
             href: "/app",
-            label: "Dashboard",
+            label: t("common.dashboard"),
             icon: LayoutDashboard,
         },
         {
@@ -47,7 +49,7 @@ export function Sidebar() {
         },
         {
             href: "/app/receivables/aging",
-            label: "Aging Report",
+            label: t("common.receivables"),
             icon: Calendar,
         },
         {
@@ -115,7 +117,7 @@ export function Sidebar() {
                         })}
 
                         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2 mt-4">
-                            Settings
+                            {t("common.settings")}
                         </div>
                         {settingsLinks.map((link) => {
                             const Icon = link.icon;

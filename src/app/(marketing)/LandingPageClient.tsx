@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { landingContent } from "@/content/landingContent";
 import { ArrowRight, CheckCircle2, Zap } from "lucide-react";
 import { Header } from "@/components/marketing/Header";
@@ -189,6 +190,7 @@ export default function LandingPage() {
                 <MarketingSection>
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div className="order-2 lg:order-1 relative">
+                            {/* ... existing data truth content ... */}
                             <div className="absolute -inset-4 bg-emerald-500/10 blur-3xl opacity-50" />
                             <div className="relative bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden group">
                                 <div className="space-y-4 font-mono text-xs">
@@ -238,6 +240,60 @@ export default function LandingPage() {
                                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                     </Button>
                                 </Link>
+                            </div>
+                        </div>
+                    </div>
+                </MarketingSection>
+
+                {/* CAIXA REAL (OPEN FINANCE) DIFFERENTIAL */}
+                <MarketingSection className="bg-slate-900 text-white overflow-hidden py-24">
+                    <div className="grid lg:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <Badge className="bg-blue-600 text-white mb-6 font-black uppercase tracking-widest px-4 py-1">Novidade: Open Finance</Badge>
+                            <h2 className="text-4xl lg:text-6xl font-black mb-8 leading-tight">A Prova Real do seu Faturamento.</h2>
+                            <p className="text-xl text-slate-400 mb-10 leading-relaxed">
+                                Pare de confiar cegamente nos números da sua plataforma de vendas. O RevenueOS conecta-se diretamente ao seu banco para garantir que cada centavo reportado realmente entrou no seu bolso.
+                            </p>
+                            <div className="grid grid-cols-2 gap-6 mb-10">
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                    <div className="text-emerald-400 font-black text-2xl mb-1">Delta Zero</div>
+                                    <p className="text-xs text-slate-500 uppercase font-bold tracking-tighter">Conciliação 100% Automática</p>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                    <div className="text-blue-400 font-black text-2xl mb-1">+20 Bancos</div>
+                                    <p className="text-xs text-slate-500 uppercase font-bold tracking-tighter">Conectividade via Open Finance</p>
+                                </div>
+                            </div>
+                            <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 font-black text-lg h-14 px-10">
+                                Conhecer Caixa Real
+                            </Button>
+                        </div>
+                        <div className="relative">
+                            <div className="absolute -inset-10 bg-blue-600/20 blur-[100px] rounded-full" />
+                            <div className="relative glass-dark p-8 rounded-3xl border border-white/10 shadow-2xl">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div className="font-black text-lg uppercase tracking-wider">Matching Engine</div>
+                                    <Badge className="bg-emerald-500/20 text-emerald-400 border-none font-bold">LIVE</Badge>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                                        <div className="text-sm font-bold">Stripe Payout #2938</div>
+                                        <div className="text-emerald-400 font-black">R$ 5.420,00</div>
+                                    </div>
+                                    <div className="flex justify-center flex-col items-center py-2 h-12 relative">
+                                        <div className="w-px h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                                        <div className="absolute top-1/2 -translate-y-1/2 bg-blue-600 p-1.5 rounded-full ring-4 ring-slate-900">
+                                            <Zap className="w-3 h-3 text-white" />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                                        <div className="text-sm font-bold">Banco Itaú (Extrato)</div>
+                                        <div className="text-emerald-400 font-black">R$ 5.420,00</div>
+                                    </div>
+                                    <div className="text-center mt-4">
+                                        <span className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.2em]">Match Confirmado Deterministicamente</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

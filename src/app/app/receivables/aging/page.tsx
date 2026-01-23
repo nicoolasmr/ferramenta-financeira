@@ -144,27 +144,62 @@ function DetailedAgingList({ orgId }: { orgId: string }) {
                                 <th className="p-3 text-left font-medium text-slate-500">Customer</th>
                                 <th className="p-3 text-left font-medium text-slate-500">Due Date</th>
                                 <th className="p-3 text-left font-medium text-slate-500">Amount</th>
-                                <th className="p-3 text-left font-medium text-slate-500">Days Overdue</th>
+                                <th className="p-3 text-left font-medium text-slate-500">Canal / Opt-in</th>
+                                <th className="p-3 text-left font-medium text-slate-500">Promessa</th>
+                                <th className="p-3 text-left font-medium text-slate-500">Último Contato</th>
                                 <th className="p-3 text-right font-medium text-slate-500">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {receivables.map(r => {
                                 const daysOverdue = Math.floor((new Date().getTime() - new Date(r.due_date).getTime()) / (1000 * 60 * 60 * 24));
+                                // Mock data for new moat features
+                                const channel = "WhatsApp";
+                                const optIn = true;
+                                const promiseDate = daysOverdue > 10 ? "2026-02-15" : null;
+                                const lastContact = "Há 2 dias";
+
                                 return (
                                     <tr key={r.id} className="border-b last:border-0 hover:bg-slate-50/50">
                                         <td className="p-3">
                                             <div className="font-medium">{r.customer?.name || "Unknown"}</div>
                                             <div className="text-xs text-slate-500">{r.customer?.email}</div>
                                         </td>
-                                        <td className="p-3 text-slate-600">{new Date(r.due_date).toLocaleDateString()}</td>
-                                        <td className="p-3 font-medium">
+                                        <td className="p-3">
+                                            <div className="flex flex-col">
+                                                <span className="text-slate-600">{new Date(r.due_date).toLocaleDateString()}</span>
+                                                <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"} className="w-fit text-[10px] h-4">
+                                                    {daysOverdue} dias
+                                                </Badge>
+                                            </div>
+                                        </td>
+                                        <td className="p-3 font-bold text-slate-900">
                                             R$ {r.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                                         </td>
                                         <td className="p-3">
-                                            <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
-                                                {daysOverdue} days
-                                            </Badge>
+                                            <div className="flex items-center gap-2">
+                                                <Badge variant="outline" className="text-blue-600 border-blue-100 bg-blue-50 font-bold text-[10px]">
+                                                    {channel}
+                                                </Badge>
+                                                {optIn ? (
+                                                    <span className="text-[10px] text-emerald-600 font-bold">OPT-IN</span>
+                                                ) : (
+                                                    <span className="text-[10px] text-slate-400 font-bold text-gray-400">NO CONSENT</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="p-3">
+                                            {promiseDate ? (
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-purple-600">{new Date(promiseDate).toLocaleDateString()}</span>
+                                                    <span className="text-[9px] uppercase font-black text-purple-400 tracking-tighter">Promessa Ativa</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-slate-300 text-xs">—</span>
+                                            )}
+                                        </td>
+                                        <td className="p-3 text-xs text-slate-500 font-medium">
+                                            {lastContact}
                                         </td>
                                         <td className="p-3 text-right">
                                             <ReminderDialog

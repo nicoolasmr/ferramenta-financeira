@@ -10,6 +10,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+-- 1.1 Helper to get the role of the current user in a specific organization
+CREATE OR REPLACE FUNCTION public.get_my_role(org_id_param UUID)
+RETURNS TEXT AS $$
+DECLARE
+  current_role TEXT;
+BEGIN
+  SELECT role INTO current_role
+  FROM public.memberships
+  WHERE user_id = auth.uid() AND org_id = org_id_param;
+  
+  RETURN current_role;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
 -- 2. Organizations
 DROP POLICY IF EXISTS "Users can view own organizations" ON public.organizations;
 CREATE POLICY "Users can view own organizations" ON public.organizations

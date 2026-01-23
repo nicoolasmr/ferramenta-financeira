@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/actions/auth";
 import { getBillingInfo, Subscription } from "@/actions/billing";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
     CreditCard,
     ChevronUp,
@@ -11,7 +12,8 @@ import {
     User as UserIcon,
     Zap,
     Crown,
-    Check
+    Check,
+    Languages
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -38,6 +40,7 @@ import {
 
 export function UserArea() {
     const { activeOrganization, loading: orgLoading } = useOrganization();
+    const { language, setLanguage, t } = useLanguage();
     const [user, setUser] = useState<any>(null);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [loading, setLoading] = useState(true);
@@ -129,16 +132,42 @@ export function UserArea() {
                         </div>
                     </div>
 
+                    <div className="px-2 mb-2">
+                        <div className="bg-slate-50 border rounded-lg p-3 relative overflow-hidden">
+                            <div className="relative z-10">
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{t('common.language')}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Button
+                                        variant={language === 'pt-BR' ? 'default' : 'outline'}
+                                        size="xs"
+                                        className="h-7 text-[10px] flex-1 px-1"
+                                        onClick={() => setLanguage('pt-BR')}
+                                    >
+                                        PT-BR
+                                    </Button>
+                                    <Button
+                                        variant={language === 'en-US' ? 'default' : 'outline'}
+                                        size="xs"
+                                        className="h-7 text-[10px] flex-1 px-1"
+                                        onClick={() => setLanguage('en-US')}
+                                    >
+                                        EN-US
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <DropdownMenuItem asChild>
                         <Link href="/app/settings/profile" className="flex items-center gap-2 cursor-pointer">
                             <UserIcon className="h-4 w-4" />
-                            <span>My Profile</span>
+                            <span>{t('common.my_profile')}</span>
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <Link href="/app/settings/organization" className="flex items-center gap-2 cursor-pointer">
                             <CreditCard className="h-4 w-4" />
-                            <span>Billing & Payments</span>
+                            <span>{t('common.billing')}</span>
                         </Link>
                     </DropdownMenuItem>
 
@@ -148,7 +177,7 @@ export function UserArea() {
                         <DialogTrigger asChild>
                             <div className="flex items-center gap-2 px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer transition-colors w-full">
                                 <LogOut className="h-4 w-4" />
-                                <span>Sign Out</span>
+                                <span>{t('common.sign_out')}</span>
                             </div>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">

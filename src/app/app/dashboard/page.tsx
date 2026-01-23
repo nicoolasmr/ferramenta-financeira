@@ -14,6 +14,7 @@ import {
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const data = [
     { name: 'Jan', total: 12000 },
@@ -27,18 +28,19 @@ const data = [
 
 export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState("portfolio");
+    const { t } = useLanguage();
 
     return (
         <div className="flex flex-col gap-8 min-h-screen grid-bg pb-12">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
+                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">{t("common.dashboard")}</h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1 uppercase text-[10px] font-bold tracking-[0.2em]">Visão Geral da Operação</p>
                 </div>
 
                 {/* Modern Tab Switcher */}
                 <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-900/50 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-800">
-                    {["portfolio", "recebíveis", "reconciliação"].map((tab) => (
+                    {["portfolio", "receivables", "reconciliation"].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -49,7 +51,7 @@ export default function DashboardPage() {
                                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                             )}
                         >
-                            {tab}
+                            {t(`common.${tab}`)}
                         </button>
                     ))}
                 </div>
@@ -60,10 +62,10 @@ export default function DashboardPage() {
             {/* KPI Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {[
-                    { title: "Gross Revenue", value: "R$ 45.231,89", change: "+20.1%", icon: DollarSign },
-                    { title: "Orders", value: "+2350", change: "+180.1%", icon: ShoppingCart },
-                    { title: "Net Revenue", value: "R$ 42.100,50", change: "+19%", icon: CreditCard },
-                    { title: "Active Rate", value: "98.5%", change: "+0.2%", icon: Activity },
+                    { title: t("common.revenue"), value: "R$ 45.231,89", change: "+20.1%", icon: DollarSign },
+                    { title: t("common.orders"), value: "+2350", change: "+180.1%", icon: ShoppingCart },
+                    { title: t("common.net_revenue"), value: "R$ 42.100,50", change: "+19%", icon: CreditCard },
+                    { title: t("common.active_rate"), value: t("common.active_rate"), change: "+0.2%", icon: Activity },
                 ].map((kpi, i) => (
                     <Card key={i} className="glass dark:glass-dark group hover:border-blue-500/50 transition-all duration-300">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
