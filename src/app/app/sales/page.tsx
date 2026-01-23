@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Plus, MoreHorizontal, Pencil, Trash2, MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,7 +57,7 @@ const FILTER_CONFIG: FilterConfig = {
     }
 };
 
-export default function SalesPage() {
+function SalesPageContent() {
     const { activeOrganization, loading: orgLoading } = useOrganization();
     const { filters, setFilters } = useFilterState();
     const [opportunities, setOpportunities] = useState<SalesOpportunity[]>([]);
@@ -206,6 +206,14 @@ export default function SalesPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function SalesPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <SalesPageContent />
+        </Suspense>
     );
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Plus, MoreHorizontal, Pencil, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -169,7 +169,7 @@ const FILTER_CONFIG: FilterConfig = {
     ]
 };
 
-export default function CustomersPage() {
+function CustomersPageContent() {
     const { activeOrganization, loading: orgLoading } = useOrganization();
     const { filters, setFilters } = useFilterState();
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -289,5 +289,13 @@ export default function CustomersPage() {
                 />
             )}
         </div>
+    );
+}
+
+export default function CustomersPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <CustomersPageContent />
+        </Suspense>
     );
 }

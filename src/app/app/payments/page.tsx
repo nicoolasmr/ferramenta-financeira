@@ -19,8 +19,14 @@ export default function PaymentsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!activeOrganization) return;
+        if (orgLoading) return;
 
+        if (!activeOrganization) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
         Promise.all([
             getPayments(activeOrganization.id),
             getPaymentsSummary(activeOrganization.id),
@@ -31,7 +37,7 @@ export default function PaymentsPage() {
             })
             .catch(() => toast.error("Failed to load payments"))
             .finally(() => setLoading(false));
-    }, [activeOrganization]);
+    }, [activeOrganization, orgLoading]);
 
     const handleExport = async () => {
         if (!activeOrganization) return;
