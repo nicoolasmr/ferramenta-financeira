@@ -1,4 +1,3 @@
-
 import {
     LayoutDashboard,
     User,
@@ -8,10 +7,8 @@ import {
     ShieldCheck,
     Zap,
     Smartphone,
-    CheckCircle2,
-    BarChart3,
     Lock,
-    ArrowRight
+    BarChart3
 } from "lucide-react";
 
 export const landingContent = {
@@ -22,15 +19,16 @@ export const landingContent = {
             { label: "Integrações", href: "/#integracoes" },
             { label: "IA Copilot", href: "/#ia" },
             { label: "Segurança", href: "/#seguranca" },
-            { label: "Preços", href: "/precos" },
+            { label: "Preços", href: "/#precos" },
             { label: "Blog", href: "/blog" },
             { label: "Recursos", href: "/recursos" },
             { label: "Ajuda", href: "/ajuda" },
         ],
-        ctaPrimary: { label: "Começar agora", href: "/precos" },
+        ctaPrimary: { label: "Começar agora", href: "/signup" },
         ctaSecondary: { label: "Login", href: "/login" },
     },
     hero: {
+        pill: "Novo: Data Truth Layer",
         headline: "Recebíveis sob controle. Receita previsível. Sem planilhas.",
         subheadline: "RevenueOS conecta Stripe, Hotmart e Asaas, normaliza tudo por projeto e mostra em tempo real: quanto vendeu, quanto entrou, quanto falta entrar — e quem está virando inadimplente.",
         bullets: [
@@ -38,13 +36,9 @@ export const landingContent = {
             "Reconciliação: por que o número bate (raw → normalized → aplicado)",
             "Copilot determinístico: Top 3 ações da semana (GPT opcional)"
         ],
-        ctaPrimary: { label: "Comece agora", href: "/precos" },
+        ctaPrimary: { label: "Comece agora", href: "/signup" },
         ctaSecondary: { label: "Ver demo", href: "/demo" },
-        dashboardImage: "/dashboard-hero.png"
-    },
-    trust: {
-        title: "Feito para operações que vendem em múltiplos canais",
-        badges: [
+        microtrust: [
             { icon: ShieldCheck, label: "RLS + Audit Logs" },
             { icon: Lock, label: "Idempotência & Webhooks assinados" },
             { icon: User, label: "LGPD-ready (PII masking)" }
@@ -70,27 +64,22 @@ export const landingContent = {
             }
         ]
     },
-    howItWorks: {
-        title: "Conectar → Normalizar → Operar",
-        subtitle: "Transformamos eventos brutos de qualquer gateway em inteligência financeira padronizada.",
+    ttv: {
+        title: "Como fica em 7 dias",
         steps: [
             {
-                number: "1",
-                title: "Conecte suas fontes",
-                description: "Integração nativa com Stripe, Hotmart e Asaas. Basta conectar a conta e nós puxamos o histórico."
+                title: "Dia 1: Conexão",
+                description: "Integramos seus gateways (Stripe, Hotmart, Asaas) e importamos o histórico de vendas bruto."
             },
             {
-                number: "2",
-                title: "Camada de Verdade",
-                description: "RevenueOS normaliza tudo. Uma venda é uma venda, não importa se veio do PIX ou do Cartão Internacional."
+                title: "Dia 3: Normalização",
+                description: "A Data Truth Layer organiza cada centavo por projeto, aplicando taxas e convertendo moedas."
             },
             {
-                number: "3",
-                title: "Dash + Ações",
-                description: "Receba alertas de inadimplência, visualize o calendário de recebimentos e renegocie com um clique."
+                title: "Dia 7: Automação",
+                description: "Seu calendário de recebíveis está pronto e o Copilot sugere as ações de cobrança prioritárias."
             }
-        ],
-        microcopy: "Em minutos você vê o histórico; em dias automatiza cobrança."
+        ]
     },
     dataTruth: {
         title: "Por que você confia no número",
@@ -110,12 +99,11 @@ export const landingContent = {
             {
                 title: "Operação por Projeto",
                 items: [
-                    { icon: LayoutDashboard, title: "Projetos (Centro de Tudo)", desc: "Produtos, vendas e pagamentos isolados por lançamento ou área de negócio." },
-                    { icon: LayoutDashboard, title: "Visão Consolidada", desc: "Dashboards financeiros que cruzam dados de múltiplas fontes em tempo real." }
+                    { icon: LayoutDashboard, title: "Projetos (Visão consolidada)", desc: "Produtos, vendas e pagamentos isolados por lançamento ou área de negócio." }
                 ]
             },
             {
-                title: "Recebíveis e Inadimplência",
+                title: "Recebíveis e inadimplência",
                 items: [
                     { icon: Calendar, title: "Calendário de Parcelas", desc: "Controle total de vencimentos futuro e passado." },
                     { icon: Banknote, title: "Renegociação Inteligente", desc: "Refinancie parcelas mantendo o histórico original intacto (Audit Trail)." },
@@ -123,7 +111,7 @@ export const landingContent = {
                 ]
             },
             {
-                title: "Transparência e Auditoria",
+                title: "Transparência e auditoria",
                 items: [
                     { icon: Globe, title: "Portal do Cliente", desc: "Área read-only para seu cliente ver faturas e status. Transparência total." },
                     { icon: ShieldCheck, title: "Ops & Auditoria", desc: "Webhooks, replay de eventos, logs imutáveis e rastreabilidade ponta a ponta." }
@@ -134,61 +122,19 @@ export const landingContent = {
     integrations: {
         title: "Integrações Tier 1 + Base para Escalar",
         tier1: [
-            {
-                name: "Stripe",
-                logo: "/logos/stripe.png",
-                tags: ["Billing", "Webhooks", "Conciliação"],
-                color: "text-[#635BFF]",
-                isImage: true
-            },
-            {
-                name: "Hotmart",
-                logo: "/logos/hotmart.png",
-                tags: ["Vendas", "Comissões", "Cancelamento"],
-                isImage: true
-            },
-            {
-                name: "Asaas",
-                logo: "/logos/asaas.png",
-                tags: ["PIX", "Boleto", "Status"],
-                isImage: true
-            },
-            {
-                name: "Mercado Pago",
-                logo: "/logos/mercadopago.png",
-                tags: ["Checkouts", "Carteira", "QR Code"],
-                isImage: true
-            },
-            {
-                name: "Kiwify",
-                logo: "/logos/kiwify.png",
-                tags: ["Infoprodutos", "Checkout", "Upsell"],
-                isImage: true
-            },
-            {
-                name: "Eduzz",
-                logo: "/logos/eduzz.png",
-                tags: ["Vendas", "Cursos", "Taxas"],
-                isImage: true
-            },
-            {
-                name: "Lastlink",
-                logo: "/logos/lastlink.png",
-                tags: ["Comunidades", "Recorrência", "Churn"],
-                isImage: true
-            },
-            {
-                name: "PagSeguro",
-                logo: "/logos/pagseguro.png",
-                tags: ["Vendas On/Off", "Cartão", "Recebíveis"],
-                isImage: true
-            }
+            { name: "Stripe", logo: "/logos/stripe.png", tags: ["Billing", "Webhooks"], isImage: true },
+            { name: "Hotmart", logo: "/logos/hotmart.png", tags: ["Infoproduto"], isImage: true },
+            { name: "Asaas", logo: "/logos/asaas.png", tags: ["Boleto/PIX"], isImage: true },
+            { name: "Mercado Pago", logo: "/logos/mercadopago.png", tags: ["Checkout"], isImage: true },
+            { name: "Kiwify", logo: "/logos/kiwify.png", tags: ["Checkout"], isImage: true },
+            { name: "Eduzz", logo: "/logos/eduzz.png", tags: ["Lançamentos"], isImage: true },
+            { name: "Lastlink", logo: "/logos/lastlink.png", tags: ["Comunidade"], isImage: true },
+            { name: "PagSeguro", logo: "/logos/pagseguro.png", tags: ["Gateway"], isImage: true }
         ],
-        roadmap: "Kiwify, Eduzz, Lastlink, Mercado Pago, PagSeguro",
         techProof: "Connector SDK / Contract Tests incluídos."
     },
     copilot: {
-        headline: "Copilot determinístico: decisões por regra, linguagem por IA.",
+        title: "Copilot determinístico: decisões por regra, linguagem por IA.",
         description: "Não alucinamos com seu dinheiro. O motor de decisão é puramente lógico (código); a IA apenas explica o resultado.",
         columns: [
             {
@@ -196,7 +142,7 @@ export const landingContent = {
                 items: ["Scores de Saúde", "Views SQL Otimizadas", "Regras de Cobrança", "Fila de Ações"]
             },
             {
-                title: "GPT-4 (Opcional - Camada de UX)",
+                title: "GPT (Opcional - Camada de UX)",
                 items: ["Explicação de cenários", "Resumo de Dívida", "Sugestão de Copy para Cobrança", "Não altera dados"]
             }
         ],
@@ -205,6 +151,14 @@ export const landingContent = {
             { icon: ShieldCheck, title: "Analista de Risco", desc: "Identifica padrões e sugere as Top 3 ações para recuperar caixa na semana." }
         ],
         disclaimer: "Sem GPT, o Copilot usa templates determinísticos seguros."
+    },
+    security: {
+        title: "Segurança de nível bancário",
+        cards: [
+            { icon: ShieldCheck, title: "RLS", description: "Row-Level Security garante que um tenant nunca acesse dados de outro." },
+            { icon: Lock, title: "Criptografia & PII", description: "Dados sensíveis criptografados e mascaramento de PII (Compliance LGPD)." },
+            { icon: Globe, title: "Audit Logs", description: "Cada ação gera um rastro de auditoria permanente e imutável." }
+        ]
     },
     pricing: {
         title: "Planos para o tamanho da sua operação",
@@ -216,7 +170,7 @@ export const landingContent = {
                 price: "R$ 397",
                 period: "/mês",
                 cta: "Comece agora",
-                ctaLink: "/precos",
+                ctaLink: "/signup",
                 ctaVariant: "outline",
                 features: ["1 Projeto", "Até 1.000 eventos/mês", "Dashboards financeiros", "Suporte por Email"]
             },
@@ -226,10 +180,10 @@ export const landingContent = {
                 price: "R$ 697",
                 period: "/mês",
                 cta: "Comece agora",
-                ctaLink: "/precos",
-                ctaVariant: "primary", // Custom logic needed
+                ctaLink: "/signup",
+                ctaVariant: "default",
                 highlight: "Recomendado",
-                features: ["Projetos Ilimitados", "Até 10.000 eventos/mês", "IA Copilot Completa", "Portal do Cliente", "Reconciliação Avançada", "Suporte Prioritário"]
+                features: ["Projetos Ilimitados", "Até 10.000 eventos/mês", "IA Copilot Completa", "Portal do Cliente", "Reconciliação Avançada"]
             },
             {
                 name: "Enterprise",
@@ -237,63 +191,36 @@ export const landingContent = {
                 price: "Sob Consulta",
                 period: "",
                 cta: "Comece agora",
-                ctaLink: "/precos",
+                ctaLink: "/signup",
                 ctaVariant: "outline",
-                features: ["Eventos Ilimitados", "White-label (Custom)", "SLA & Suporte Dedicado", "Compliance Avançado", "Gerente de Conta"]
+                features: ["Eventos Ilimitados", "White-label (Custom)", "SLA & Suporte Dedicado", "Gerente de Conta"]
             }
         ],
         comparison: [
             { feature: "Organizations System", starter: "1 org", pro: "Unlimited", ent: "Unlimited + White-label" },
-            { feature: "Team Management (RBAC)", starter: "3 users", pro: "Unlimited users", ent: "Unlimited + Custom roles" },
-            { feature: "Projects (Multi-tenant)", starter: "5 projects", pro: "Unlimited", ent: "Unlimited + Custom fields" },
-            { feature: "Multi-Factor Authentication (MFA)", starter: "✓", pro: "✓", ent: "✓ + SSO" },
-            { feature: "Gateway Integrations", starter: "2 gateways", pro: "All 6 gateways", ent: "All + Custom API" },
-            { feature: "Stripe", starter: "✓", pro: "✓", ent: "✓" },
-            { feature: "Hotmart", starter: "✓", pro: "✓", ent: "✓" },
-            { feature: "Asaas", starter: "-", pro: "✓", ent: "✓" },
-            { feature: "Mercado Pago", starter: "-", pro: "✓", ent: "✓" },
-            { feature: "Eduzz", starter: "-", pro: "✓", ent: "✓" },
-            { feature: "Kiwify", starter: "-", pro: "✓", ent: "✓" },
-            { feature: "Webhooks System", starter: "5 endpoints", pro: "Unlimited", ent: "Unlimited + Priority" },
-            { feature: "Aging Buckets (Receivables)", starter: "✓", pro: "✓ + Export", ent: "✓ + Custom buckets" },
-            { feature: "Sales Funnel", starter: "Basic", pro: "Advanced + Analytics", ent: "Advanced + Custom stages" },
-            { feature: "IA Copilot", starter: "-", pro: "✓ Top 3 actions", ent: "✓ Unlimited + Custom" },
-            { feature: "API Keys Management", starter: "2 keys", pro: "Unlimited", ent: "Unlimited + IP whitelist" },
-            { feature: "Audit Logs", starter: "30 days", pro: "1 year", ent: "Unlimited + Export" },
-            { feature: "Advanced Settings", starter: "Basic", pro: "Advanced", ent: "Full customization" },
-            { feature: "Security & Compliance", starter: "RLS + LGPD", pro: "RLS + LGPD + SOC2", ent: "All + Custom compliance" },
-            { feature: "Data Retention", starter: "90 days", pro: "1 year", ent: "Unlimited" },
-            { feature: "Support", starter: "Email", pro: "Email + Chat", ent: "24/7 Priority + Dedicated" },
-            { feature: "SLA", starter: "99%", pro: "99.9%", ent: "99.99% + Custom" },
+            { feature: "Projects", starter: "5 projects", pro: "Unlimited", ent: "Unlimited" },
+            { feature: "IA Copilot", starter: "-", pro: "✓ Top 3 actions", ent: "✓ Unlimited" },
+            { feature: "Security", starter: "RLS + LGPD", pro: "All + SOC2", ent: "All + Custom" },
         ]
     },
     faq: {
         title: "Perguntas Frequentes",
         questions: [
-            { q: "O RevenueOS substitui meu gateway (Stripe/Asaas)?", a: "Não. Nós nos conectamos a eles para ler os dados e centralizar a inteligência. O pagamento continua passando por onde você já confia." },
-            { q: "Consigo ver parcelas e inadimplência por projeto?", a: "Sim. Essa é a nossa especialidade. Você cria projetos (lançamentos ou produtos) e o sistema isola as finanças de cada um." },
-            { q: "Dá para renegociar sem perder histórico?", a: "Sim. O RevenueOS mantém a dívida original 'congelada' e cria um novo acordo, mantendo o rastro completo da auditoria." },
-            { q: "O que é ‘evento’ no metering?", a: "Qualquer transação processada: uma venda, um pagamento de parcela, um estorno. Se você tem 500 vendas em 12x, o volume de eventos cresce conforme as parcelas caem." },
-            { q: "Vocês movem dinheiro?", a: "Não. O RevenueOS é uma camada de inteligência e leitura (Read/Write apenas dados, não assets). Seu dinheiro fica na sua conta Stripe/Asaas." },
-            { q: "Como funciona o acesso do meu cliente no portal?", a: "Você gera um link seguro (magic link) e ele acessa uma área restrita para ver faturas em aberto, 2ª via e extrato de pagamentos." }
-        ]
-    },
-    security: {
-        title: "Segurança de nível bancário",
-        subtitle: "Proteção total para seus dados e conformidade para sua operação.",
-        cards: [
-            { icon: ShieldCheck, title: "Row-Level Security (RLS)", description: "Isolamento absoluto de dados. Mesmo em nível de banco de dados, um tenant nunca acessa dados de outro." },
-            { icon: Lock, title: "Criptografia & PII", description: "Dados sensíveis são criptografados em repouso e em trânsito. Conformidade total com LGPD." },
-            { icon: Globe, title: "Audit Logs Imutáveis", description: "Cada ação no sistema gera um rastro de auditoria permanente. Saiba exatamente quem fez o quê." }
+            { q: "Preciso de GPT para usar?", a: "Não. GPT é opcional; o Copilot é determinístico. A IA só resume/explica o resultado lógico." },
+            { q: "O RevenueOS substitui meu gateway?", a: "Não. Nós nos conectamos a eles para ler os dados e centralizar a inteligência." },
+            { q: "Consigo ver parcelas e inadimplência por projeto?", a: "Sim. Essa é a nossa especialidade: visibilidade granular por projeto." },
+            { q: "Vocês movem dinheiro?", a: "Não. O RevenueOS é uma camada de inteligência e leitura. Seu dinheiro fica na sua conta gateway." }
         ]
     },
     finalCta: {
-        headline: "Você não precisa vender mais. Precisa receber melhor.",
-        sub: "Se hoje você depende de planilha e 'sensação', a próxima inadimplência vai te lembrar.",
-        ctaPrimary: { label: "Começar agora", href: "/precos" },
-        ctaSecondary: { label: "Agendar demo", href: "/demo" }
+        title: "Você não precisa vender mais. Precisa receber melhor.",
+        subtitle: "Se hoje você depende de planilha e 'sensação', a próxima inadimplência vai te lembrar.",
+        buttons: [
+            { label: "Começar agora", href: "/signup", primary: true },
+            { label: "Agendar demo", href: "/demo", primary: false }
+        ]
     },
     footer: {
-        copyright: "© 2026 Antigravity. Todos os direitos reservados."
+        copyright: "© 2026 RevenueOS. Todos os direitos reservados."
     }
 };
