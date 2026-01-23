@@ -97,3 +97,57 @@ export async function testWebhook(id: string) {
         return { success: false, error: String(error) };
     }
 }
+
+export interface WebhookEvent {
+    id: string;
+    provider: string;
+    status: 'pending' | 'processed' | 'failed';
+    received_at: string;
+    processed_at?: string;
+    payload: any;
+    error_message?: string;
+}
+
+export async function getWebhookLogs(orgId: string, limit = 50): Promise<WebhookEvent[]> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from("webhook_inbox")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("received_at", { ascending: false })
+        .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function retryWebhookEvent(eventId: string) {
+    const supabase = await createClient();
+
+    // 1. Get the event
+    const { data: event, error: fetchError } = await supabase
+        .from("webhook_inbox")
+        .select("*")
+        .eq("id", eventId)
+        .single();
+
+    if (fetchError || !event) throw new Error("Event not found");
+
+    // 2. Reset status to pending to be picked up by the worker (or process immediately if we had the logic here)
+    // For now, we will just update the status so the async worker tries again.
+    // If the worker logic was here, we would call it. 
+    // Assuming a background worker processes 'pending' events.
+
+    const { error: updateError } = await supabase
+        .from("webhook_inbox")
+        .update({
+            status: 'pending',
+            error_message: null,
+            processed_at: null
+        })
+        .eq("id", eventId);
+
+    if (updateError) throw updateError;
+    revalidatePath("/app/settings/webhooks");
+    return { success: true };
+}
