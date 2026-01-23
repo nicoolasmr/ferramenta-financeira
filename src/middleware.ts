@@ -106,9 +106,13 @@ export async function middleware(request: NextRequest) {
     // Redirect / to /app if logged in, else /login (or keep on landing page /)
     if (request.nextUrl.pathname === '/') {
         if (user) {
-            return NextResponse.redirect(new URL('/app', request.url))
+            return NextResponse.redirect(new URL('/app/dashboard', request.url))
         }
-        // If not logged in, stay on Landing Page (/) - Do NOT redirect to /login
+    }
+
+    // Redirect /app directly to /app/dashboard
+    if (request.nextUrl.pathname === '/app') {
+        return NextResponse.redirect(new URL('/app/dashboard', request.url))
     }
 
     return response

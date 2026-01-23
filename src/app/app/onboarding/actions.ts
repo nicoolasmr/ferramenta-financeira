@@ -59,10 +59,14 @@ export async function completeOnboarding(formData: FormData) {
     });
 
     // 4. Create First Project
-    await supabase.from("projects").insert({
+    const { data: firstProject, error: projectError } = await supabase.from("projects").insert({
         org_id: org.id,
         name: data.projectName
-    });
+    }).select("id").single();
+
+    if (projectError || !firstProject) {
+        return { error: { server: projectError?.message || "Failed to create first project" } };
+    }
 
     // 5. Billing Setup (Mock for now, real implementation would create Stripe Customer here)
     // Fetch plan ID
@@ -82,7 +86,7 @@ export async function completeOnboarding(formData: FormData) {
         // Map integration to provider key (lowercase)
         const provider = data.integration.toLowerCase();
         await supabase.from("gateway_integrations").insert({
-            org_id: org.id,
+            project_id: firstProject.id, // Fixed: use project_id instead of org_id
             provider: provider,
             name: data.integration,
             status: "active", // mock active for onboarding

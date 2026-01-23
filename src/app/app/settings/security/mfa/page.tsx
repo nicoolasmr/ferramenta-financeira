@@ -114,13 +114,13 @@ export default function SecurityMFAPage() {
                         <div className="space-y-4">
                             {!mfaEnabled ? (
                                 <>
-                                    <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                        <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                                    <div className="flex items-start gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-900/30">
+                                        <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                                         <div className="flex-1">
-                                            <h3 className="font-semibold text-blue-900 mb-1">
+                                            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
                                                 Secure your account
                                             </h3>
-                                            <p className="text-sm text-blue-700">
+                                            <p className="text-sm text-blue-700 dark:text-blue-200/80">
                                                 Enable MFA to protect your account from unauthorized access.
                                                 You'll need an authenticator app like Google Authenticator or Authy.
                                             </p>

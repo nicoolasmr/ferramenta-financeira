@@ -75,8 +75,8 @@ export function CreateProjectDialog({
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Rocket className="w-5 h-5" />
-                        Criar Novo Projeto
+                        <Rocket className="w-5 h-5 text-emerald-500" />
+                        Criar Projeto
                     </DialogTitle>
                     <DialogDescription>
                         Projetos isolam dados e permitem gerenciar múltiplos ambientes (produção, staging, desenvolvimento).
@@ -111,19 +111,19 @@ export function CreateProjectDialog({
                                     <SelectItem value="production">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                            <span>Production (Produção)</span>
+                                            <span>Produção</span>
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="staging">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                                            <span>Staging (Homologação)</span>
+                                            <span>Homologação</span>
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="development">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                            <span>Development (Desenvolvimento)</span>
+                                            <span>Desenvolvimento</span>
                                         </div>
                                     </SelectItem>
                                 </SelectContent>

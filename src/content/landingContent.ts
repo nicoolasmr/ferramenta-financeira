@@ -169,7 +169,7 @@ export const landingContent = {
                 desc: "Para quem está validando.",
                 price: "R$ 397",
                 period: "/mês",
-                cta: "Comece agora",
+                cta: "Iniciar Starter",
                 ctaLink: "/signup",
                 ctaVariant: "outline",
                 features: ["1 Projeto", "Até 1.000 eventos/mês", "Dashboards financeiros", "Suporte por Email"]
@@ -179,7 +179,7 @@ export const landingContent = {
                 desc: "Para operações em escala.",
                 price: "R$ 697",
                 period: "/mês",
-                cta: "Comece agora",
+                cta: "Assinar Pro",
                 ctaLink: "/signup",
                 ctaVariant: "default",
                 highlight: "Recomendado",
@@ -190,7 +190,7 @@ export const landingContent = {
                 desc: "Volume massivo e White-label.",
                 price: "Sob Consulta",
                 period: "",
-                cta: "Comece agora",
+                cta: "Contatar Vendas",
                 ctaLink: "/signup",
                 ctaVariant: "outline",
                 features: ["Eventos Ilimitados", "White-label (Custom)", "SLA & Suporte Dedicado", "Gerente de Conta"]
@@ -208,8 +208,11 @@ export const landingContent = {
         questions: [
             { q: "Preciso de GPT para usar?", a: "Não. GPT é opcional; o Copilot é determinístico. A IA só resume/explica o resultado lógico." },
             { q: "O RevenueOS substitui meu gateway?", a: "Não. Nós nos conectamos a eles para ler os dados e centralizar a inteligência." },
-            { q: "Consigo ver parcelas e inadimplência por projeto?", a: "Sim. Essa é a nossa especialidade: visibilidade granular por projeto." },
-            { q: "Vocês movem dinheiro?", a: "Não. O RevenueOS é uma camada de inteligência e leitura. Seu dinheiro fica na sua conta gateway." }
+            { q: "Como funciona a integração?", a: "Via API ou Webhooks oficiais. Conectamos com um clique no Stripe, Hotmart e Asaas para importar dados históricos e tempo real." },
+            { q: "Posso testar antes de assinar?", a: "Sim, oferecemos uma demo guiada e um período de trial para operações que atendam aos requisitos mínimos de volume." },
+            { q: "Quais gateways são suportados?", a: "Stripe, Hotmart, Asaas, Mercado Pago, Kiwify, Eduzz, Lastlink e PagSeguro." },
+            { q: "Consigo ver parcelas e inadimplência por projeto?", a: "Sim. Essa é a nossa especialidade: visibilidade granular por projeto para que seu caixa nunca seja uma surpresa." },
+            { q: "Vocês movem dinheiro?", a: "Não. O RevenueOS é uma camada de inteligência e leitura. Seu dinheiro fica na sua conta gateway; nós apenas organizamos a visão." }
         ]
     },
     finalCta: {

@@ -39,7 +39,12 @@ export default function TeamPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!activeOrganization) return;
+        if (orgLoading) return;
+
+        if (!activeOrganization) {
+            setLoading(false);
+            return;
+        }
 
         Promise.all([
             getTeamMembers(activeOrganization.id),
@@ -51,7 +56,7 @@ export default function TeamPage() {
             })
             .catch(() => toast.error("Failed to load team data"))
             .finally(() => setLoading(false));
-    }, [activeOrganization]);
+    }, [activeOrganization, orgLoading]);
 
     const handleInvite = async (data: Record<string, string>) => {
         if (!activeOrganization) return;

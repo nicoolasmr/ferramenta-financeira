@@ -24,18 +24,18 @@ export function LogoCloud({ title, logos }: LogoCloudProps) {
                     <motion.div
                         key={logo.name}
                         initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 0.5 }}
+                        whileInView={{ opacity: 1 }}
                         transition={{ delay: i * 0.1 }}
-                        whileHover={{ opacity: 1, scale: 1.05 }}
-                        className="flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300"
+                        whileHover={{ scale: 1.1 }}
+                        className="flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
                     >
-                        {/* 
-                            In a real app, these would be next/image or real SVG logos.
-                            Since I don't have all files, I'll use placeholders or the paths provided.
-                        */}
-                        <div className="h-8 flex items-center gap-2">
-                            <div className="h-6 w-6 bg-slate-300 rounded" />
-                            <span className="font-bold text-slate-400 group-hover:text-slate-900">{logo.name}</span>
+                        <div className="h-8 md:h-10 flex items-center justify-center grayscale hover:grayscale-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={logo.logo}
+                                alt={logo.name}
+                                className="h-full w-auto max-w-[120px] object-contain"
+                            />
                         </div>
                     </motion.div>
                 ))}

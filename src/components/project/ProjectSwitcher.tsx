@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, ChevronsUpDown, Plus, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,18 +17,13 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-
-// Mock data - replace with real data from API
-const MOCK_PROJECTS = [
-    { id: '1', name: 'Production', slug: 'production', environment: 'production' as const },
-    { id: '2', name: 'Staging', slug: 'staging', environment: 'staging' as const },
-    { id: '3', name: 'Development', slug: 'development', environment: 'development' as const },
-];
+import { useOrganization } from '@/components/providers/OrganizationProvider';
+import { getProjects, type Project } from '@/actions/projects';
 
 const ENV_COLORS = {
-    production: 'bg-emerald-100 text-emerald-700',
-    staging: 'bg-amber-100 text-amber-700',
-    development: 'bg-blue-100 text-blue-700',
+    production: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400',
+    staging: 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400',
+    development: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400',
 };
 
 interface ProjectSwitcherProps {
@@ -37,8 +32,21 @@ interface ProjectSwitcherProps {
 }
 
 export function ProjectSwitcher({ className, onCreateProject }: ProjectSwitcherProps) {
+    const { activeOrganization } = useOrganization();
     const [open, setOpen] = useState(false);
-    const [selectedProject, setSelectedProject] = useState(MOCK_PROJECTS[0]);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+    useEffect(() => {
+        if (!activeOrganization) return;
+        getProjects(activeOrganization.id)
+            .then(data => {
+                setProjects(data);
+                if (data.length > 0 && !selectedProject) {
+                    setSelectedProject(data[0]);
+                }
+            });
+    }, [activeOrganization]);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -48,13 +56,18 @@ export function ProjectSwitcher({ className, onCreateProject }: ProjectSwitcherP
                     role="combobox"
                     aria-expanded={open}
                     className={cn('w-full justify-between', className)}
+                    disabled={!selectedProject}
                 >
                     <div className="flex items-center gap-2 truncate">
                         <Rocket className="w-4 h-4 text-slate-500" />
-                        <span className="truncate font-medium">{selectedProject.name}</span>
-                        <Badge className={cn('text-xs', ENV_COLORS[selectedProject.environment])}>
-                            {selectedProject.environment}
-                        </Badge>
+                        <span className="truncate font-medium">
+                            {selectedProject ? selectedProject.name : 'Selecionar Projeto'}
+                        </span>
+                        {selectedProject && (
+                            <Badge className={cn('text-xs', ENV_COLORS[selectedProject.environment])}>
+                                {selectedProject.environment}
+                            </Badge>
+                        )}
                     </div>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -64,7 +77,7 @@ export function ProjectSwitcher({ className, onCreateProject }: ProjectSwitcherP
                     <CommandInput placeholder="Buscar projeto..." />
                     <CommandEmpty>Nenhum projeto encontrado.</CommandEmpty>
                     <CommandGroup heading="Seus Projetos">
-                        {MOCK_PROJECTS.map((project) => (
+                        {projects.map((project) => (
                             <CommandItem
                                 key={project.id}
                                 onSelect={() => {
@@ -85,7 +98,7 @@ export function ProjectSwitcher({ className, onCreateProject }: ProjectSwitcherP
                                 <Check
                                     className={cn(
                                         'ml-2 h-4 w-4',
-                                        selectedProject.id === project.id ? 'opacity-100' : 'opacity-0'
+                                        selectedProject?.id === project.id ? 'opacity-100' : 'opacity-0'
                                     )}
                                 />
                             </CommandItem>

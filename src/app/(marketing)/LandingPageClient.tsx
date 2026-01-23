@@ -96,7 +96,7 @@ export default function LandingPage() {
                                     className="flex flex-col sm:flex-row items-center gap-4 mb-16"
                                 >
                                     <Link href={landingContent.hero.ctaPrimary.href} className="w-full sm:w-auto relative group">
-                                        <Button size="lg" className="w-full h-14 px-10 text-lg font-bold bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] transition-all duration-300 relative overflow-hidden">
+                                        <Button size="lg" className="w-full h-14 px-10 text-lg font-bold bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all duration-300 relative overflow-hidden text-white">
                                             <span className="relative z-10 flex items-center">
                                                 {landingContent.hero.ctaPrimary.label}
                                                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -106,7 +106,7 @@ export default function LandingPage() {
                                         </Button>
                                     </Link>
                                     <Link href={landingContent.hero.ctaSecondary.href} className="w-full sm:w-auto">
-                                        <Button size="lg" variant="outline" className="w-full h-14 px-10 text-lg font-bold border-slate-200 hover:bg-slate-50 transition-colors">
+                                        <Button size="lg" variant="outline" className="w-full h-14 px-10 text-lg font-bold bg-blue-600 text-white border-none hover:bg-blue-700 transition-all hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]">
                                             {landingContent.hero.ctaSecondary.label}
                                         </Button>
                                     </Link>
@@ -227,9 +227,18 @@ export default function LandingPage() {
                                     </div>
                                 ))}
                             </div>
-                            <Button variant="outline" size="lg" className="font-bold border-slate-200">
-                                {landingContent.dataTruth.cta.label}
-                            </Button>
+                            <div className="mt-8">
+                                <Link href={landingContent.dataTruth.cta.href}>
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
+                                        className="h-14 px-10 text-lg font-black text-blue-600 border-blue-200 hover:bg-blue-50/50 hover:border-blue-300 transition-all group"
+                                    >
+                                        <span>{landingContent.dataTruth.cta.label}</span>
+                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </MarketingSection>
@@ -418,7 +427,7 @@ export default function LandingPage() {
                 </MarketingSection>
 
                 {/* FINAL CTA */}
-                <MarketingSection className="bg-blue-600 text-white text-center pb-20 lg:pb-32">
+                <MarketingSection className="bg-blue-600 text-white text-center py-20 lg:py-32">
                     <div className="max-w-4xl mx-auto">
                         <h2 className="text-4xl lg:text-7xl font-black mb-8 leading-[1.1] tracking-tighter">
                             {landingContent.finalCta.title}
@@ -435,7 +444,7 @@ export default function LandingPage() {
                                         className={cn(
                                             "w-full h-16 px-10 text-xl font-black transition-all",
                                             btn.primary
-                                                ? "bg-white text-blue-600 hover:bg-slate-50 shadow-2xl"
+                                                ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xl"
                                                 : "bg-transparent text-white border-blue-400 hover:bg-white/10"
                                         )}
                                     >
@@ -448,7 +457,7 @@ export default function LandingPage() {
                 </MarketingSection>
             </main>
 
-            <footer className="py-12 border-t bg-slate-50">
+            <footer className="py-12 border-t bg-white">
                 <div className="container mx-auto px-4 text-center">
                     <p className="text-sm font-bold text-slate-400 tracking-tighter uppercase">
                         {landingContent.nav.logo}

@@ -27,12 +27,12 @@ export function PricingCard({ plan }: PricingCardProps) {
             className={cn(
                 "p-8 rounded-2xl border bg-white flex flex-col relative h-full transition-all duration-300",
                 plan.highlight
-                    ? "border-blue-600 shadow-2xl ring-1 ring-blue-600/20 z-10 scale-[1.02]"
+                    ? "border-emerald-600 shadow-2xl ring-1 ring-emerald-600/20 z-10 scale-[1.02]"
                     : "border-slate-200 hover:shadow-xl"
             )}
         >
             {plan.highlight && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-emerald-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg">
                     {plan.highlight}
                 </div>
             )}
@@ -52,7 +52,7 @@ export function PricingCard({ plan }: PricingCardProps) {
                     <li key={j} className="flex gap-3 text-sm text-slate-600 items-start">
                         <CheckCircle2 className={cn(
                             "w-5 h-5 mt-0.5 shrink-0",
-                            plan.highlight ? "text-blue-500" : "text-slate-400"
+                            plan.highlight ? "text-emerald-500" : "text-slate-400"
                         )} />
                         {feat}
                     </li>
@@ -64,8 +64,10 @@ export function PricingCard({ plan }: PricingCardProps) {
                     size="lg"
                     variant={plan.ctaVariant || "default"}
                     className={cn(
-                        "w-full h-12 text-base font-bold transition-all",
-                        plan.highlight ? "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-500/25" : ""
+                        "w-full h-12 text-base font-black transition-all",
+                        plan.highlight
+                            ? "bg-emerald-600 hover:bg-emerald-700 shadow-lg hover:shadow-emerald-500/25 text-white"
+                            : "bg-transparent text-slate-600 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
                     )}
                 >
                     {plan.cta}
