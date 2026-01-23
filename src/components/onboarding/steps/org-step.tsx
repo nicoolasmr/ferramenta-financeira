@@ -8,11 +8,7 @@ interface StepOrgProps {
 
 export function StepOrg({ data, onChange }: StepOrgProps) {
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center mb-6">
-                <h2 className="text-2xl font-bold">Name your Organization</h2>
-                <p className="text-slate-500">This will be your dedicated workspace on RevenueOS.</p>
-            </div>
+        <div className="space-y-6 pt-4">
 
             <div className="space-y-4">
                 <div className="space-y-2">

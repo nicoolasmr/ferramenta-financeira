@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -52,7 +52,8 @@ const MOCK_API_KEYS = [
     },
 ];
 
-export default function ApiKeysPage({ params }: { params: { projectId: string } }) {
+export default function ApiKeysPage({ params }: { params: Promise<{ projectId: string }> }) {
+    const { projectId } = React.use(params);
     const [createOpen, setCreateOpen] = useState(false);
     const [generatedKey, setGeneratedKey] = useState<string | null>(null);
     const [keyName, setKeyName] = useState('');

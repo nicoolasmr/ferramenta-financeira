@@ -63,7 +63,7 @@ export function Header({ logo, links, ctaPrimary, ctaSecondary }: HeaderProps) {
                         </Button>
                     </Link>
                     <Link href={ctaPrimary.href}>
-                        <Button className="h-10 px-6 text-sm font-black bg-slate-900 text-white hover:bg-blue-600 transition-all shadow-sm">
+                        <Button className="h-10 px-6 text-sm font-black bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-sm">
                             {ctaPrimary.label}
                         </Button>
                     </Link>

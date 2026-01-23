@@ -14,11 +14,7 @@ export function StepPlan({ value, onChange }: StepPlanProps) {
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center mb-6">
-                <h2 className="text-2xl font-bold">Choose your Plan</h2>
-                <p className="text-slate-500">Start for free, upgrade as you grow.</p>
-            </div>
+        <div className="space-y-6 pt-4">
 
             <div className="grid gap-4">
                 {plans.map((plan) => (

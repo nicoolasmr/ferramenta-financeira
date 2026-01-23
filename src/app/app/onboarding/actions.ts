@@ -34,15 +34,18 @@ export async function completeOnboarding(formData: FormData) {
     }
 
     // 1. Create Organization
+    console.log("Onboarding: Creating organization", data.orgName);
     const { data: org, error: orgError } = await supabase.from("organizations").insert({
         name: data.orgName,
         slug: data.orgSlug,
-        // owner_id logic usually via RLS/Trigger or explicit membership creation next
     }).select("id").single();
 
     if (orgError) {
+        console.error("Onboarding Error (Organization):", orgError);
         return { error: { server: orgError.message } };
     }
+
+    console.log("Onboarding: Created organization", org.id);
 
     // 2. Create Membership (Owner)
     await supabase.from("memberships").insert({
@@ -59,14 +62,18 @@ export async function completeOnboarding(formData: FormData) {
     });
 
     // 4. Create First Project
+    console.log("Onboarding: Creating first project", data.projectName);
     const { data: firstProject, error: projectError } = await supabase.from("projects").insert({
         org_id: org.id,
         name: data.projectName
     }).select("id").single();
 
     if (projectError || !firstProject) {
+        console.error("Onboarding Error (Project):", projectError);
         return { error: { server: projectError?.message || "Failed to create first project" } };
     }
+
+    console.log("Onboarding: Created project", firstProject.id);
 
     // 5. Billing Setup (Mock for now, real implementation would create Stripe Customer here)
     // Fetch plan ID

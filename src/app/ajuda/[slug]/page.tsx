@@ -22,7 +22,7 @@ export async function generateStaticParams() {
     }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const doc = getHelpArticleBySlug(slug);
     if (!doc) return {};
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
 }
 
-export default async function HelpArticle({ params }: { params: { slug: string } }) {
+export default async function HelpArticle({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const doc = getHelpArticleBySlug(slug);
 

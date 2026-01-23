@@ -103,10 +103,24 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // Redirect / to /app if logged in, else /login (or keep on landing page /)
+    // Redirect / to /app if logged in
     if (request.nextUrl.pathname === '/') {
         if (user) {
+            // Check if user has projects
+            const { data: projects } = await supabase.from('projects').select('id', { count: 'exact', head: true });
+            if (!projects || projects.length === 0) {
+                return NextResponse.redirect(new URL('/app/onboarding', request.url))
+            }
             return NextResponse.redirect(new URL('/app/dashboard', request.url))
+        }
+    }
+
+    // Protect /app routes and enforce onboarding
+    if (request.nextUrl.pathname.startsWith('/app') && request.nextUrl.pathname !== '/app/onboarding') {
+        // We already checked user above
+        const { data: projects } = await supabase.from('projects').select('id', { count: 'exact', head: true });
+        if (!projects || projects.length === 0) {
+            return NextResponse.redirect(new URL('/app/onboarding', request.url))
         }
     }
 

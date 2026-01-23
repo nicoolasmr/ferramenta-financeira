@@ -16,11 +16,7 @@ export function StepIntegration({ value, onChange }: StepIntegrationProps) {
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center mb-6">
-                <h2 className="text-2xl font-bold">Connect Integration</h2>
-                <p className="text-slate-500">Sync your sales data automatically.</p>
-            </div>
+        <div className="space-y-6 pt-4">
 
             <div className="grid gap-3">
                 {integrations.map((provider) => (

@@ -8,11 +8,7 @@ interface StepProjectProps {
 
 export function StepProject({ data, onChange }: StepProjectProps) {
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center mb-6">
-                <h2 className="text-2xl font-bold">Create your First Project</h2>
-                <p className="text-slate-500">Projects organize your products, launches, and campaigns.</p>
-            </div>
+        <div className="space-y-6 pt-4">
 
             <div className="space-y-4">
                 <div className="space-y-2">

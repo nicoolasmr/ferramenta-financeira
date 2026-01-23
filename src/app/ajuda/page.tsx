@@ -8,7 +8,7 @@ export const metadata = {
     description: "Documentação, tutoriais e suporte para usar o RevenueOS.",
 };
 
-export default async function HelpCenter({ searchParams }: { searchParams: { category?: string } }) {
+export default async function HelpCenter({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
     // In Next 15, we might need to await searchParams. 
     // Ideally we treat it as potentially async or just access it.
     // For safety in this environment, let's treat it as an object for now, 
