@@ -11,6 +11,7 @@ import { StepPlan } from "@/components/onboarding/steps/plan-step";
 import { StepIntegration } from "@/components/onboarding/steps/integration-step";
 import { StepProject } from "@/components/onboarding/steps/project-step";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function OnboardingPage() {
     // Steps: 0=Welcome, 1=Org, 2=Plan, 3=Integration, 4=Project
@@ -30,11 +31,21 @@ export default function OnboardingPage() {
     const handleChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
     const handleSet = (key: string, value: string) => setFormData({ ...formData, [key]: value });
 
-    // Handle form submission via the server action
-    const handleSubmit = async (formDataPayload: FormData) => {
+    const handleAction = async (data: FormData) => {
         setIsSubmitting(true);
-        // The server action 'completeOnboarding' will handle the redirect
-        // We just need to ensure the form submits correctly
+        try {
+            const result = await completeOnboarding(data);
+            if (result?.error) {
+                setIsSubmitting(false);
+                toast.error("Falha ao completar onboarding. Verifique os dados.");
+            }
+        } catch (error) {
+            setIsSubmitting(false);
+            // Ignore redirect errors as they are expected
+            if (!(error instanceof Error && error.message === 'NEXT_REDIRECT')) {
+                toast.error("Erro inesperado ao processar onboarding.");
+            }
+        }
     };
 
     return (
@@ -94,7 +105,7 @@ export default function OnboardingPage() {
                                 Continue
                             </Button>
                         ) : (
-                            <form action={completeOnboarding} onSubmit={() => setIsSubmitting(true)}>
+                            <form action={handleAction}>
                                 {/* Pass all state as hidden inputs */}
                                 <input type="hidden" name="orgName" value={formData.orgName} />
                                 <input type="hidden" name="orgSlug" value={formData.orgSlug} />
