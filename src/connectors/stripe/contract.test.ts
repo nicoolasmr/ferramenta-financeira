@@ -1,61 +1,66 @@
-import { describe, it, expect } from 'vitest';
-import { normalize } from './normalize';
 
-describe('Stripe Connector Contract', () => {
-    it('should normalize checkout.session.completed', () => {
-        const payload = {
-            id: 'evt_test_123',
-            created: 1700000000,
-            type: 'checkout.session.completed',
+import { describe, it, expect } from 'vitest';
+import { StripeConnector } from './connector';
+import { PaymentStatus } from '@/lib/contracts/canonical';
+
+describe('Stripe Connector', () => {
+    const connector = new StripeConnector();
+
+    it('should normalize charge.succeeded event', () => {
+        const rawPayload = {
+            id: 'evt_test_charge',
+            object: 'event',
+            type: 'charge.succeeded',
+            created: 1672531200,
             data: {
                 object: {
-                    id: 'cs_test_123',
-                    amount_total: 10000,
+                    id: 'ch_test_123',
+                    object: 'charge',
+                    amount: 2000,
                     currency: 'brl',
-                    customer_details: {
-                        email: 'test@example.com',
-                        name: 'Test Agent'
-                    },
-                    metadata: {
-                        plan: 'pro'
-                    }
+                    payment_intent: 'pi_test_123',
+                    status: 'succeeded'
                 }
             }
         };
 
-        const events = normalize(payload as any);
+        const rawEvent = {
+            provider: 'stripe',
+            event_type: 'charge.succeeded',
+            payload: rawPayload,
+            headers: {},
+            occurred_at: new Date(1672531200000)
+        };
 
-        expect(events).toHaveLength(1);
-        const event = events[0];
+        const canonicalEvents = connector.normalize(rawEvent);
 
-        expect(event.canonical_type).toBe('order.created');
+        expect(canonicalEvents).toHaveLength(1);
+        const event = canonicalEvents[0];
+
+        expect(event.domain_type).toBe('payment');
         expect(event.provider).toBe('stripe');
-        expect(event.payload.external_id).toBe('cs_test_123');
-        expect(event.payload.amount_cents).toBe(10000);
-        expect(event.payload.customer_email).toBe('test@example.com');
-        expect(event.payload.status).toBe('paid');
-        expect(event.timestamp).toBe('2023-11-14T22:13:20.000Z');
+
+        // Assert Data
+        const payment = event.data as any;
+        expect(payment.amount_cents).toBe(2000);
+        expect(payment.currency).toBe('BRL');
+        expect(payment.status).toBe(PaymentStatus.PAID);
+
+        // Assert References
+        expect(event.refs.provider_object_id).toBe('ch_test_123');
+        expect(event.refs.provider_related_id).toBe('pi_test_123');
     });
 
-    it('should normalize payment_intent.succeeded', () => {
-        const payload = {
-            id: 'evt_pi_123',
-            created: 1700000000,
-            type: 'payment_intent.succeeded',
-            data: {
-                object: {
-                    id: 'pi_test_123',
-                    amount: 5000,
-                    currency: 'usd',
-                    receipt_email: 'payer@example.com'
-                }
-            }
+    it('should ignore unrelated events', () => {
+        const rawEvent = {
+            provider: 'stripe',
+            event_type: 'customer.created',
+            payload: { type: 'customer.created' },
+            headers: {},
+            occurred_at: new Date()
         };
 
-        const events = normalize(payload as any);
-        expect(events).toHaveLength(1);
-        expect(events[0].canonical_type).toBe('payment.confirmed');
-        expect(events[0].payload.amount_cents).toBe(5000);
-        expect(events[0].payload.currency).toBe('USD');
+        const canonicalEvents = connector.normalize(rawEvent);
+        expect(canonicalEvents).toHaveLength(0);
     });
 });

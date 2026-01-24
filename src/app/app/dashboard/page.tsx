@@ -17,6 +17,8 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { PortfolioHealthBlock } from "@/components/dashboard/PortfolioHealthBlock";
+import { TopAnomaliesBlock } from "@/components/dashboard/TopAnomaliesBlock";
 
 const data = [
     { name: 'Jan', total: 12000 },
@@ -60,7 +62,19 @@ export default function DashboardPage() {
                 </div>
             </div>
 
+            import {PortfolioHealthBlock} from "@/components/dashboard/PortfolioHealthBlock";
+            import {TopAnomaliesBlock} from "@/components/dashboard/TopAnomaliesBlock";
+
+            // ... inside component ...
+
             {/* Belvo "Caixa Real" Block */}
+            {activeOrganization && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <PortfolioHealthBlock orgId={activeOrganization.id} />
+                    <TopAnomaliesBlock orgId={activeOrganization.id} />
+                </div>
+            )}
+
             {activeOrganization && <BelvoDashboardBlock orgId={activeOrganization.id} />}
 
             <OnboardingChecklist />

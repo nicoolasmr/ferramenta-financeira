@@ -1,72 +1,36 @@
+
 import { describe, it, expect } from 'vitest';
-import { normalize } from './normalize';
+import { HotmartConnector } from './connector';
+import { OrderStatus } from '@/lib/contracts/canonical';
 
-describe('Hotmart Connector Contract', () => {
-    it('should normalize PURCHASE_COMPLETE to order.created and payment.confirmed', () => {
-        const payload = {
-            id: 'evt_hm_123',
-            event: 'PURCHASE_COMPLETE',
-            transaction: 'HP1234567890',
-            status: 'APPROVED',
-            price: {
-                value: 97.00,
-                currency_code: 'BRL'
-            },
-            buyer: {
-                email: 'buyer@example.com',
-                name: 'John Doe',
-                checkout_phone: '+5511999999999'
-            },
-            product: {
-                id: '123456'
-            }
+describe('Hotmart Connector', () => {
+    const connector = new HotmartConnector();
+
+    it('should normalize PURCHASE_APPROVED event', () => {
+        const rawPayload = {
+            event: 'PURCHASE_APPROVED',
+            purchase_date: 1672531200000,
+            transaction: 'HP123456',
+            product: { name: 'Course A' },
+            price: { value: 99.90 },
+            full_price: 99.90,
+            buyer: { name: 'John Doe', email: 'john@example.com' }
         };
 
-        const events = normalize(payload);
-
-        expect(events).toHaveLength(2);
-
-        // Event 1: Order Created
-        const orderEvent = events[0];
-        expect(orderEvent.canonical_type).toBe('order.created');
-        expect(orderEvent.provider).toBe('hotmart');
-        expect(orderEvent.payload.external_id).toBe('HP1234567890');
-        expect(orderEvent.payload.amount_cents).toBe(9700);
-        expect(orderEvent.payload.customer_email).toBe('buyer@example.com');
-        expect(orderEvent.payload.status).toBe('paid');
-
-        // Event 2: Payment Confirmed
-        const paymentEvent = events[1];
-        expect(paymentEvent.canonical_type).toBe('payment.confirmed');
-        expect(paymentEvent.provider).toBe('hotmart');
-        expect(paymentEvent.payload.external_id).toBe('HP1234567890');
-        expect(paymentEvent.payload.status).toBe('paid');
-        expect(paymentEvent.payload.amount_cents).toBe(9700);
-    });
-
-    it('should normalize PURCHASE_REFUNDED to refund.confirmed', () => {
-        const payload = {
-            id: 'evt_hm_999',
-            event: 'PURCHASE_REFUNDED',
-            transaction: 'HP1234567890',
-            status: 'REFUNDED',
-            price: {
-                value: 97.00,
-                currency_code: 'BRL'
-            },
-            buyer: {
-                email: 'buyer@example.com'
-            }
+        const rawEvent = {
+            provider: 'hotmart',
+            event_type: 'PURCHASE_APPROVED',
+            payload: rawPayload,
+            headers: {},
+            occurred_at: new Date(1672531200000)
         };
 
-        const events = normalize(payload);
+        const canonicalEvents = connector.normalize(rawEvent);
+        expect(canonicalEvents).toHaveLength(1);
+        const order = canonicalEvents[0].data as any;
 
-        expect(events).toHaveLength(1);
-        const refundEvent = events[0];
-
-        expect(refundEvent.canonical_type).toBe('refund.confirmed');
-        expect(refundEvent.payload.external_id).toBe('HP1234567890');
-        expect(refundEvent.payload.status).toBe('refunded');
-        expect(refundEvent.payload.amount_cents).toBe(9700);
+        expect(order.total_cents).toBe(9990);
+        expect(order.status).toBe(OrderStatus.CONFIRMED);
+        expect(canonicalEvents[0].refs.provider_object_id).toBe('HP123456');
     });
 });

@@ -59,15 +59,15 @@ export function evaluateRules(
     }
 
     // Rule 3: Reconciliation Gaps
-    if (reconciliationGap > 0) {
+    if (reconciliationGap > 100) { // Tolerance of 1.00 BRL
         insights.push({
             org_id: orgId,
             project_id: projectId,
             kind: 'reconciliation',
             severity: 'warning',
-            title: 'Data Mismatch Detected',
-            summary: `Found ${reconciliationGap} events that are not in the financial records.`,
-            evidence_json: { gap: reconciliationGap }
+            title: 'Revenue Gap Detected',
+            summary: `There is a difference of ${(reconciliationGap / 100).toFixed(2)} between expected and received revenue.`,
+            evidence_json: { gap_cents: reconciliationGap }
         });
 
         actions.push({
@@ -76,7 +76,7 @@ export function evaluateRules(
             action_type: 'open_reconciliation',
             priority: 70,
             status: 'open',
-            payload_json: { count: reconciliationGap }
+            payload_json: { gap_cents: reconciliationGap }
         });
     }
 

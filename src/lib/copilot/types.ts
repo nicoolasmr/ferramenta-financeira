@@ -9,14 +9,22 @@ export type ProjectFinancials = {
     total_received: number;
     total_open: number;
     total_overdue: number;
+    // Calculated fields (not in view)
     overdue_rate: number;
-    next_30d_expected: number;
 };
 
 export type ReceivablesAging = {
     overdue_30: number;
     overdue_60: number;
-    overdue_90_plus: number;
+    overdue_90plus: number; // Changed from 90_plus to match view? View has overdue_90plus.
+    future_receivables: number;
+};
+
+export type ReconciliationSummary = {
+    expected_revenue: number;
+    gateway_received: number;
+    gateway_payouts: number;
+    bank_received_total: number;
 };
 
 export type IntegrationStatus = {

@@ -1,33 +1,52 @@
-# Application Routes
 
-## Public / Auth
-- `/login`: User sign in.
-- `/signup`: User registration.
-- `/forgot-password`: Password recovery.
+# RevenueOS Route Inventory
 
-## App (Private, Tenant Scoped)
-- `/app/dashboard`: Main overview.
-    - KPIs: Gross/Net Revenue, Charges, Refunds.
-- `/app/sales`: List of orders.
-- `/app/sales/[orderId]`: Order details.
-- `/app/customers`: List of customers.
-- `/app/customers/[customerId]`: Customer detailed profile.
-- `/app/payments`: List of transactions.
-- `/app/reports`: Detailed reports (Revenue, Cohorts).
+## Public Routes
+| Path | Description | Access |
+| :--- | :--- | :--- |
+| `/` | Landing Page | Public |
+| `/pricing` | Pricing Page | Public |
+| `/blog` | Blog & updates | Public |
+| `/help` | Help Center | Public |
+| `/login` | Authentication | Public (Guest) |
+| `/signup` | Registration | Public (Guest) |
 
-## Projects Module
-- `/app/projects`: List of all projects.
-- `/app/projects/[projectId]/dashboard`: Project-specific dashboard (Financials, At Risk, etc.).
-- `/app/projects/[projectId]/enrollments`: List of enrolled customers in the project.
-- `/app/enrollments/[enrollmentId]`: Detailed student profile (Cycle, Diagnosis, Financial Plan).
+## App Routes (`/app`) - Requires Auth
+| Path | Description | Access |
+| :--- | :--- | :--- |
+| `/app` | Dashboard (Portfolio Health) | Auth + Org Member |
+| `/app/projects` | Project List | Auth + Org Member |
+| `/app/projects/new` | Create Project | Auth + Org Member |
+| `/app/projects/[id]` | Project Hub (Overview) | Auth + Org Member |
+| `/app/projects/[id]/sales` | Sales Reports | Auth + Org Member |
+| `/app/projects/[id]/payments` | Payments & Installments | Auth + Org Member |
+| `/app/projects/[id]/receivables` | Aging & Collections | Auth + Org Member |
+| `/app/projects/[id]/reconciliation` | Reconciliation Views | Auth + Org Member |
+| `/app/projects/[id]/cash-real` | Bank vs Gateway | Auth + Org Member |
+| `/app/projects/[id]/copilot` | AI Insights | Auth + Org Member |
+| `/app/projects/[id]/risk` | Risk & Chargebacks | Auth + Org Member |
+| `/app/projects/[id]/integrations` | Connect Providers | Auth + Org Member |
+| `/app/settings` | Org Settings | Auth + Owner/Admin |
+| `/app/settings/billing` | Billing & Plans | Auth + Owner/Admin |
+| `/app/settings/team` | Team Management | Auth + Owner/Admin |
 
-## Client Portal
-- `/portal/projects/[projectId]`: Read-only view for external clients (investors/partners).
+## Portal Routes (`/portal`) - Read Only Client
+| Path | Description | Access |
+| :--- | :--- | :--- |
+| `/portal/projects/[id]` | Client View (Read-Only) | Auth + Viewer Policy |
 
-## Ops (Admin/Owner Only)
-- `/ops/overview`: System health.
-- `/ops/integrations`: Managing third-party providers.
-- `/ops/webhooks`: Inbound webhook logs.
-- `/ops/sync-runs`: History of data synchronization jobs.
-- `/ops/audit-logs`: Security audit trail.
-- `/ops/reconciliation`: Tools for matching orders to payments.
+## Ops Routes (`/ops`) - Internal Admin
+| Path | Description | Access |
+| :--- | :--- | :--- |
+| `/ops` | Ops Overview | Auth + Internal Role |
+| `/ops/webhooks` | Webhook Logs & Replay | Auth + Internal Role |
+| `/ops/consistency` | Anomaly Management | Auth + Internal Role |
+| `/ops/lineage` | Data Lineage Tool | Auth + Internal Role |
+| `/ops/support` | Impersonation (ToDo) | Auth + Internal Role |
+
+## API Routes
+| Path | Method | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `/api/webhooks/[provider]` | POST | Provider Ingest | Signature Verification |
+| `/api/cron/consistency` | POST | Run Detectors | CRON_SECRET |
+| `/api/cron/worker` | POST | Process Job Queue | CRON_SECRET |

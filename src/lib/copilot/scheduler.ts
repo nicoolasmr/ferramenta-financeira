@@ -33,24 +33,32 @@ export async function runCopilotForOrg(orgId: string) {
             .eq('project_id', project.project_id)
             .single();
 
-        const projectIntegrations = integrations?.filter(i => i.org_id === orgId) || []; // Actually integrations are usually org-wide, maybe filtered by provider if project specific? 
-        // For now assume integrations are Organization Wide credentials.
+        const projectIntegrations = integrations?.filter(i => i.org_id === orgId) || [];
+
+        // Calculate Gap (Expected - Received)
+        const reconGap = (recon?.expected_revenue || 0) - (recon?.gateway_received || 0);
+
+        // Calculate Overdue Rate if not in view
+        // The view returns raw totals.
+        const overdueRate = project.total_sold > 0 ? (project.total_overdue / project.total_sold) * 100 : 0;
+
+        const financials = { ...project, overdue_rate: overdueRate };
 
         // 2. Calculate Score
         const { score, level, breakdown } = calculateHealthScore(
-            project as ProjectFinancials,
+            financials as ProjectFinancials,
             (projectIntegrations as IntegrationStatus[]),
-            recon?.delta_count || 0
+            reconGap
         );
 
         // 3. Run Rules
         const { insights, actions } = evaluateRules(
             orgId,
             project.project_id,
-            project as ProjectFinancials,
+            financials as ProjectFinancials,
             (projectIntegrations as IntegrationStatus[]),
-            aging || { overdue_30: 0, overdue_60: 0, overdue_90_plus: 0 }, // Fallback
-            recon?.delta_count || 0
+            aging || { overdue_30: 0, overdue_60: 0, overdue_90plus: 0, future_receivables: 0 }, // Fallback
+            reconGap
         );
 
         // 4. Save to DB
