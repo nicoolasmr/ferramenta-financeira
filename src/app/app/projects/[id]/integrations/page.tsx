@@ -11,16 +11,17 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 // This could come from a shared constant or API
-{ key: "stripe", name: "Stripe", description: "Global payments and subscriptions." },
-{ key: "hotmart", name: "Hotmart", description: "Digital products platform." },
-{ key: "asaas", name: "Asaas", description: "Brazilian billing and payments." },
-{ key: "kiwify", name: "Kiwify", description: "Course platform." },
-{ key: "lastlink", name: "Lastlink", description: "Creator economy monetization." },
-{ key: "eduzz", name: "Eduzz", description: "Affiliate marketing platform." },
-{ key: "monetizze", name: "Monetizze", description: "Digital and physical products." },
-{ key: "mercadopago", name: "Mercado Pago", description: "Payment processing." },
-{ key: "pagseguro", name: "PagSeguro", description: "Brazilian payments." },
-{ key: "belvo", name: "Belvo", description: "Open Finance aggregation." },
+const AVAILABLE_PROVIDERS = [
+    { key: "stripe", name: "Stripe", description: "Global payments and subscriptions." },
+    { key: "hotmart", name: "Hotmart", description: "Digital products platform." },
+    { key: "asaas", name: "Asaas", description: "Brazilian billing and payments." },
+    { key: "kiwify", name: "Kiwify", description: "Course platform." },
+    { key: "lastlink", name: "Lastlink", description: "Creator economy monetization." },
+    { key: "eduzz", name: "Eduzz", description: "Affiliate marketing platform." },
+    { key: "monetizze", name: "Monetizze", description: "Digital and physical products." },
+    { key: "mercadopago", name: "Mercado Pago", description: "Payment processing." },
+    { key: "pagseguro", name: "PagSeguro", description: "Brazilian payments." },
+    { key: "belvo", name: "Belvo", description: "Open Finance aggregation." },
 ];
 
 export default function IntegrationsHubPage() {
