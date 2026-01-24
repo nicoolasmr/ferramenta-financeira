@@ -1,120 +1,61 @@
-# 🚀 RevenueOS v2.0 (SaaS Edition)
 
-> **The Financial Operating System for Modern SaaS.**
-> Unified Billing, AI Analysis, and Multi-Provider Integrations in one platform.
+# RevenueOS (ferramenta-financeira)
 
-![RevenueOS Banner](https://img.shields.io/badge/RevenueOS-SaaS_Core-blueviolet?style=for-the-badge&logo=rocket)
-![Status](https://img.shields.io/badge/Status-100%25_Functional-success?style=for-the-badge)
-![Security](https://img.shields.io/badge/Security-MFA_Protected-blue?style=for-the-badge)
+**Vertical SaaS for Revenue Operations** - The financial brain for modern businesses.
 
----
-
-## 🌟 Overview
-
-**RevenueOS** is a complete, production-ready B2B SaaS platform designed to centralize and optimize financial operations for digital businesses (Course Creators, Agencies, SaaS).
-
-1.  **Unify Revenue Streams**: Sync sales from **Stripe**, **Hotmart**, **Asaas**, **Eduzz**, **Kiwify**, and **Mercado Pago** into a single source of truth.
-2.  **Automate Operations**: Advanced webhook management, real-time sync, and automated processing.
-3.  **Leverage AI**: Integrated **IA Copilot** providing actionable insights on churn, revenue risks, and team performance.
-4.  **Manage Projects**: Granular tracking for high-ticket sales, custom payment plans, and installment aging.
-
----
-
-## ✨ Core Features (100% Functional)
-
-### 🤖 **Intelligence & IA Copilot**
-- **IA Copilot**: Real-time insights based on live database data. Automatically suggests actions to reduce churn or recover revenue.
-- **Unified Analytics**: Global dashboard with real-time metrics across all connected gateways.
-
-### 💳 **SaaS Billing & Plans**
-- **Dynamic Subscription Hub**: Full implementation of Starter, Pro, and Enterprise plans.
-- **Subscription Management**: Complete flow for upgrading, downgrading, and canceling plans.
-- **Secure Payment Updates**: Built-in modal for updating payment methods.
-- **Invoice Tracking**: Detailed billing history with downloadable receipts.
-
-### 🔌 **Integration Gateway**
-- **Multi-Gateway Support**: 6 pre-configured providers with secure credential management.
-- **Open Finance**: Integrated with **Belvo** for real-time bank statement aggregation ("Caixa Real").
-- **Connectivity Testing**: Built-in "Test Connection" engine for all integrated gateways.
-- **Reliable Webhooks**: Tested webhook delivery system with secret rotation support.
-
-### 🛡️ **Enterprise Security**
-- **TOTP MFA**: Real-time QR code generation and 2FA verification.
-- **Recovery Codes**: Secure backup code system for account recovery.
-- **API Key Management**: Secure key generation with masking and show/hide security.
-- **Audit Logs**: Comprehensive activity tracking with advanced filters (Action, Resource, User) and **CSV Export**.
-
----
-
-## 🛠 Tech Stack
-
-*   **Frontend**: Next.js 15 (App Router/Turbopack), React 19, TailwindCSS, Shadcn/UI.
-*   **Backend**: Supabase (Postgres), server-side revalidation, and Typescript Server Actions.
-*   **Security**: RLS Policies, MFA implementation, and Encrypted Credentials.
-*   **Utilities**: `otplib` (MFA), `qrcode` (2FA), `recharts` (Analytics), `sonner` (Notifications).
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-*   Node.js 20+
-*   Supabase Project
-
-### Installation
-
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/nicoolasmr/ferramenta-financeira.git
-    cd ferramenta-financeira
-    ```
-
-2.  **Install Dependencies**
-    ```bash
-    npm install
-    ```
-
-3.  **Environment Setup**
-    Copy `.env.example` to `.env` and configure:
-    ```bash
-    NEXT_PUBLIC_SUPABASE_URL=your_url
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
-    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-    ```
-
-4.  **Seeding Data**
-    Populate the platform with initial plans:
-    ```bash
-    npx tsx scripts/seed-billing-plans.ts
-    ```
-
-5.  **Run Development Server**
-    ```bash
-    npm run dev
-    ```
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://vercel.com)
+[![Version](https://img.shields.io/badge/version-v1.0.1-blue)](docs/CHANGELOG.md)
+[![Docs](https://img.shields.io/badge/docs-SSOT-orange)](docs/MASTER_DOC.md)
 
 ---
 
 ## 📚 Documentation
+The engineering team maintains a strict **Source of Truth**. Please consult these documents before contributing:
 
-The technical and operational documentation is organized in the [`docs/`](./docs/) directory:
-
-### Core Platform
-- [**Architecture Guide**](./docs/ARCHITECTURE.md): System design, data flow, and stack details.
-- [**Database Schema**](./docs/DB_SCHEMA.md): Entity relationship diagram and table descriptions.
-- [**Security & Compliance**](./docs/SECURITY.md): RLS, MFA, and data protection policies.
-- [**Routes & API**](./docs/ROUTES.md): Complete list of app routes and API endpoints.
-
-### Operations & Intelligence
-- [**AI Copilot**](./docs/AI_COPILOT.md): How the deterministic and GPT layers work.
-- [**Operations Manual (OPS)**](./docs/OPS.md): Managing gateways, webhooks, and the DLQ.
-- [**Payment Scheduling**](./docs/PAYMENTS_SCHEDULING.md): Logic for installments and re-negotiations.
-- [**Runbook**](./docs/RUNBOOK.md): Troubleshooting common operational issues.
-
-### Implementation History
-- [**Task Tracker**](./docs/brain/task.md): Detailed 100% completion checklist.
-- [**Final Walkthrough**](./docs/brain/walkthrough.md): Documented proofs of all functional modules.
+- **[Master Documentation](docs/MASTER_DOC.md)**: Architecture, Schema, Invariants, and API Spec. (Start Here)
+- **[Provider Matrix](docs/PROVIDER_MATRIX.md)**: Capabilities and setup for Stripe, Hotmart, Asaas, etc.
+- **[Ops Runbook](docs/OPS_RUNBOOK.md)**: Incident response and maintenance.
+- **[Release Checklist](docs/RELEASE_CHECKLIST.md)**: Deployment safety checks.
+- **[Changelog](docs/CHANGELOG.md)**: Version history.
 
 ---
 
-> **RevenueOS** — 100% Building completed by Antigravity. 🚀
+## 🚀 Quick Start (Dev)
+
+1.  **Clone & Install**:
+    ```bash
+    git clone repo
+    npm install
+    ```
+
+2.  **Environment**:
+    Copy `.env.example` to `.env.local` and populate:
+    - `NEXT_PUBLIC_SUPABASE_URL`
+    - `NEXT_PUBLIC_STRIPE_KEY`
+
+3.  **Run**:
+    ```bash
+    npm run dev
+    # Opens http://localhost:3000
+    ```
+
+4.  **Codegen (Supabase)**:
+    ```bash
+    npm run supabase:types
+    ```
+
+---
+
+## 🧪 Testing
+We enforce a **Contract First** approach for Integrations.
+```bash
+npm run test           # Run all tests
+npm run test:contracts # Verify Provider SDK compliance
+```
+
+---
+
+## 📦 Deployment
+Deployed on **Vercel** + **Supabase**.
+Pushing to `main` triggers a production build.
+See `docs/RELEASE_CHECKLIST.md` before merging.
