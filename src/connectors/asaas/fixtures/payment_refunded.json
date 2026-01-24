@@ -1,0 +1,13 @@
+{
+    "event": "PAYMENT_REFUNDED",
+    "payment": {
+        "object": "payment",
+        "id": "pay_1234567890",
+        "dateCreated": "2024-01-01",
+        "customer": "cus_123",
+        "value": 100.00,
+        "netValue": 95.00,
+        "billingType": "PIX",
+        "status": "REFUNDED"
+    }
+}

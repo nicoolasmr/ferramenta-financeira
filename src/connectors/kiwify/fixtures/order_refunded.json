@@ -1,0 +1,10 @@
+{
+    "order_id": "ord_987654",
+    "order_status": "refunded",
+    "commission_total_value": 49.90,
+    "approved_date": "2024-01-02T10:00:00Z",
+    "Customer": {
+        "full_name": "Jane Doe",
+        "email": "jane@example.com"
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "order_id": "ord_123456",
+    "order_status": "paid",
+    "commission_total_value": 197.00,
+    "payment_method_type": "credit_card",
+    "installments": 12,
+    "approved_date": "2024-01-01T12:00:00Z",
+    "Customer": {
+        "full_name": "John Doe",
+        "email": "john@example.com"
+    },
+    "Product": {
+        "product_name": "Super Course"
+    }
+}
