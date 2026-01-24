@@ -1,77 +1,99 @@
 
-import { BaseConnector } from "@/connectors/sdk/core";
-import { CanonicalEvent, CanonicalProvider, OrderStatus, PaymentStatus } from "@/lib/contracts/canonical";
-import { RawEvent } from "@/connectors/sdk/types";
+import { BaseConnectorV2 } from "../base-v2";
+import { CapabilityMatrix, NormalizedEvent, WebhookConfig } from "@/lib/integrations/sdk";
 import Stripe from "stripe";
+import { getWebhookUrl } from "@/lib/integrations/setup";
 
-export class StripeConnector extends BaseConnector {
-    provider: CanonicalProvider = "stripe";
-    private client: Stripe;
+export class StripeConnector extends BaseConnectorV2 {
+    providerKey = "stripe";
+    displayName = "Stripe";
 
-    constructor() {
-        super();
-        this.client = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-12-18.acacia" });
-    }
+    capabilities: CapabilityMatrix = {
+        webhooks: true,
+        backfill: true,
+        subscriptions: true,
+        payouts: true,
+        disputes: true,
+        refunds: true,
+        installments: false, // Stripe handles this but usually as subscription or params
+        commissions: false,
+        affiliates: false,
+        multi_currency: true
+    };
 
-    verifySignature(body: string, headers: Record<string, string>, secret: string): boolean {
-        const sig = headers["stripe-signature"];
-        try {
-            this.client.webhooks.constructEvent(body, sig, secret);
-            return true;
-        } catch (err) {
-            return false;
-        }
-    }
-
-    parseWebhook(body: any, headers: Record<string, string>): RawEvent {
-        // Stripe body is already parsed by Next.js often, but here we assume 'body' is the raw object if we parsed it, or raw string.
-        // Actually, parseWebhook logic usually takes the raw body to verify signature? 
-        // SDK Design: 'verifySignature' takes raw string. 'parseWebhook' takes raw body or object.
-        // Let's assume 'body' passed here is the JSON.
-
+    async getSetupConfig(projectId: string): Promise<WebhookConfig> {
+        const url = await getWebhookUrl(projectId, this.providerKey);
         return {
-            provider: this.provider,
-            event_type: body.type,
-            payload: body,
-            headers: headers,
-            occurred_at: new Date(body.created * 1000)
+            webhookUrl: url,
+            verificationKind: 'hmac_signature',
+            recommendedEvents: [
+                { code: 'charge.succeeded', label: 'Payment Succeeded' },
+                { code: 'invoice.payment_succeeded', label: 'Subscription Payment' }
+            ],
+            fields: [
+                {
+                    key: "webhook_secret",
+                    label: "Signing Secret (whsec_...)",
+                    type: "password",
+                    required: true,
+                    help: "Found in Stripe Dashboard > Developers > Webhooks"
+                }
+            ],
+            instructions: [
+                {
+                    step: 1,
+                    title: "Add Endpoint",
+                    description: `Go to Stripe Dash and add endpoint: \`${url}\``,
+                    action: { label: "Open Stripe", url: "https://dashboard.stripe.com/webhooks" }
+                }
+            ]
         };
     }
 
-    normalize(raw: RawEvent): CanonicalEvent[] {
-        const event = raw.payload;
-        const type = event.type;
-        const object = event.data.object;
-        const timestamp = new Date(event.created * 1000).toISOString();
+    async verifyWebhook(body: string, headers: Record<string, string>, secrets: Record<string, string>): Promise<{ ok: boolean; reason?: string }> {
+        try {
+            const stripe = new Stripe("dummy", { apiVersion: "2024-12-18.acacia" });
+            const sig = headers["stripe-signature"];
+            const secret = secrets["webhook_secret"];
+            if (!secret) return { ok: false, reason: "Missing secret" };
 
-        // 1. Payment Intent / Charge Succeeded
-        if (type === "charge.succeeded" || type === "payment_intent.succeeded") {
-            const amount = object.amount; // cents
-            const currency = object.currency.toUpperCase();
+            stripe.webhooks.constructEvent(body, sig, secret);
+            return { ok: true };
+        } catch (e: any) {
+            return { ok: false, reason: e.message };
+        }
+    }
 
-            return [{
-                org_id: "unknown", // Context needs to be injected or found from metadata
-                env: "production", // Default or detect
-                provider: this.provider,
-                provider_event_type: type,
-                occurred_at: timestamp,
-                domain_type: "payment",
-                data: {
-                    amount_cents: amount,
-                    currency: currency,
-                    status: PaymentStatus.PAID,
-                    method: "credit_card", // simplified
-                    installments: 1,
-                    fee_cents: 0, // Fee is separate usually
-                    net_cents: amount // Net needs fee calc
+    async normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string }): Promise<NormalizedEvent[]> {
+        // raw is the full payload stored in DB
+        // payload in raw event usually.
+        const body = raw.payload || raw;
+        const type = body.type;
+        const object = body.data?.object;
+
+        if (!object) return [];
+
+        const events: NormalizedEvent[] = [];
+
+        if (type === 'charge.succeeded') {
+            events.push({
+                provider_key: this.providerKey,
+                project_id: ctx.project_id,
+                org_id: ctx.org_id,
+                trace_id: ctx.trace_id,
+                external_event_id: object.id,
+                occurred_at: new Date(object.created * 1000).toISOString(),
+                canonical_module: 'sales',
+                canonical_type: 'sales.payment.succeeded',
+                payload: object,
+                money: {
+                    amount_cents: object.amount,
+                    currency: object.currency?.toUpperCase() || 'BRL'
                 },
-                refs: {
-                    provider_object_id: object.id,
-                    provider_related_id: object.payment_intent
-                }
-            }];
+                external_refs: [{ kind: 'charge', external_id: object.id }]
+            });
         }
 
-        return [];
+        return events;
     }
 }

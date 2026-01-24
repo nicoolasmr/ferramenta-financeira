@@ -1,62 +1,106 @@
 
-import { BaseConnector } from "@/connectors/sdk/core";
-import { CanonicalEvent, CanonicalProvider, OrderStatus, PaymentStatus } from "@/lib/contracts/canonical";
-import { RawEvent } from "@/connectors/sdk/types";
+import { BaseConnectorV2 } from "../base-v2";
+import { CapabilityMatrix, NormalizedEvent, WebhookConfig } from "@/lib/integrations/sdk";
+import { getWebhookUrl } from "@/lib/integrations/setup";
 
-export class HotmartConnector extends BaseConnector {
-    provider: CanonicalProvider = "hotmart";
+export class HotmartConnector extends BaseConnectorV2 {
+    providerKey = "hotmart";
+    displayName = "Hotmart";
 
-    verifySignature(body: string, headers: Record<string, string>, secret: string): boolean {
-        // Hotmart uses "hottok" often or valid HMAC.
-        // For MVP assuming Token match if headers contain it, or relying on body "hottok" if sent there.
-        // Actually Hotmart 2.0 uses 'X-Hotmart-Hottok'
-        return headers["x-hotmart-hottok"] === secret;
-    }
+    capabilities: CapabilityMatrix = {
+        webhooks: true,
+        backfill: false,
+        subscriptions: true,
+        payouts: false,
+        disputes: true,
+        refunds: true,
+        installments: true,
+        commissions: true,
+        affiliates: true,
+        multi_currency: true
+    };
 
-    parseWebhook(body: any, headers: Record<string, string>): RawEvent {
+    async getSetupConfig(projectId: string): Promise<WebhookConfig> {
+        const url = await getWebhookUrl(projectId, this.providerKey);
         return {
-            provider: this.provider,
-            event_type: body.event || "PURCHASE_APPROVED", // Hotmart 1.0 vs 2.0 varies
-            payload: body,
-            headers: headers,
-            occurred_at: new Date(body.purchase_date || Date.now())
+            webhookUrl: url,
+            verificationKind: 'header_token',
+            recommendedEvents: [
+                { code: 'PURCHASE_APPROVED', label: 'Purchase Approved' },
+                { code: 'REFUND', label: 'Refunded' },
+                { code: 'DISPUTE', label: 'Dispute' }
+            ],
+            fields: [
+                {
+                    key: "hottok",
+                    label: "Hottok",
+                    type: "password",
+                    required: true,
+                    help: "Found in Hotmart Webhook Credentials"
+                }
+            ],
+            instructions: [
+                {
+                    step: 1,
+                    title: "Configure Webhook",
+                    description: `Paste URL: \`${url}\``,
+                    action: { label: "Go to Hotmart", url: "https://app.hotmart.com/tools/webhook" }
+                }
+            ]
         };
     }
 
-    normalize(raw: RawEvent): CanonicalEvent[] {
-        const event = raw.payload;
-        // Hotmart often sends 'PURCHASE_APPROVED'
-        // Only processing approved (paid) for MVP
+    async verifyWebhook(body: string, headers: Record<string, string>, secrets: Record<string, string>): Promise<{ ok: boolean; reason?: string }> {
+        const hottok = headers["x-hotmart-hottok"];
+        if (hottok === secrets["hottok"]) return { ok: true };
+        return { ok: false, reason: "Hottok mismatch" };
+    }
 
-        if (event.event === "PURCHASE_APPROVED" || event.status === "APPROVED") {
-            const amount = event.price?.value || event.full_price; // varies by version
+    async normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string }): Promise<NormalizedEvent[]> {
+        const body = raw.payload || raw;
+        const event = body.event;
+        const data = body.data || body; // Hotmart payloads vary (v1/v2)
 
-            return [{
-                org_id: "unknown",
-                env: "production",
-                provider: this.provider,
-                provider_event_type: "PURCHASE_APPROVED",
-                occurred_at: raw.occurred_at.toISOString(),
-                domain_type: "order", // Hotmart usually is Order + Payment combined
-                data: {
-                    customer: {
-                        name: event.buyer?.name,
-                        email: event.buyer?.email
-                    },
-                    products: [{
-                        name: event.product?.name || "Product",
-                        quantity: 1,
-                        price_cents: Math.round(amount * 100)
-                    }],
-                    total_cents: Math.round(amount * 100),
-                    currency: "BRL",
-                    status: OrderStatus.CONFIRMED
+        if (!data) return [];
+        const events: NormalizedEvent[] = [];
+
+        if (event === 'PURCHASE_APPROVED') {
+            // Sales
+            const amount = data.price?.value || data.full_price;
+            events.push({
+                provider_key: this.providerKey,
+                project_id: ctx.project_id,
+                org_id: ctx.org_id,
+                trace_id: ctx.trace_id,
+                external_event_id: data.transaction || data.purchase_id,
+                occurred_at: data.purchase_date ? new Date(data.purchase_date).toISOString() : new Date().toISOString(),
+                canonical_module: 'sales',
+                canonical_type: 'sales.order.paid', // Hotmart is Order+Payment combined
+                payload: data,
+                money: {
+                    amount_cents: Math.round(amount * 100),
+                    currency: 'BRL'
                 },
-                refs: {
-                    provider_object_id: event.transaction || event.purchase_id
-                }
-            }];
+                external_refs: [{ kind: 'transaction', external_id: data.transaction }]
+            });
+
+            // Commissions (Stub)
+            if (data.commissions) {
+                events.push({
+                    provider_key: this.providerKey,
+                    project_id: ctx.project_id,
+                    org_id: ctx.org_id,
+                    trace_id: ctx.trace_id,
+                    external_event_id: `${data.transaction}_comm`,
+                    occurred_at: new Date().toISOString(),
+                    canonical_module: 'commissions',
+                    canonical_type: 'commissions.created',
+                    payload: data.commissions,
+                    external_refs: [{ kind: 'transaction', external_id: data.transaction }]
+                });
+            }
         }
-        return [];
+
+        return events;
     }
 }

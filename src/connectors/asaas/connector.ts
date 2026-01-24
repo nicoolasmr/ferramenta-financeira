@@ -1,53 +1,88 @@
 
-import { BaseConnector } from "@/connectors/sdk/core";
-import { CanonicalEvent, CanonicalProvider, PaymentStatus } from "@/lib/contracts/canonical";
-import { RawEvent } from "@/connectors/sdk/types";
+import { BaseConnectorV2 } from "../base-v2";
+import { CapabilityMatrix, NormalizedEvent, WebhookConfig } from "@/lib/integrations/sdk";
+import { getWebhookUrl } from "@/lib/integrations/setup";
 
-export class AsaasConnector extends BaseConnector {
-    provider: CanonicalProvider = "asaas";
+export class AsaasConnector extends BaseConnectorV2 {
+    providerKey = "asaas";
+    displayName = "Asaas";
 
-    verifySignature(body: string, headers: Record<string, string>, secret: string): boolean {
-        const token = headers["asaas-access-token"];
-        return token === secret;
-    }
+    capabilities: CapabilityMatrix = {
+        webhooks: true,
+        backfill: true,
+        subscriptions: true,
+        payouts: false,
+        disputes: false,
+        refunds: true,
+        installments: true,
+        commissions: false,
+        affiliates: false,
+        multi_currency: false
+    };
 
-    parseWebhook(body: any, headers: Record<string, string>): RawEvent {
+    async getSetupConfig(projectId: string): Promise<WebhookConfig> {
+        const url = await getWebhookUrl(projectId, this.providerKey);
         return {
-            provider: this.provider,
-            event_type: body.event,
-            payload: body,
-            headers: headers,
-            occurred_at: new Date(body.payment?.dateCreated || Date.now())
+            webhookUrl: url,
+            verificationKind: 'header_token',
+            recommendedEvents: [
+                { code: 'PAYMENT_CONFIRMED', label: 'Payment Paid' },
+                { code: 'PAYMENT_OVERDUE', label: 'Payment Overdue' }
+            ],
+            fields: [
+                {
+                    key: "webhook_token",
+                    label: "Access Token",
+                    type: "password",
+                    required: true,
+                    help: "Generated in Asaas Integrations"
+                }
+            ],
+            instructions: [
+                {
+                    step: 1,
+                    title: "Configure Webhook",
+                    description: `Paste URL: \`${url}\``,
+                    action: { label: "Go to Asaas", url: "https://www.asaas.com/customerConfigIntegration" }
+                }
+            ]
         };
     }
 
-    normalize(raw: RawEvent): CanonicalEvent[] {
-        const event = raw.payload;
-        // Asaas events: PAYMENT_CONFIRMED, PAYMENT_RECEIVED, ...
+    async verifyWebhook(body: string, headers: Record<string, string>, secrets: Record<string, string>): Promise<{ ok: boolean; reason?: string }> {
+        const token = headers["asaas-access-token"];
+        if (token === secrets["webhook_token"]) return { ok: true };
+        return { ok: false, reason: "Token mismatch" };
+    }
 
-        if (event.event === "PAYMENT_CONFIRMED" || event.event === "PAYMENT_RECEIVED") {
-            const payment = event.payment;
-            return [{
-                org_id: "unknown",
-                env: "production",
-                provider: this.provider,
-                provider_event_type: event.event,
-                occurred_at: raw.occurred_at.toISOString(),
-                domain_type: "payment",
-                data: {
+    async normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string }): Promise<NormalizedEvent[]> {
+        const body = raw.payload || raw;
+        const type = body.event;
+        const payment = body.payment;
+
+        if (!payment) return [];
+
+        const events: NormalizedEvent[] = [];
+
+        if (type === 'PAYMENT_CONFIRMED' || type === 'PAYMENT_RECEIVED') {
+            events.push({
+                provider_key: this.providerKey,
+                project_id: ctx.project_id,
+                org_id: ctx.org_id,
+                trace_id: ctx.trace_id,
+                external_event_id: payment.id,
+                occurred_at: body.payment.dateCreated ? new Date(body.payment.dateCreated).toISOString() : new Date().toISOString(),
+                canonical_module: 'sales',
+                canonical_type: 'sales.payment.succeeded',
+                payload: payment,
+                money: {
                     amount_cents: Math.round(payment.value * 100),
-                    currency: "BRL",
-                    status: PaymentStatus.PAID,
-                    method: payment.billingType === "PIX" ? "pix" : "boleto", // simplified
-                    installments: 1,
-                    fee_cents: 0,
-                    net_cents: Math.round(payment.netValue * 100)
+                    currency: 'BRL'
                 },
-                refs: {
-                    provider_object_id: payment.id
-                }
-            }];
+                external_refs: [{ kind: 'payment', external_id: payment.id }]
+            });
         }
-        return [];
+
+        return events;
     }
 }

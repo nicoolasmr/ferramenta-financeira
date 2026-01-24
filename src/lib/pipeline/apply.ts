@@ -1,6 +1,6 @@
 
 import { createClient } from "@/lib/supabase/server";
-import { CanonicalEvent, CanonicalOrder, CanonicalPayment } from "@/lib/contracts/canonical";
+import { CanonicalEvent, CanonicalOrder, CanonicalPayment, OrderStatus } from "@/lib/contracts/canonical";
 
 /**
  * Apply to Domain
@@ -167,7 +167,7 @@ async function createLedgerEntry(supabase: any, entry: any) {
 
     const crypto = await import('crypto'); // Dynamic import or require if node
     const rawKey = `${entry.org_id}|${entry.source_type}|${entry.source_id}|${entry.category}|${entry.amount_cents}|${entry.entry_date}`;
-    const idempotencyKey = crypto.createHash('md5').update(rawKey).digest('hex');
+    const idempotencyKey = crypto.createHash('sha256').update(rawKey).digest('hex');
 
     await supabase.from('ledger_entries').upsert({
         ...entry,

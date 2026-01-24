@@ -1,140 +1,115 @@
 
-import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, Server, Webhook, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { SLOStatus } from "@/components/ops/SLOStatus";
+import { Button } from "@/components/ui/button";
+import { RefreshCcw } from "lucide-react";
 
-export default async function OpsOverviewPage() {
-    const supabase = await createClient();
+export default function OpsOverviewPage() {
+    const [metrics, setMetrics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const supabase = createClient();
 
-    // 1. Fetch Freshness (Real Health Check)
-    const { data: freshness } = await supabase.from("integration_freshness_view").select("*");
+    const fetchMetrics = async () => {
+        setLoading(true);
 
-    // 2. Fetch Webhook Stats (Last 24h)
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+        // Parallel Fetch
+        const [qHealth, jobSuccess, anomalies] = await Promise.all([
+            supabase.from('ops_queue_health_view').select('*').single(),
+            supabase.from('ops_job_success_view').select('*'),
+            supabase.from('ops_anomalies_view').select('*').single()
+        ]);
 
-    // Note: This is an expensive query in production, usually we'd use a materialized view or stats table
-    // For MVP, counting rows with limit is safer or just trusting the "freshness" view
-    const { count: webhooks24h } = await supabase
-        .from("external_events_raw")
-        .select("*", { count: 'exact', head: true })
-        .gte("received_at", yesterday.toISOString());
+        const queue = qHealth.data || { backlog_count: 0, dead_letter_count: 0, oldest_age_seconds: 0 };
+        const jobs = jobSuccess.data || [];
+        const anomalyStats = anomalies.data || { open_anomalies: 0, critical_anomalies: 0 };
 
-    // 3. Fetch Anomalies
-    const { count: anomalyCount } = await supabase
-        .from("state_anomalies")
-        .select("*", { count: 'exact', head: true })
-        .is("resolved_at", null);
+        // Aggregate Job Success (Weighted Average simplified)
+        let total = 0, success = 0;
+        jobs.forEach((j: any) => { total += j.total; success += j.success; });
+        const overallRate = total === 0 ? 100 : (success / total) * 100;
 
-    const isHealthy = (freshness?.every(f => f.status === 'healthy') ?? true) && (anomalyCount === 0);
+        setMetrics({
+            queue,
+            overallRate,
+            anomalies: anomalyStats
+        });
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchMetrics();
+    }, []);
+
+    if (loading) return <div className="p-8">Loading Ops Metrics...</div>;
+
+    const { queue, overallRate, anomalies } = metrics;
 
     return (
-        <div className="flex flex-col gap-6">
-            <h1 className="text-3xl font-bold tracking-tight">Operations Overview</h1>
-
-            <div className="grid gap-4 md:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">System Status</CardTitle>
-                        <Activity className={`h-4 w-4 ${isHealthy ? "text-green-500" : "text-amber-500"}`} />
-                    </CardHeader>
-                    <CardContent>
-                        <div className={`text-2xl font-bold ${isHealthy ? "text-green-600" : "text-amber-600"}`}>
-                            {isHealthy ? "Healthy" : "Attention"}
-                        </div>
-                        <p className="text-xs text-muted-foreground">Global health check</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Webhooks (24h)</CardTitle>
-                        <Webhook className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{webhooks24h?.toLocaleString() || 0}</div>
-                        <p className="text-xs text-muted-foreground">Events ingested</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Connectors</CardTitle>
-                        <Server className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{freshness?.length || 0}</div>
-                        <p className="text-xs text-muted-foreground">Providers sending data</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Anomalies</CardTitle>
-                        <ShieldAlert className={`h-4 w-4 ${anomalyCount ? "text-red-500" : "text-muted-foreground"}`} />
-                    </CardHeader>
-                    <CardContent>
-                        <div className={`text-2xl font-bold ${anomalyCount ? "text-red-600" : ""}`}>{anomalyCount || 0}</div>
-                        <p className="text-xs text-muted-foreground">Unresolved issues</p>
-                    </CardContent>
-                </Card>
+        <div className="space-y-8 max-w-5xl mx-auto">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-black">System Status (SLOs)</h1>
+                    <p className="text-muted-foreground">Real-time platform health verification.</p>
+                </div>
+                <Button variant="outline" onClick={fetchMetrics}><RefreshCcw className="mr-2 h-4 w-4" /> Refresh</Button>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Integration Freshness</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {freshness?.map((f) => (
-                                <div key={`${f.org_id}-${f.provider}`} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        {f.status === 'healthy' ? (
-                                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                                        ) : f.status === 'degraded' ? (
-                                            <div className="h-2 w-2 rounded-full bg-yellow-500" />
-                                        ) : (
-                                            <div className="h-2 w-2 rounded-full bg-red-500" />
-                                        )}
-                                        <span className="font-medium capitalize">{f.provider}</span>
-                                        <span className="text-xs text-muted-foreground font-mono">({f.freshness_seconds ? `${Math.round(f.freshness_seconds / 60)}m ago` : 'Never'})</span>
-                                    </div>
-                                    <Badge variant={f.status === 'healthy' ? 'outline' : 'destructive'}>
-                                        {f.status}
-                                    </Badge>
-                                </div>
-                            ))}
-                            {(!freshness || freshness.length === 0) && (
-                                <p className="text-sm text-muted-foreground text-center py-4">No integration data found.</p>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="grid md:grid-cols-3 gap-6">
+                {/* SLO 1: Reliability */}
+                <SLOStatus
+                    title="Job Success Rate (24h)"
+                    currentValue={`${overallRate.toFixed(2)}%`}
+                    target="> 99.0%"
+                    status={overallRate >= 99 ? 'healthy' : overallRate >= 95 ? 'warning' : 'critical'}
+                    description="Percentage of background jobs completed successfully."
+                />
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Anomaly Detector</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {anomalyCount === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <CheckCircle2 className="h-12 w-12 text-green-500 mb-4" />
-                                <h3 className="font-semibold">All Clear</h3>
-                                <p className="text-sm text-muted-foreground">No data integrity issues detected.</p>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <XCircle className="h-12 w-12 text-red-500 mb-4" />
-                                <h3 className="font-semibold text-red-600">{anomalyCount} Issues Detected</h3>
-                                <p className="text-sm text-muted-foreground">Check the Anomalies tab for details.</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                {/* SLO 2: Latency / Backlog */}
+                <SLOStatus
+                    title="Queue Latency (Lag)"
+                    currentValue={`${Math.round(queue.oldest_age_seconds)}s`}
+                    target="< 300s"
+                    status={queue.oldest_age_seconds < 60 ? 'healthy' : queue.oldest_age_seconds < 300 ? 'warning' : 'critical'}
+                    description="Age of the oldest pending job in the queue."
+                />
+
+                {/* SLO 3: Data Integrity */}
+                <SLOStatus
+                    title="Critical Anomalies"
+                    currentValue={anomalies.critical_anomalies}
+                    target="0"
+                    status={anomalies.critical_anomalies === 0 ? 'healthy' : 'critical'}
+                    description="Financial inconsistencies requiring immediate intervention."
+                />
+            </div>
+
+            {/* Secondary Metrics */}
+            <div className="grid md:grid-cols-2 gap-6">
+                <div className="p-6 border rounded-xl bg-slate-50 dark:bg-slate-900/50">
+                    <h3 className="font-bold mb-4">Queue Depth</h3>
+                    <div className="flex justify-between items-center border-b py-2">
+                        <span>Backlog</span>
+                        <span className="font-mono font-bold">{queue.backlog_count}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 text-red-600">
+                        <span>Dead Letters</span>
+                        <span className="font-mono font-bold">{queue.dead_letter_count}</span>
+                    </div>
+                </div>
+
+                <div className="p-6 border rounded-xl bg-slate-50 dark:bg-slate-900/50">
+                    <h3 className="font-bold mb-4">Integrity Check</h3>
+                    <div className="flex justify-between items-center border-b py-2">
+                        <span>Total Open</span>
+                        <span className="font-mono font-bold">{anomalies.open_anomalies}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 text-blue-600">
+                        <a href="/ops/consistency" className="text-sm underline">View Consistency Dashboard &rarr;</a>
+                    </div>
+                </div>
             </div>
         </div>
     );

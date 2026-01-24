@@ -3,18 +3,18 @@ import { BaseConnectorV2 } from "../base-v2";
 import { CapabilityMatrix, NormalizedEvent, WebhookConfig } from "@/lib/integrations/sdk";
 import { getWebhookUrl } from "@/lib/integrations/setup";
 
-export class BelvoConnector extends BaseConnectorV2 {
-    providerKey = "belvo";
-    displayName = "Belvo (Open Finance)";
+export class MercadoPagoConnector extends BaseConnectorV2 {
+    providerKey = "mercadopago";
+    displayName = "Mercado Pago";
 
     capabilities: CapabilityMatrix = {
         webhooks: true,
         backfill: true,
-        subscriptions: false,
-        payouts: false,
-        disputes: false,
-        refunds: false,
-        installments: false,
+        subscriptions: true,
+        payouts: true,
+        disputes: true,
+        refunds: true,
+        installments: true,
         commissions: false,
         affiliates: false,
         multi_currency: true
@@ -25,21 +25,14 @@ export class BelvoConnector extends BaseConnectorV2 {
         return {
             webhookUrl: url,
             verificationKind: 'hmac_signature',
-            recommendedEvents: [{ code: 'transactions.new', label: 'New Transactions' }],
+            recommendedEvents: [{ code: 'payment.created', label: 'Pgmto Criado' }],
             fields: [
                 {
-                    key: "secret_id",
-                    label: "Secret ID",
+                    key: "access_token",
+                    label: "Access Token",
                     type: "password",
                     required: true,
-                    help: "Belvo Dashboard"
-                },
-                {
-                    key: "secret_password",
-                    label: "Secret Password",
-                    type: "password",
-                    required: true,
-                    help: "Belvo Dashboard"
+                    help: "MP Developers"
                 }
             ],
             instructions: [
@@ -47,7 +40,7 @@ export class BelvoConnector extends BaseConnectorV2 {
                     step: 1,
                     title: "Setup",
                     description: `Use URL: \`${url}\``,
-                    action: { label: "Go to Belvo", url: "https://dashboard.belvo.com" }
+                    action: { label: "Go to MP", url: "https://www.mercadopago.com.br/developers" }
                 }
             ]
         };

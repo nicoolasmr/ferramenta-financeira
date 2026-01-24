@@ -1,28 +1,86 @@
 
-import { BaseConnector } from "@/connectors/sdk/core";
-import { CanonicalEvent, CanonicalProvider } from "@/lib/contracts/canonical";
-import { RawEvent } from "@/connectors/sdk/types";
-import { normalizeKiwify } from "./normalize";
-import { verifySignature } from "./verifySignature";
+import { BaseConnectorV2 } from "../base-v2";
+import { CapabilityMatrix, NormalizedEvent, WebhookConfig } from "@/lib/integrations/sdk";
+import { getWebhookUrl } from "@/lib/integrations/setup";
+import { verifySignature } from "./verifySignature"; // Reusing existing util
 
-export class KiwifyConnector extends BaseConnector {
-    provider: CanonicalProvider = "kiwify";
+export class KiwifyConnector extends BaseConnectorV2 {
+    providerKey = "kiwify";
+    displayName = "Kiwify";
 
-    verifySignature(body: string, headers: Record<string, string>, secret: string): boolean {
-        return verifySignature(body, headers, secret);
-    }
+    capabilities: CapabilityMatrix = {
+        webhooks: true,
+        backfill: false,
+        subscriptions: true,
+        payouts: false,
+        disputes: true,
+        refunds: true,
+        installments: true,
+        commissions: true, // Kiwify supports co-production
+        affiliates: true,
+        multi_currency: false
+    };
 
-    parseWebhook(body: any, headers: Record<string, string>): RawEvent {
+    async getSetupConfig(projectId: string): Promise<WebhookConfig> {
+        const url = await getWebhookUrl(projectId, this.providerKey);
         return {
-            provider: this.provider,
-            event_type: body.order_status || "unknown", // Kiwify uses order_status often
-            payload: body,
-            headers: headers,
-            occurred_at: new Date() // Kiwify payload might have it, default now
+            webhookUrl: url,
+            verificationKind: 'hmac_signature', // Or query token? VerifySignature checks query params usually
+            recommendedEvents: [
+                { code: 'order_approved', label: 'Order Approved' }
+            ],
+            fields: [
+                {
+                    key: "webhook_token",
+                    label: "Token (Signature)",
+                    type: "password",
+                    required: true,
+                    help: "Found in Kiwify Webhook Settings"
+                }
+            ],
+            instructions: [
+                {
+                    step: 1,
+                    title: "Configure Webhook",
+                    description: `Paste URL: \`${url}\``,
+                    action: { label: "Go to Kiwify", url: "https://dashboard.kiwify.com.br/apps/webhooks" }
+                }
+            ]
         };
     }
 
-    normalize(raw: RawEvent): CanonicalEvent[] {
-        return normalizeKiwify(raw);
+    async verifyWebhook(body: string, headers: Record<string, string>, secrets: Record<string, string>): Promise<{ ok: boolean; reason?: string }> {
+        // Compat with existing verifySignature logic
+        if (verifySignature(body, headers, secrets["webhook_token"])) return { ok: true };
+        return { ok: false, reason: "Signature mismatch" };
+    }
+
+    async normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string }): Promise<NormalizedEvent[]> {
+        const body = raw.payload || raw;
+        const status = body.order_status;
+
+        const events: NormalizedEvent[] = [];
+
+        if (status === 'paid') {
+            const amount = body.Commission?.charge_amount || body.order_total_value_cents / 100 || 0; // Depends on payload structure
+            events.push({
+                provider_key: this.providerKey,
+                project_id: ctx.project_id,
+                org_id: ctx.org_id,
+                trace_id: ctx.trace_id,
+                external_event_id: body.order_id,
+                occurred_at: new Date().toISOString(), // Kiwify often misses timestamp in root
+                canonical_module: 'sales',
+                canonical_type: 'sales.order.paid',
+                payload: body,
+                money: {
+                    amount_cents: Math.round(amount * 100),
+                    currency: 'BRL'
+                },
+                external_refs: [{ kind: 'order', external_id: body.order_id }]
+            });
+        }
+
+        return events;
     }
 }

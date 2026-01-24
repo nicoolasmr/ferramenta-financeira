@@ -14,7 +14,8 @@ export async function enqueueJob(
     orgId: string,
     type: JobType,
     payload: JobPayload,
-    projectId?: string
+    projectId?: string,
+    traceId?: string
 ) {
     const supabase = await createClient();
 
@@ -28,7 +29,8 @@ export async function enqueueJob(
         project_id: projectId,
         job_type: type,
         payload: payload,
-        status: 'queued'
+        status: 'queued',
+        trace_id: traceId
     }).select().single();
 
     if (error) {

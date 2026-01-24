@@ -3,43 +3,36 @@ import { BaseConnectorV2 } from "../base-v2";
 import { CapabilityMatrix, NormalizedEvent, WebhookConfig } from "@/lib/integrations/sdk";
 import { getWebhookUrl } from "@/lib/integrations/setup";
 
-export class BelvoConnector extends BaseConnectorV2 {
-    providerKey = "belvo";
-    displayName = "Belvo (Open Finance)";
+export class MonetizzeConnector extends BaseConnectorV2 {
+    providerKey = "monetizze";
+    displayName = "Monetizze";
 
     capabilities: CapabilityMatrix = {
         webhooks: true,
-        backfill: true,
-        subscriptions: false,
-        payouts: false,
-        disputes: false,
-        refunds: false,
-        installments: false,
-        commissions: false,
-        affiliates: false,
-        multi_currency: true
+        backfill: false,
+        subscriptions: true,
+        payouts: true,
+        disputes: true,
+        refunds: true,
+        installments: true,
+        commissions: true,
+        affiliates: true,
+        multi_currency: false
     };
 
     async getSetupConfig(projectId: string): Promise<WebhookConfig> {
         const url = await getWebhookUrl(projectId, this.providerKey);
         return {
             webhookUrl: url,
-            verificationKind: 'hmac_signature',
-            recommendedEvents: [{ code: 'transactions.new', label: 'New Transactions' }],
+            verificationKind: 'header_token',
+            recommendedEvents: [],
             fields: [
                 {
-                    key: "secret_id",
-                    label: "Secret ID",
+                    key: "consumer_key",
+                    label: "Consumer Key",
                     type: "password",
                     required: true,
-                    help: "Belvo Dashboard"
-                },
-                {
-                    key: "secret_password",
-                    label: "Secret Password",
-                    type: "password",
-                    required: true,
-                    help: "Belvo Dashboard"
+                    help: "Monetizze API"
                 }
             ],
             instructions: [
@@ -47,7 +40,7 @@ export class BelvoConnector extends BaseConnectorV2 {
                     step: 1,
                     title: "Setup",
                     description: `Use URL: \`${url}\``,
-                    action: { label: "Go to Belvo", url: "https://dashboard.belvo.com" }
+                    action: { label: "Go to Monetizze", url: "https://app.monetizze.com.br/ferramentas/postback" }
                 }
             ]
         };
