@@ -16,14 +16,19 @@ export async function processExternalEvent(orgId: string, provider: string, exte
     if (!raw) throw new Error("Raw event not found");
 
     // 2. Normalize
-    const connector = getConnector(provider);
+    const connector = await getConnector(provider);
     if (!connector) throw new Error("Provider not supported");
 
     let canonicalEvents = [];
     try {
-        // We pass empty headers as we might not have original headers stored or needed for normalize logic mostly (except signature)
-        // Ideally we should store headers if needed for normalize, but usually body is enough.
-        canonicalEvents = connector.normalize(raw.payload_json, new Headers());
+        // V2 Normalize signature: normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string })
+        // We need trace_id, and raw event might be just payload or full object depending on how connector expects it.
+        // Usually V2 connectors expect the full payload object.
+        canonicalEvents = await connector.normalize(raw.payload_json, {
+            org_id: orgId,
+            project_id: raw.project_id || 'unknown', // Need project_id from raw
+            trace_id: raw.external_event_id // Use ID as trace
+        });
     } catch (e: any) {
         throw new Error(`Normalization failed: ${e.message}`);
     }
