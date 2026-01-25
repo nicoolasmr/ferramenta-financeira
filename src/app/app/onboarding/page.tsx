@@ -14,7 +14,17 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function OnboardingPage() {
-    // Steps: 0=Welcome, 1=Org, 2=Plan, 3=Integration, 4=Project
+    // Steps: 0=Welcome, 1=Org, 2=Integration, 3=Project (Plan step removed from UI, defaulted in state)
+    // We map internal step numbers to UI: 
+    // UI Step 1: Org (Internal 1)
+    // UI Step 2: Integration (Internal 3) - Skipped 2
+    // UI Step 3: Project (Internal 4)
+
+    // Actually simpler: re-index.
+    // 0=Welcome
+    // 1=Org
+    // 2=Integration
+    // 3=Project
     const [step, setStep] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,7 +32,7 @@ export default function OnboardingPage() {
         orgName: "",
         orgSlug: "",
         projectName: "",
-        planCode: "starter",
+        planCode: "pro", // Default to pro for now, or logic to detect
         integration: ""
     });
 
@@ -34,7 +44,14 @@ export default function OnboardingPage() {
     const handleAction = async (data: FormData) => {
         setIsSubmitting(true);
         try {
-            const result = await completeOnboarding(data);
+            const formDataToSend = new FormData();
+            formDataToSend.append("orgName", formData.orgName);
+            formDataToSend.append("orgSlug", formData.orgSlug);
+            formDataToSend.append("projectName", formData.projectName);
+            formDataToSend.append("planCode", formData.planCode);
+            formDataToSend.append("integration", formData.integration);
+
+            const result = await completeOnboarding(formDataToSend);
             if (result?.error) {
                 setIsSubmitting(false);
                 const errorMessage = result.error.server ||
@@ -44,7 +61,6 @@ export default function OnboardingPage() {
             }
         } catch (error) {
             setIsSubmitting(false);
-            // Ignore redirect errors as they are expected
             if (error instanceof Error && (error.message === 'NEXT_REDIRECT' || error.message.includes('NEXT_REDIRECT'))) {
                 return;
             }
@@ -54,16 +70,15 @@ export default function OnboardingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <Card className="w-full max-w-lg shadow-xl">
+        <div className="fixed inset-0 bg-slate-50 flex items-center justify-center p-4">
+            <Card className="w-full max-w-lg shadow-xl animate-in fade-in zoom-in duration-300">
                 {step > 0 && (
                     <CardHeader>
-                        <StepIndicator currentStep={step} totalSteps={4} />
+                        <StepIndicator currentStep={step} totalSteps={3} />
                         <CardTitle className="text-center text-2xl">
                             {step === 1 && "Start your Organization"}
-                            {step === 2 && "Choose your Plan"}
-                            {step === 3 && "Connect Integration"}
-                            {step === 4 && "Create your First Project"}
+                            {step === 2 && "Connect Integration"}
+                            {step === 3 && "Create your First Project"}
                         </CardTitle>
                         <CardDescription className="text-center">
                             Let&apos;s get your workspace ready for business.
@@ -78,15 +93,13 @@ export default function OnboardingPage() {
                         <StepOrg data={formData} onChange={handleChange} />
                     )}
 
-                    {step === 2 && (
-                        <StepPlan value={formData.planCode} onChange={(val) => handleSet('planCode', val)} />
-                    )}
+                    {/* Step Plan skipped */}
 
-                    {step === 3 && (
+                    {step === 2 && (
                         <StepIntegration value={formData.integration} onChange={(val) => handleSet('integration', val)} />
                     )}
 
-                    {step === 4 && (
+                    {step === 3 && (
                         <StepProject data={formData} onChange={handleChange} />
                     )}
                 </CardContent>
@@ -97,27 +110,19 @@ export default function OnboardingPage() {
                             Back
                         </Button>
 
-                        {step < 4 ? (
+                        {step < 3 ? (
                             <Button
                                 type="button"
                                 onClick={handleNext}
                                 disabled={
                                     (step === 1 && (!formData.orgName || !formData.orgSlug)) ||
-                                    (step === 2 && !formData.planCode) ||
-                                    (step === 3 && !formData.integration && formData.integration !== 'skip')
+                                    (step === 2 && !formData.integration && formData.integration !== 'skip')
                                 }
                             >
                                 Continue
                             </Button>
                         ) : (
-                            <form action={handleAction}>
-                                {/* Pass all state as hidden inputs */}
-                                <input type="hidden" name="orgName" value={formData.orgName} />
-                                <input type="hidden" name="orgSlug" value={formData.orgSlug} />
-                                <input type="hidden" name="planCode" value={formData.planCode} />
-                                <input type="hidden" name="integration" value={formData.integration} />
-                                <input type="hidden" name="projectName" value={formData.projectName} />
-
+                            <form action={() => handleAction(new FormData())}>
                                 <Button type="submit" disabled={!formData.projectName || isSubmitting}>
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Complete Setup
