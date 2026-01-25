@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 import {
     Command,
     CommandEmpty,
@@ -29,8 +30,25 @@ interface OrganizationSwitcherProps {
 }
 
 export function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
+    const { activeOrganization, setActiveOrganization } = useOrganization();
     const [open, setOpen] = useState(false);
-    const [selectedOrg, setSelectedOrg] = useState(MOCK_ORGANIZATIONS[0]);
+    const [organizations, setOrganizations] = useState<any[]>([]);
+
+    // Fetch organizations on mount
+    useEffect(() => {
+        async function loadOrgs() {
+            try {
+                const { getUserOrganizations } = await import("@/actions/organization");
+                const orgs = await getUserOrganizations();
+                setOrganizations(orgs);
+            } catch (error) {
+                console.error("Failed to load organizations", error);
+            }
+        }
+        loadOrgs();
+    }, []);
+
+    const currentOrg = activeOrganization || (organizations.length > 0 ? organizations[0] : null);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -43,23 +61,23 @@ export function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
                 >
                     <div className="flex items-center gap-2 truncate">
                         <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                            {selectedOrg.name.charAt(0)}
+                            {currentOrg?.name?.charAt(0) || "?"}
                         </div>
-                        <span className="truncate">{selectedOrg.name}</span>
+                        <span className="truncate">{currentOrg?.name || "Select Organization"}</span>
                     </div>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
                 <Command>
-                    <CommandInput placeholder="Buscar organização..." />
-                    <CommandEmpty>Nenhuma organização encontrada.</CommandEmpty>
-                    <CommandGroup heading="Suas Organizações">
-                        {MOCK_ORGANIZATIONS.map((org) => (
+                    <CommandInput placeholder="Search organization..." />
+                    <CommandEmpty>No organization found.</CommandEmpty>
+                    <CommandGroup heading="Your Organizations">
+                        {organizations.map((org) => (
                             <CommandItem
                                 key={org.id}
                                 onSelect={() => {
-                                    setSelectedOrg(org);
+                                    setActiveOrganization(org);
                                     setOpen(false);
                                 }}
                             >
@@ -69,13 +87,13 @@ export function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
                                     </div>
                                     <div className="flex-1">
                                         <div className="font-medium">{org.name}</div>
-                                        <div className="text-xs text-slate-500 capitalize">{org.role}</div>
+                                        <div className="text-xs text-slate-500 capitalize">{org.role || 'Member'}</div>
                                     </div>
                                 </div>
                                 <Check
                                     className={cn(
                                         'ml-auto h-4 w-4',
-                                        selectedOrg.id === org.id ? 'opacity-100' : 'opacity-0'
+                                        activeOrganization?.id === org.id ? 'opacity-100' : 'opacity-0'
                                     )}
                                 />
                             </CommandItem>
@@ -87,12 +105,11 @@ export function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
                             className="w-full justify-start"
                             onClick={() => {
                                 setOpen(false);
-                                // Navigate to create organization
-                                window.location.href = '/onboarding';
+                                window.location.href = '/app/onboarding';
                             }}
                         >
                             <Plus className="mr-2 h-4 w-4" />
-                            Criar Nova Organização
+                            Create New Organization
                         </Button>
                     </div>
                 </Command>
