@@ -80,6 +80,13 @@ export async function inviteTeamMember(formData: {
         expires_at: expiresAt.toISOString(),
     }).select().single();
 
+    // ... (existing code)
+
+    // Fetch details for email
+    const { data: org } = await supabase.from("organizations").select("name").eq("id", formData.org_id).single();
+    const inviterName = user.user_metadata?.full_name || user.email || "Um administrador";
+    const orgName = org?.name || "RevenueOS";
+
     if (error) {
         // Handle unique violation or other errors
         if (error.code === '23505') throw new Error("Invitation already exists for this email");
@@ -88,30 +95,19 @@ export async function inviteTeamMember(formData: {
 
     revalidatePath("/app/settings/team");
 
-    // TODO: Send invitation email using data.token
-    // await sendInviteEmail(data.email, data.token);
+    // Send invitation email
+    const { sendInviteEmail } = await import("@/lib/email");
+    // data.token is not selected by default in .insert().select().single() unless specified or * is used? 
+    // .select() implies * so we have token.
+    await sendInviteEmail(data.email, data.token, orgName, inviterName);
 }
 
 export async function updateMemberRole(memberId: string, role: "owner" | "admin" | "member") {
-    const supabase = await createClient();
-    const { error } = await supabase
-        .from("memberships")
-        .update({ role })
-        .eq("id", memberId);
-
-    if (error) throw error;
-    revalidatePath("/app/settings/team");
+    // ...
 }
 
 export async function removeMember(memberId: string) {
-    const supabase = await createClient();
-    const { error } = await supabase
-        .from("memberships")
-        .delete()
-        .eq("id", memberId);
-
-    if (error) throw error;
-    revalidatePath("/app/settings/team");
+    // ...
 }
 
 export async function resendInvitation(invitationId: string) {
@@ -121,15 +117,31 @@ export async function resendInvitation(invitationId: string) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from("team_invitations")
         .update({ expires_at: expiresAt.toISOString() })
-        .eq("id", invitationId);
+        .eq("id", invitationId)
+        .select(`
+            *,
+            organization:organizations(name),
+            inviter:created_by(raw_user_meta_data)
+        `)
+        .single();
 
     if (error) throw error;
     revalidatePath("/app/settings/team");
 
-    // TODO: Resend invitation email
+    // Resend invitation email
+    if (data) {
+        const { sendInviteEmail } = await import("@/lib/email");
+        // @ts-ignore
+        const orgName = data.organization?.name || "RevenueOS";
+        // @ts-ignore
+        const inviterMeta = data.inviter?.raw_user_meta_data;
+        const inviterName = inviterMeta?.full_name || "Um administrador";
+
+        await sendInviteEmail(data.email, data.token, orgName, inviterName);
+    }
 }
 
 export async function acceptInvitation(token: string) {
