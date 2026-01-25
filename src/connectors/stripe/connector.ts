@@ -52,7 +52,7 @@ export class StripeConnector extends BaseConnectorV2 {
 
     async verifyWebhook(body: string, headers: Record<string, string>, secrets: Record<string, string>): Promise<{ ok: boolean; reason?: string }> {
         try {
-            const stripe = new Stripe("dummy", { apiVersion: "2024-12-18.acacia" });
+            const stripe = new Stripe("dummy", { apiVersion: "2025-12-15.clover" });
             const sig = headers["stripe-signature"];
             const secret = secrets["webhook_secret"];
             if (!secret) return { ok: false, reason: "Missing secret" };
