@@ -1,7 +1,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-export type JobType = 'sync_provider' | 'apply_event' | 'consistency_run' | 'copilot_run';
+export type JobType = 'sync_provider' | 'apply_event' | 'consistency_run' | 'copilot_run' | 'normalize_event';
 
 export interface JobPayload {
     [key: string]: any;
