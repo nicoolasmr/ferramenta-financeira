@@ -145,8 +145,7 @@ export async function syncBelvoLink(linkId: string, orgId: string, projectId?: s
     }
 }
 
-return tx.id;
-}
+
 
 // Helper to get internal UUID for bank account
 async function getBankAccountId(supabase: any, orgId: string, externalAccountId: string) {
