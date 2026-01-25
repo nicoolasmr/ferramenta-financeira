@@ -53,7 +53,6 @@ export async function completeOnboarding(formData: FormData) {
         email: user.email,
         full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
         avatar_url: user.user_metadata?.avatar_url,
-        updated_at: new Date().toISOString(),
     }, { onConflict: "id" });
 
     if (userSyncError) {
