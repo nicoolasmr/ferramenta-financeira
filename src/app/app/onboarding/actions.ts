@@ -20,6 +20,15 @@ export async function completeOnboarding(formData: FormData) {
         redirect("/login");
     }
 
+    // NUCLEAR OPTION: Use Admin Client for EVERYTHING to bypass RLS during setup
+    // This guarantees we don't hit "Foreign Key" or "Policy" errors if the user context is not yet fully established
+    const adminClient = getAdminClient();
+
+    if (!adminClient) {
+        console.error("Onboarding FATAL: Service Role Key missing.");
+        return { error: { server: "System Configuration Error: Missing Administrative Privileges (Service Key). Please contact support." } };
+    }
+
     const data = {
         orgName: formData.get("orgName") as string,
         orgSlug: (formData.get("orgSlug") as string)?.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || "",
@@ -33,9 +42,26 @@ export async function completeOnboarding(formData: FormData) {
         return { error: validation.error.flatten().fieldErrors };
     }
 
-    // 1. Create Organization
-    console.log("Onboarding: Creating organization", data.orgName);
-    const { data: org, error: orgError } = await supabase.from("organizations").insert({
+    console.log("Onboarding (Admin Mode): Starting for user", user.id);
+
+    // 0. FORCE SYNC USER (Admin)
+    // We do this first to ensure FK satisfied
+    const { error: userSyncError } = await adminClient.from("users").upsert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
+        avatar_url: user.user_metadata?.avatar_url,
+        updated_at: new Date().toISOString(),
+    }, { onConflict: "id" });
+
+    if (userSyncError) {
+        console.error("Onboarding Error (User Sync):", userSyncError);
+        return { error: { server: `Failed to initialize user profile: ${userSyncError.message}` } };
+    }
+
+    // 1. Create Organization (Admin)
+    console.log("Onboarding (Admin Mode): Creating organization", data.orgName);
+    const { data: org, error: orgError } = await adminClient.from("organizations").insert({
         name: data.orgName,
         slug: data.orgSlug,
     }).select("id").single();
@@ -45,73 +71,9 @@ export async function completeOnboarding(formData: FormData) {
         return { error: { server: orgError.message } };
     }
 
-    console.log("Onboarding: Created organization", org.id);
-
-    // 1.5 Ensure User Exists in Public Table
-    let adminClient = null;
-    let userSyncError = null;
-
-    try {
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (serviceRoleKey && serviceRoleKey !== 'placeholder-key') {
-            const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
-            adminClient = createSupabaseClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                serviceRoleKey,
-                {
-                    auth: {
-                        autoRefreshToken: false,
-                        persistSession: false
-                    }
-                }
-            );
-
-            // Upsert User with Admin
-            const { error } = await adminClient.from("users").upsert({
-                id: user.id,
-                email: user.email,
-                full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
-                avatar_url: user.user_metadata?.avatar_url,
-                updated_at: new Date().toISOString(),
-            }, { onConflict: "id" });
-            userSyncError = error;
-        } else {
-            console.warn("Onboarding: SUPABASE_SERVICE_ROLE_KEY missing, using user client fallback.");
-            // Fallback to normal client
-            const { error } = await supabase.from("users").upsert({
-                id: user.id,
-                email: user.email,
-                full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
-                avatar_url: user.user_metadata?.avatar_url,
-                updated_at: new Date().toISOString(),
-            }, { onConflict: "id" });
-            userSyncError = error;
-        }
-    } catch (e: any) {
-        console.error("Onboarding: Admin Client Init Failed:", e);
-        // Fallback
-        const { error } = await supabase.from("users").upsert({
-            id: user.id,
-            email: user.email,
-            full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
-            avatar_url: user.user_metadata?.avatar_url,
-            updated_at: new Date().toISOString(),
-        }, { onConflict: "id" });
-        userSyncError = error;
-    }
-
-    const debugInfo = `ServiceKey: ${!!process.env.SUPABASE_SERVICE_ROLE_KEY}, AdminClient: ${!!adminClient}`;
-
-    if (userSyncError) {
-        console.error("Onboarding Error (User Sync):", userSyncError);
-        return { error: { server: `User Profile Sync Failed. ${debugInfo}. DB Error: ${userSyncError.message} (${userSyncError.code})` } };
-    }
-
-    // 2. Create Membership (Owner)
-    // Use admin client if available to bypass RLS, otherwise user client
-    const targetClient = adminClient || supabase;
-
-    const { error: membershipError } = await targetClient.from("memberships").insert({
+    // 2. Create Membership (Owner) (Admin)
+    console.log("Onboarding (Admin Mode): Creating owner membership");
+    const { error: membershipError } = await adminClient.from("memberships").insert({
         org_id: org.id,
         user_id: user.id,
         role: "owner"
@@ -119,19 +81,21 @@ export async function completeOnboarding(formData: FormData) {
 
     if (membershipError) {
         console.error("Onboarding Error (Membership):", membershipError);
-        return { error: { server: `Membership Failed. ${debugInfo}. Error: ${membershipError.message}. Details: ${membershipError.details || 'None'}` } };
+        // Clean up org if membership fails (optional, but good practice)
+        await adminClient.from("organizations").delete().eq("id", org.id);
+        return { error: { server: `Failed to assign ownership: ${membershipError.message}` } };
     }
 
-    // 3. Create Settings
-    await supabase.from("settings").insert({
+    // 3. Create Settings (Admin)
+    await adminClient.from("settings").insert({
         org_id: org.id,
         currency: "BRL",
         timezone: "America/Sao_Paulo"
     });
 
-    // 4. Create First Project
-    console.log("Onboarding: Creating first project", data.projectName);
-    const { data: firstProject, error: projectError } = await supabase.from("projects").insert({
+    // 4. Create First Project (Admin)
+    console.log("Onboarding (Admin Mode): Creating first project", data.projectName);
+    const { data: firstProject, error: projectError } = await adminClient.from("projects").insert({
         org_id: org.id,
         name: data.projectName
     }).select("id").single();
@@ -141,25 +105,21 @@ export async function completeOnboarding(formData: FormData) {
         return { error: { server: projectError?.message || "Failed to create first project" } };
     }
 
-    console.log("Onboarding: Created project", firstProject.id);
-
-    // 5. Billing Setup (Mock for now, real implementation would create Stripe Customer here)
-    // Fetch plan ID
-    const { data: plan } = await supabase.from("plans").select("id").eq("code", data.planCode).single();
-
+    // 5. Billing Setup (Admin)
+    const { data: plan } = await adminClient.from("plans").select("id").eq("code", data.planCode).single();
     if (plan) {
-        await supabase.from("subscriptions").insert({
+        await adminClient.from("subscriptions").insert({
             org_id: org.id,
             plan_id: plan.id,
-            status: "active", // trial or active
+            status: "active",
             provider: "stripe"
         });
     }
 
-    // 6. Create Integration (if selected)
+    // 6. Create Integration (Admin)
     if (data.integration && data.integration !== 'skip') {
         const provider = data.integration.toLowerCase();
-        await supabase.from("gateway_integrations").insert({
+        await adminClient.from("gateway_integrations").insert({
             project_id: firstProject.id,
             provider: provider,
             name: data.integration,
@@ -168,5 +128,6 @@ export async function completeOnboarding(formData: FormData) {
         });
     }
 
+    console.log("Onboarding Complete. Redirecting.");
     redirect(`/app?org=${org.id}`);
 }
