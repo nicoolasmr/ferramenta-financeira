@@ -62,8 +62,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            import {PortfolioHealthBlock} from "@/components/dashboard/PortfolioHealthBlock";
-            import {TopAnomaliesBlock} from "@/components/dashboard/TopAnomaliesBlock";
+
 
             // ... inside component ...
 
