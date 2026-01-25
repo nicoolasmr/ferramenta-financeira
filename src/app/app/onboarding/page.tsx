@@ -71,7 +71,7 @@ export default function OnboardingPage() {
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-50 flex items-center justify-center p-4 z-[100]">
+        <div className="h-full w-full flex items-center justify-center -mt-8"> {/* Negative margin to offset parent padding for perfect center */}
             <Card className="w-full max-w-lg shadow-xl animate-in fade-in zoom-in duration-300">
                 {step > 0 && (
                     <CardHeader>
