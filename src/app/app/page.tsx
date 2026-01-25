@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Users, Plug, FolderKanban } from "lucide-react";
+import { DollarSign, Users, Plug, FolderKanban, Plus } from "lucide-react";
 import { getDashboardMetrics } from "@/actions/dashboard";
 import { LoadingState } from "@/components/states/LoadingState";
 import { ErrorState } from "@/components/states/ErrorState";
 import Link from "next/link";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { Button } from "@/components/ui/button";
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
@@ -51,7 +52,27 @@ export default function DashboardPage() {
     }, [activeOrganization, orgLoading]);
 
     if (orgLoading || loading) return <LoadingState />;
-    if (!activeOrganization) return <ErrorState message="Nenhuma organização encontrada" />;
+
+    if (!activeOrganization) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                    <FolderKanban className="w-8 h-8 text-blue-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">Bem-vindo ao RevenueOS</h2>
+                <p className="text-slate-500 max-w-md mb-8">
+                    Parece que você ainda não tem uma organização. Crie sua primeira organização para começar a gerenciar suas finanças.
+                </p>
+                <Link href="/app/onboarding">
+                    <Button size="lg" className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Criar Nova Organização
+                    </Button>
+                </Link>
+            </div>
+        );
+    }
+
     if (error) return <ErrorState message={error} retry={() => window.location.reload()} />;
     if (!metrics) return null;
 
