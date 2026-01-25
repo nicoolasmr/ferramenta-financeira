@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL,
     full_name TEXT,
     avatar_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE
 );
 
 -- 3. Memberships (Linking Users to Orgs)
