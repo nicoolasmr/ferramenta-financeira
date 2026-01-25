@@ -35,7 +35,8 @@ export async function createWebhook(formData: {
     const supabase = await createClient();
 
     // Generate secret
-    const secret = `whsec_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+    // Generate secret
+    const secret = `whsec_${require("crypto").randomBytes(24).toString("hex")}`;
 
     const { error } = await supabase.from("webhook_endpoints").insert({
         ...formData,

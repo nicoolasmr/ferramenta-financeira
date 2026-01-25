@@ -20,15 +20,19 @@ export function verifySignature(body: string, headers: Record<string, string>, s
     // If body contains token?
     try {
         const json = JSON.parse(body);
+        // Kiwify usually sends 'token' or 'signature' in payload or query.
+        // We check against the secret configured in the connector.
         if (json.webhook_token === secret) return true;
         if (json.token === secret) return true;
-    } catch (e) { }
+        if (json.signature === secret) return true;
+    } catch (e) {
+        console.error("Kiwify signature verification failed - invalid JSON", e);
+    }
 
-    // Or check headers
-    // x-kiwify-token ?
+    // Check Headers if applicable (x-kiwify-signature)
+    // const headerSig = headers['x-kiwify-signature'];
+    // if (headerSig === secret) return true;
 
-    // Fallback: simple exact match if we can't find spec docs in prompt.
-    // "Rejeitar... com token inválido"
-
-    return true; // TODO: Implement specific check once we know field name. Assuming Router matched KEY is enough for now + body token check above.
+    console.warn("Kiwify signature verification failed - no match");
+    return false;
 }
