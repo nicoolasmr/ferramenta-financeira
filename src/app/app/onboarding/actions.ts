@@ -48,20 +48,64 @@ export async function completeOnboarding(formData: FormData) {
     console.log("Onboarding: Created organization", org.id);
 
     // 1.5 Ensure User Exists in Public Table
-    // This is necessary because the trigger might have failed or not fired
-    const { error: userError } = await supabase.from("users").upsert({
-        id: user.id,
-        email: user.email,
-        full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
-        avatar_url: user.user_metadata?.avatar_url,
-        updated_at: new Date().toISOString(),
-    }, { onConflict: "id" });
+    // We try to use the Service Role key to bypass RLS if possible, otherwise fall back to user client.
+    let userSyncError = null;
 
-    if (userError) {
-        console.error("Onboarding Error (User Sync):", userError);
-        // We continue even if this fails, hoping the user exists, 
-        // but logging it is important. 
-        // If it fails because table doesn't exist, we might be in trouble essentially.
+    try {
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        // Verify we have the key and it's not the placeholder
+        if (serviceRoleKey && serviceRoleKey !== 'placeholder-key') {
+            // Dynamic import to avoid build issues if package missing, 
+            // though @supabase/supabase-js is likely present as it's a peer dep of @supabase/ssr
+            const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+            const adminClient = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                serviceRoleKey,
+                {
+                    auth: {
+                        autoRefreshToken: false,
+                        persistSession: false
+                    }
+                }
+            );
+
+            const { error } = await adminClient.from("users").upsert({
+                id: user.id,
+                email: user.email,
+                full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
+                avatar_url: user.user_metadata?.avatar_url,
+                updated_at: new Date().toISOString(),
+            }, { onConflict: "id" });
+
+            userSyncError = error;
+        } else {
+            // Fallback to normal client (subject to RLS)
+            const { error } = await supabase.from("users").upsert({
+                id: user.id,
+                email: user.email,
+                full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
+                avatar_url: user.user_metadata?.avatar_url,
+                updated_at: new Date().toISOString(),
+            }, { onConflict: "id" });
+            userSyncError = error;
+        }
+    } catch (e: any) {
+        console.error("Service Role Client Init Error:", e);
+        // Fallback to normal client attempt if admin client failed to init
+        const { error } = await supabase.from("users").upsert({
+            id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
+            avatar_url: user.user_metadata?.avatar_url,
+            updated_at: new Date().toISOString(),
+        }, { onConflict: "id" });
+        userSyncError = error;
+    }
+
+    if (userSyncError) {
+        console.error("Onboarding Error (User Sync):", userSyncError);
+        // If this fails, we return the error because the next step (FK) will definitely fail.
+        return { error: { server: `Failed to sync user profile: ${userSyncError.message}` } };
     }
 
     // 2. Create Membership (Owner)
