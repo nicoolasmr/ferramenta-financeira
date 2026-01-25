@@ -4,13 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-const onboardingSchema = z.object({
-    orgName: z.string().min(3),
-    orgSlug: z.string().min(3).regex(/^[a-z0-9-]+$/, "Apenas letras minúsculas, números e hífens"),
-    projectName: z.string().min(3),
-    planCode: z.enum(["starter", "pro", "agency"]),
-    integration: z.string().optional(),
-});
+import { onboardingSchema } from "./schema";
 
 export async function completeOnboarding(formData: FormData) {
     const supabase = await createClient();
@@ -66,75 +60,31 @@ export async function completeOnboarding(formData: FormData) {
         return { error: { server: `Failed to initialize user profile: ${userSyncError.message}` } };
     }
 
-    // 1. Create Organization (Admin)
-    console.log("Onboarding (Admin Mode): Creating organization", data.orgName);
-    const { data: org, error: orgError } = await adminClient.from("organizations").insert({
-        name: data.orgName,
-        slug: data.orgSlug,
-    }).select("id").single();
+    // NUCLEAR OPTION: Call the Postgres RPC
+    console.log("Onboarding (RPC Mode): Executing create_onboarding_package for", userId);
 
-    if (orgError) {
-        console.error("Onboarding Error (Organization):", orgError);
-        return { error: { server: orgError.message } };
-    }
-
-    // 2. Create Membership (Owner) (Admin)
-    console.log("Onboarding (Admin Mode): Creating owner membership for user", userId, "org", org.id);
-    const { error: membershipError } = await adminClient.from("memberships").insert({
-        org_id: org.id,
-        user_id: userId,
-        role: "owner"
+    const { data: result, error: rpcError } = await adminClient.rpc('create_onboarding_package', {
+        p_user_id: userId,
+        p_org_name: data.orgName,
+        p_org_slug: data.orgSlug,
+        p_project_name: data.projectName,
+        p_plan_code: data.planCode,
+        p_integration: data.integration || null
     });
 
-    if (membershipError) {
-        console.error("Onboarding Error (Membership):", membershipError);
-        // Clean up org if membership fails (optional, but good practice)
-        await adminClient.from("organizations").delete().eq("id", org.id);
-        return { error: { server: `Failed to assign ownership: ${membershipError.message}` } };
+    if (rpcError) {
+        console.error("Onboarding Error (RPC):", rpcError);
+        // Clean error message
+        const msg = rpcError.message.replace('Onboarding Failed: ', '');
+        if (msg.includes('duplicate key')) return { error: { server: "Este URL de workspace já está em uso." } };
+        return { error: { server: `Erro no setup: ${msg}` } };
     }
 
-    // 3. Create Settings (Admin)
-    await adminClient.from("settings").insert({
-        org_id: org.id,
-        currency: "BRL",
-        timezone: "America/Sao_Paulo"
-    });
-
-    // 4. Create First Project (Admin)
-    console.log("Onboarding (Admin Mode): Creating first project", data.projectName);
-    const { data: firstProject, error: projectError } = await adminClient.from("projects").insert({
-        org_id: org.id,
-        name: data.projectName
-    }).select("id").single();
-
-    if (projectError || !firstProject) {
-        console.error("Onboarding Error (Project):", projectError);
-        return { error: { server: projectError?.message || "Failed to create first project" } };
+    const payload = result as any; // RPC returns JSONB
+    if (!payload || !payload.success) {
+        return { error: { server: "Erro desconhecido ao criar organização." } };
     }
 
-    // 5. Billing Setup (Admin)
-    const { data: plan } = await adminClient.from("plans").select("id").eq("code", data.planCode).single();
-    if (plan) {
-        await adminClient.from("subscriptions").insert({
-            org_id: org.id,
-            plan_id: plan.id,
-            status: "active",
-            provider: "stripe"
-        });
-    }
-
-    // 6. Create Integration (Admin)
-    if (data.integration && data.integration !== 'skip') {
-        const provider = data.integration.toLowerCase();
-        await adminClient.from("gateway_integrations").insert({
-            project_id: firstProject.id,
-            provider: provider,
-            name: data.integration,
-            status: "active",
-            credentials: {}
-        });
-    }
-
-    console.log("Onboarding Complete. Redirecting.");
-    redirect(`/app?org=${org.id}`);
+    console.log("Onboarding Complete. Redirecting to Org:", payload.org_id);
+    redirect(`/app?org=${payload.org_id}`);
 }
