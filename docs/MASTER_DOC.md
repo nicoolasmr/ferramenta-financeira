@@ -35,7 +35,7 @@ graph TD
     
     Stripe -->|Webhook| API[ Ingestion API ]
     API -->|INSERT| RawDB[(external_events_raw)]
-    API -->|Normalize (Sync)| Norm[NormalizedEvent]
+    API -->|"Normalize (Sync)"| Norm[NormalizedEvent]
     
     subgraph "Async Worker Layer"
         Worker[Queue Worker]
