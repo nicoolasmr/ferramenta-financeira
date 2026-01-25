@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,28 +29,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Key, Plus, Copy, Trash2, Eye, EyeOff, AlertTriangle } from 'lucide-react';
-
-// Mock data
-const MOCK_API_KEYS = [
-    {
-        id: '1',
-        name: 'Production API Key',
-        key_prefix: 'sk_live_',
-        key_hint: 'a1b2',
-        created_at: '2026-01-15',
-        last_used_at: '2026-01-21',
-    },
-    {
-        id: '2',
-        name: 'Staging API Key',
-        key_prefix: 'sk_test_',
-        key_hint: 'c3d4',
-        created_at: '2026-01-18',
-        last_used_at: null,
-    },
-];
+import { Key, Plus, Copy, Trash2, Eye, EyeOff, AlertTriangle, Loader2 } from 'lucide-react';
+import { getActiveOrganization } from '@/actions/organization';
+import { getAPIKeys, createAPIKey, deleteAPIKey, APIKey } from '@/actions/api-keys';
+import { toast } from 'sonner';
 
 export default function ApiKeysPage({ params }: { params: Promise<{ projectId: string }> }) {
     const { projectId } = React.use(params);
@@ -58,26 +40,68 @@ export default function ApiKeysPage({ params }: { params: Promise<{ projectId: s
     const [generatedKey, setGeneratedKey] = useState<string | null>(null);
     const [keyName, setKeyName] = useState('');
     const [keyType, setKeyType] = useState<'secret' | 'publishable'>('secret');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
     const [showKey, setShowKey] = useState(false);
 
-    const handleGenerateKey = async () => {
-        setLoading(true);
+    const [keys, setKeys] = useState<APIKey[]>([]);
+    const [orgId, setOrgId] = useState<string | null>(null);
+
+    async function fetchKeys() {
         try {
-            // TODO: Implement API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            const mockKey = `${keyType === 'secret' ? 'sk_live_' : 'pk_live_'}${'x'.repeat(32)}`;
-            setGeneratedKey(mockKey);
-        } catch (error) {
-            alert('Erro ao gerar chave');
+            const org = await getActiveOrganization();
+            if (!org) return;
+            setOrgId(org.id);
+
+            const data = await getAPIKeys(org.id);
+            setKeys(data);
+        } catch (e) {
+            console.error(e);
+            toast.error("Erro ao carregar chaves");
         } finally {
             setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchKeys();
+    }, []);
+
+    const handleGenerateKey = async () => {
+        if (!orgId) return;
+        setActionLoading(true);
+        try {
+            // Note: The backend currently generates SK_ only and doesn't explicitly store 'type' in this action version.
+            // If we needed PK, we'd update the action. For now generating SK.
+            const res = await createAPIKey({
+                name: keyName,
+                org_id: orgId
+            });
+
+            setGeneratedKey(res.key);
+            fetchKeys(); // Refresh list to show new key row (masked)
+            toast.success("Chave gerada com sucesso!");
+        } catch (error) {
+            toast.error('Erro ao gerar chave');
+        } finally {
+            setActionLoading(false);
         }
     };
 
     const handleCopyKey = (key: string) => {
         navigator.clipboard.writeText(key);
-        alert('Chave copiada!');
+        toast.success('Chave copiada!');
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Tem certeza? Qualquer sistema usando esta chave perderá o acesso imediatamente.")) return;
+        try {
+            await deleteAPIKey(id);
+            toast.success("Chave revogada.");
+            fetchKeys();
+        } catch (e) {
+            toast.error("Erro ao revogar chave.");
+        }
     };
 
     const handleClose = () => {
@@ -85,7 +109,12 @@ export default function ApiKeysPage({ params }: { params: Promise<{ projectId: s
         setGeneratedKey(null);
         setKeyName('');
         setKeyType('secret');
+        setShowKey(false);
     };
+
+    if (loading) {
+        return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>;
+    }
 
     return (
         <div className="container mx-auto py-8 max-w-6xl">
@@ -99,9 +128,9 @@ export default function ApiKeysPage({ params }: { params: Promise<{ projectId: s
                         Gerencie as chaves de API para integração com o RevenueOS.
                     </p>
                 </div>
-                <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                <Dialog open={createOpen} onOpenChange={(open) => !open && handleClose()}>
                     <DialogTrigger asChild>
-                        <Button>
+                        <Button onClick={() => setCreateOpen(true)}>
                             <Plus className="w-4 h-4 mr-2" />
                             Gerar Nova Chave
                         </Button>
@@ -140,12 +169,13 @@ export default function ApiKeysPage({ params }: { params: Promise<{ projectId: s
                                                     <div className="text-xs text-slate-500">Uso no backend (privada)</div>
                                                 </div>
                                             </SelectItem>
-                                            <SelectItem value="publishable">
+                                            {/* Publishable key logic pending backend support */}
+                                            {/* <SelectItem value="publishable">
                                                 <div>
                                                     <div className="font-medium">Publishable Key (pk_live_...)</div>
                                                     <div className="text-xs text-slate-500">Uso no frontend (pública)</div>
                                                 </div>
-                                            </SelectItem>
+                                            </SelectItem> */}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -199,8 +229,8 @@ export default function ApiKeysPage({ params }: { params: Promise<{ projectId: s
                                     <Button type="button" variant="outline" onClick={handleClose}>
                                         Cancelar
                                     </Button>
-                                    <Button onClick={handleGenerateKey} disabled={loading || !keyName}>
-                                        {loading ? 'Gerando...' : 'Gerar Chave'}
+                                    <Button onClick={handleGenerateKey} disabled={actionLoading || !keyName}>
+                                        {actionLoading ? 'Gerando...' : 'Gerar Chave'}
                                     </Button>
                                 </>
                             ) : (
@@ -226,19 +256,19 @@ export default function ApiKeysPage({ params }: { params: Promise<{ projectId: s
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Nome</TableHead>
-                                <TableHead>Chave</TableHead>
+                                <TableHead>Chave (Prefix)</TableHead>
                                 <TableHead>Criada em</TableHead>
                                 <TableHead>Último uso</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {MOCK_API_KEYS.map((key) => (
+                            {keys.map((key) => (
                                 <TableRow key={key.id}>
                                     <TableCell className="font-medium">{key.name}</TableCell>
                                     <TableCell>
                                         <code className="text-xs bg-slate-100 px-2 py-1 rounded font-mono">
-                                            {key.key_prefix}••••{key.key_hint}
+                                            {key.key}
                                         </code>
                                     </TableCell>
                                     <TableCell className="text-slate-500">
@@ -250,12 +280,13 @@ export default function ApiKeysPage({ params }: { params: Promise<{ projectId: s
                                             : 'Nunca'}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(key.id)}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
+                            {keys.length === 0 && <TableRow><TableCell colSpan={5} className="text-center">Nenhuma chave encontrada</TableCell></TableRow>}
                         </TableBody>
                     </Table>
                 </CardContent>
