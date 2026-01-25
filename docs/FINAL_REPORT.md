@@ -30,7 +30,15 @@ We addressed the 5 critical areas identified in the initial audit:
 -   **Email Delivery**: `inviteTeamMember` logic is implemented but email sending service (e.g. Resend/SendGrid) logic needs final configuration in production env.
 -   **Rate Limiting**: Basic RL is in place, but aggressive webhook bursts might need further tuning of the Worker concurrency.
 
-## 4. Next Steps (Post-Launch)
+## 4. New Capabilities (Phase 11 & 12)
+| Feature | Implementation | Benefit |
+| :--- | :--- | :--- |
+| **Manual Sales** | `/app/sales/new` + Server Action | Allows logging non-integrated revenue. |
+| **Receivables Engine** | Database Table + Auto-Explosion Trigger | Generates future cashflow data automatically. |
+| **AI Forecasting** | `getProjectReceivables` Tool | Enables Copilot to project revenue 12 months out. |
+| **Stability** | Atomic RPC Onboarding | zero-risk of "stuck" accounts during sign-up. |
+
+## 5. Next Steps (Post-Launch)
 1.  **Observability**: Set up Sentry/Datadog for Worker monitoring.
 2.  **Performance**: Optimize `apply` logic for massive bulk imports (currently one-by-one).
 3.  **Expansion**: Add "Conta Azul" and "Omie" for ERP reconciliation.
