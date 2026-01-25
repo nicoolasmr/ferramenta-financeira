@@ -55,7 +55,8 @@ export default function DashboardPage() {
 
     if (!activeOrganization) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
+        return (
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl animate-in fade-in duration-500">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                     <FolderKanban className="w-8 h-8 text-blue-600" />
                 </div>

@@ -70,7 +70,7 @@ export default function OnboardingPage() {
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-50 flex items-center justify-center p-4 z-[100]">
             <Card className="w-full max-w-lg shadow-xl animate-in fade-in zoom-in duration-300">
                 {step > 0 && (
                     <CardHeader>
