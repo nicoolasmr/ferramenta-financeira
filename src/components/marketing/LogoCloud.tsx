@@ -35,12 +35,12 @@ export function LogoCloud({ title, logos }: LogoCloudProps) {
                             logo.className
                         )}
                     >
-                        <div className={cn("h-8 md:h-10 flex items-center justify-center grayscale hover:grayscale-0", logo.className ? "h-auto" : "")}>
+                        <div className={cn("h-9 md:h-12 flex items-center justify-center grayscale hover:grayscale-0 opacity-70 hover:opacity-100 transition-all", logo.className ? "h-auto" : "")}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={logo.logo}
                                 alt={logo.name}
-                                className={cn("h-full w-auto max-w-[120px] object-contain", logo.className)}
+                                className={cn("h-full w-auto max-w-[180px] object-contain", logo.className)}
                             />
                         </div>
                     </motion.div>
