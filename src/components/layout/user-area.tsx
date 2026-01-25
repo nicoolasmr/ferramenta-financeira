@@ -66,8 +66,9 @@ export function UserArea() {
         loadUserData();
     }, [activeOrganization]);
 
-    const planName = subscription?.plan?.name || "Free Plan";
-    const isPro = subscription?.plan?.code === "pro" || subscription?.plan?.code === "agency";
+    const isMaster = user?.email === 'nicoolascf5@gmail.com';
+    const planName = isMaster ? "Master Plan" : (subscription?.plan?.name || "Free Plan");
+    const isPro = subscription?.plan?.code === "pro" || subscription?.plan?.code === "agency" || isMaster;
 
     if (orgLoading || loading) {
         return (
@@ -100,6 +101,7 @@ export function UserArea() {
                                 )}>
                                     {planName}
                                 </span>
+                                {isPro && <Crown className="h-3 w-3 text-amber-500 ml-1" />}
                             </div>
                         </div>
                         <ChevronUp className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
@@ -211,12 +213,14 @@ export function UserArea() {
 
             {!isPro && (
                 <div className="px-2 mt-2">
-                    <Button asChild size="sm" className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white border-0 shadow-sm h-8">
-                        <Link href="/app/billing" className="flex items-center justify-center gap-2">
-                            <Zap className="h-3.5 w-3.5 fill-white" />
-                            <span className="text-xs font-bold uppercase tracking-wider">{t('common.upgrade')}</span>
+                    <DropdownMenuItem asChild className="p-0 focus:bg-transparent">
+                        <Link href="/app/billing" className="w-full cursor-pointer">
+                            <Button size="sm" className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white border-0 shadow-sm h-8 gap-2">
+                                <Zap className="h-3.5 w-3.5 fill-white" />
+                                <span className="text-xs font-bold uppercase tracking-wider">{t('common.upgrade')}</span>
+                            </Button>
                         </Link>
-                    </Button>
+                    </DropdownMenuItem>
                 </div>
             )}
         </div>
