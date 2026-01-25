@@ -30,7 +30,7 @@ export default function IntegrationsOpsPage() {
             // Querying jobs_queue for last event per provider
             const { data: jobs } = await supabase
                 .from('jobs_queue')
-                .select('payload, created_at, status')
+                .select('payload, created_at, status, project_id')
                 .eq('job_type', 'apply_event')
                 .order('created_at', { ascending: false })
                 .limit(100);
