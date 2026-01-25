@@ -1,14 +1,18 @@
+import { notFound } from "next/navigation";
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CTABox } from "@/components/mdx/CTABox";
 
-// ... existing imports ...
+const CONTENT_DIR = path.join(process.cwd(), "content/cases");
 
 const components = {
     CTABox
 };
-
-// ... inside component ...
-
-<MDXRemote source={caseStudy.content} components={components} />
 
 export async function generateStaticParams() {
     const files = fs.readdirSync(CONTENT_DIR);
