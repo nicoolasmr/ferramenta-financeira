@@ -5,9 +5,9 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface IntegrationHelpPageProps {
-    params: {
+    params: Promise<{
         slug: string;
-    };
+    }>;
 }
 
 export async function generateStaticParams() {
@@ -16,7 +16,8 @@ export async function generateStaticParams() {
     }));
 }
 
-export default function IntegrationHelpPage({ params }: IntegrationHelpPageProps) {
+export default async function IntegrationHelpPage(props: IntegrationHelpPageProps) {
+    const params = await props.params;
     const provider = PROVIDERS[params.slug];
 
     if (!provider) {

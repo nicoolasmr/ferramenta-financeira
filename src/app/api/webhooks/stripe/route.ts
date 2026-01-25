@@ -5,7 +5,7 @@ import Stripe from "stripe";
 
 export async function POST(req: Request) {
     const body = await req.text();
-    const signature = headers().get("Stripe-Signature") as string;
+    const signature = (await headers()).get("Stripe-Signature") as string;
 
     if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
         console.error("Stripe config missing");
