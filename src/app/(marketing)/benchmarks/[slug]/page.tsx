@@ -6,7 +6,6 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
 import { CTABox } from "@/components/mdx/CTABox";
 import { Callout } from "@/components/mdx/Callout";
 
@@ -16,10 +15,6 @@ const components = {
     CTABox,
     Callout
 };
-
-// ... inside BenchmarkPage ...
-
-<MDXRemote source={benchmark.content} components={components} />
 
 export async function generateStaticParams() {
     const files = fs.readdirSync(CONTENT_DIR);
