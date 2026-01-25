@@ -7,11 +7,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CTABox } from "@/components/mdx/CTABox";
+import { Callout } from "@/components/mdx/Callout";
 
 const CONTENT_DIR = path.join(process.cwd(), "content/cases");
 
 const components = {
-    CTABox
+    CTABox,
+    Callout
 };
 
 export async function generateStaticParams() {
