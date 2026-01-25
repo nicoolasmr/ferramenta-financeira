@@ -1,13 +1,14 @@
-import { notFound } from "next/navigation";
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
-import { MDXRemote } from "next-mdx-remote/rsc";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CTABox } from "@/components/mdx/CTABox";
 
-const CONTENT_DIR = path.join(process.cwd(), "content/cases");
+// ... existing imports ...
+
+const components = {
+    CTABox
+};
+
+// ... inside component ...
+
+<MDXRemote source={caseStudy.content} components={components} />
 
 export async function generateStaticParams() {
     const files = fs.readdirSync(CONTENT_DIR);
@@ -59,7 +60,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
             <div className="container mx-auto px-4 max-w-4xl py-12">
                 <article className="prose prose-slate prose-lg max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-blue-600 hover:prose-a:text-blue-700">
-                    <MDXRemote source={caseStudy.content} />
+                    <MDXRemote source={caseStudy.content} components={components} />
                 </article>
 
                 <div className="mt-16 p-8 bg-blue-600 text-white rounded-2xl text-center">
