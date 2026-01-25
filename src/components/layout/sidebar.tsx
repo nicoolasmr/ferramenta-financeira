@@ -64,21 +64,26 @@ export function Sidebar() {
         },
     ];
 
-    const settingsLinks = [
+    const settingsRoutes = [
         {
-            href: "/app/settings/organization",
-            label: "Organization",
-            icon: Settings,
-        },
-        {
-            href: "/app/settings/team",
-            label: "Team",
-            icon: Users,
-        },
-        {
-            href: "/app/settings/security/mfa",
-            label: "Security",
-            icon: Shield,
+            label: "Configurações",
+            items: [
+                {
+                    label: "Organização",
+                    href: "/app/settings/organization",
+                    icon: Settings,
+                },
+                {
+                    label: "Equipe",
+                    href: "/app/settings/team",
+                    icon: Users,
+                },
+                {
+                    label: "Segurança",
+                    href: "/app/settings/security",
+                    icon: Shield,
+                },
+            ],
         },
     ];
 
