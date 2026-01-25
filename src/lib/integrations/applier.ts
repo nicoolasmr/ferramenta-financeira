@@ -1,15 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 
-// import { CanonicalEvent } from "@/connectors/_shared/types"; // LEGACY REMOVED
-
 // Minimal stub to fix build if types are gone
-interface CanonicalEvent {
+interface NormalizedEvent {
     canonical_type: string;
     payload: any;
-    timestamp: string;
+    occurred_at: string;
+    money?: { amount_cents: number; currency: string };
+    external_event_id?: string;
 }
 
-export async function applyEvent(orgId: string, event: CanonicalEvent, provider: string) {
+export async function applyEvent(orgId: string, event: NormalizedEvent, provider: string) {
     const supabase = await createClient();
 
     if (event.canonical_type === 'order.created') {
@@ -43,7 +43,7 @@ export async function applyEvent(orgId: string, event: CanonicalEvent, provider:
                     external_order_id: payload.external_id,
                     status: payload.status || 'pending',
                     total_amount_cents: payload.amount_cents || 0,
-                    created_at: event.timestamp,
+                    created_at: event.occurred_at,
                     currency: payload.currency || 'BRL'
                 }, { onConflict: 'org_id, provider, external_order_id' });
 
@@ -78,7 +78,7 @@ export async function applyEvent(orgId: string, event: CanonicalEvent, provider:
             external_payment_id: payload.external_id,
             total_amount_cents: payload.amount_cents || 0,
             status: 'paid',
-            paid_at: event.timestamp,
+            paid_at: event.occurred_at,
         }, { onConflict: 'org_id, provider, external_payment_id' });
     }
 }
