@@ -54,7 +54,8 @@ export default function OnboardingPage() {
             const result = await completeOnboarding(formDataToSend);
             if (result?.error) {
                 setIsSubmitting(false);
-                const errorMessage = result.error.server ||
+                const errorObj = result.error as any;
+                const errorMessage = errorObj.server ||
                     (typeof result.error === 'object' ? Object.values(result.error).flat().join(', ') : '') ||
                     "Falha ao completar onboarding. Verifique os dados.";
                 toast.error(errorMessage);
