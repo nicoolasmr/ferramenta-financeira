@@ -12,7 +12,7 @@ export async function applySales(event: NormalizedEvent): Promise<boolean> {
     // The tables (orders, payments) have UNIQUE constraints on (org_id, provider, provider_object_id).
     // So 'upsert' handles it gracefully.
 
-    if (canonical_type === 'sales.order.created' || canonical_type === 'sales.order.paid' || canonical_type === 'sales.order.refunded') {
+    if (canonical_type === 'sales.order.created' || canonical_type === 'sales.order.paid' || (canonical_type as string) === 'sales.order.refunded') {
         // Use 'data' field which now exists on NormalizedEvent (added in sdk.ts)
         const orderData = event.data as import("@/lib/contracts/canonical").CanonicalOrder;
 
