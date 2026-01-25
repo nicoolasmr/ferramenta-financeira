@@ -27,7 +27,10 @@ export async function getTeamMembers(orgId: string): Promise<TeamMember[]> {
     const supabase = await createClient();
     const { data, error } = await supabase
         .from("memberships")
-        .select("*")
+        .select(`
+            *,
+            user:users(email, full_name, avatar_url)
+        `)
         .eq("org_id", orgId)
         .order("created_at", { ascending: false });
 

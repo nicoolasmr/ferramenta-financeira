@@ -1,18 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Save } from 'lucide-react';
+import { Building2, Save, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { getActiveOrganization, updateOrganization } from '@/actions/organization';
 
 export default function OrganizationSettingsPage() {
     const [loading, setLoading] = useState(false);
+    const [initializing, setInitializing] = useState(true);
+    const [orgId, setOrgId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
         legal_name: '',
         tax_id: '',
+        address: '', // Flattened for now as DB schema might be simple
+        // DB fields are: legal_name, tax_id, address.
+        // The UI has detailed address fields. I'll join them for the DB 'address' field or leave them as state if not persisted.
+        // Checking schema: organizations table has 'address' (text).
+        // I will map UI fields <-> Single Address string for now to avoid schema migration delay.
         street: '',
         number: '',
         complement: '',
@@ -22,20 +31,67 @@ export default function OrganizationSettingsPage() {
         zip_code: '',
     });
 
+    useEffect(() => {
+        async function loadOrg() {
+            try {
+                const org = await getActiveOrganization();
+                if (org) {
+                    setOrgId(org.id);
+                    // Parse address if it is JSON or comma separated? 
+                    // For MVP simplicity, we might just treat 'address' as the full string or try to parse.
+                    // Let's assume it's just a string for now, but UI asks for split.
+                    // I'll populate just 'name' and 'legal_name' etc correctly.
+
+                    setFormData(prev => ({
+                        ...prev,
+                        name: org.name || '',
+                        legal_name: org.legal_name || '',
+                        tax_id: org.tax_id || '',
+                        address: org.address || '',
+                        // Keep granular address fields empty if we can't parse easily, 
+                        // or try to put the full address in 'street' for visibility.
+                        street: org.address || '',
+                    }));
+                }
+            } catch (e) {
+                console.error("Failed to load org", e);
+                toast.error("Erro ao carregar dados da organização");
+            } finally {
+                setInitializing(false);
+            }
+        }
+        loadOrg();
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!orgId) return;
+
         setLoading(true);
 
         try {
-            // TODO: Implement API call to update organization
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            alert('Organização atualizada com sucesso!');
+            // Combine address fields
+            const fullAddress = `${formData.street}, ${formData.number} - ${formData.neighborhood}, ${formData.city}/${formData.state} - ${formData.zip_code}`;
+
+            await updateOrganization(orgId, {
+                name: formData.name,
+                legal_name: formData.legal_name,
+                tax_id: formData.tax_id,
+                address: fullAddress
+            });
+
+            toast.success('Organização atualizada com sucesso!');
         } catch (error) {
-            alert('Erro ao atualizar organização');
+            console.error(error);
+            toast.error('Erro ao atualizar organização');
         } finally {
             setLoading(false);
         }
     };
+
+    if (initializing) {
+        return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>;
+    }
 
     return (
         <div className="container mx-auto py-8 max-w-4xl">

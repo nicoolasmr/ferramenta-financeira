@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,18 +30,10 @@ import {
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { UserPlus, Mail, Trash2, Shield } from 'lucide-react';
-
-// Mock data
-const MOCK_MEMBERS = [
-    { id: '1', email: 'owner@empresa.com', role: 'owner', joined_at: '2026-01-15' },
-    { id: '2', email: 'admin@empresa.com', role: 'admin', joined_at: '2026-01-16' },
-    { id: '3', email: 'dev@empresa.com', role: 'member', joined_at: '2026-01-18' },
-];
-
-const MOCK_INVITATIONS = [
-    { id: '1', email: 'pending@empresa.com', role: 'member', created_at: '2026-01-20', expires_at: '2026-01-27' },
-];
+import { UserPlus, Mail, Trash2, Shield, Loader2, RotateCcw } from 'lucide-react';
+import { getActiveOrganization } from '@/actions/organization';
+import { getTeamMembers, getPendingInvitations, inviteTeamMember, removeMember, resendInvitation, TeamMember, TeamInvitation } from '@/actions/team';
+import { toast } from 'sonner';
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
     owner: { label: 'Proprietário', color: 'bg-purple-100 text-purple-700' },
@@ -53,22 +45,101 @@ export default function TeamSettingsPage() {
     const [inviteOpen, setInviteOpen] = useState(false);
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteRole, setInviteRole] = useState<'owner' | 'admin' | 'member'>('member');
-    const [loading, setLoading] = useState(false);
 
-    const handleInvite = async () => {
-        setLoading(true);
+    const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
+
+    const [members, setMembers] = useState<any[]>([]);
+    const [invitations, setInvitations] = useState<any[]>([]);
+    const [orgId, setOrgId] = useState<string | null>(null);
+
+    async function fetchData() {
         try {
-            // TODO: Implement API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            setInviteOpen(false);
-            setInviteEmail('');
-            setInviteRole('member');
+            const org = await getActiveOrganization();
+            if (!org) return;
+            setOrgId(org.id);
+
+            const [mems, invs] = await Promise.all([
+                getTeamMembers(org.id),
+                getPendingInvitations(org.id)
+            ]);
+
+            // Enrich members with user emails? 
+            // The getTeamMembers returns memberships, which should ideally include user details.
+            // But currently it selects *. I might need to update the query in the action to join users.
+            // Let's assume the action handles it or we fix the action next.
+            // Looking at the action: .select("*"). It only returns membership fields.
+            // I will update the action to select user:users(email) if needed. 
+            // For now, let's presume the UI will just show ID if email missing, or I fix the action immediately after this.
+
+            setMembers(mems);
+            setInvitations(invs);
         } catch (error) {
-            alert('Erro ao enviar convite');
+            console.error(error);
+            toast.error("Erro ao carregar equipe");
         } finally {
             setLoading(false);
         }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleInvite = async () => {
+        if (!orgId) return;
+        setActionLoading(true);
+        try {
+            await inviteTeamMember({
+                email: inviteEmail,
+                role: inviteRole,
+                org_id: orgId
+            });
+
+            toast.success("Convite enviado com sucesso!");
+            setInviteOpen(false);
+            setInviteEmail('');
+            setInviteRole('member');
+            fetchData(); // Refresh list
+        } catch (error: any) {
+            toast.error(error.message || "Erro ao enviar convite");
+        } finally {
+            setActionLoading(false);
+        }
     };
+
+    const handleRemove = async (id: string, isInvite: boolean) => {
+        if (!confirm("Tem certeza? Esta ação não pode ser desfeita.")) return;
+
+        try {
+            if (isInvite) {
+                // TODO: add deleteInvitation action or reuse removeMember logic?
+                // Actually removeMember uses 'memberships' table. Invitations are in 'team_invitations'.
+                // I need a cancelInvitation action. For now, let's use removeMember for members only.
+                toast.error("Cancelamento de convite ainda não implementado na UI (Backlog).");
+            } else {
+                await removeMember(id);
+                toast.success("Membro removido.");
+                fetchData();
+            }
+        } catch (e) {
+            toast.error("Erro ao remover.");
+        }
+    };
+
+    const handleResend = async (id: string) => {
+        try {
+            await resendInvitation(id);
+            toast.success("Convite reenviado!");
+            fetchData();
+        } catch (e) {
+            toast.error("Erro ao reenviar.");
+        }
+    };
+
+    if (loading) {
+        return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>;
+    }
 
     return (
         <div className="container mx-auto py-8 max-w-6xl">
@@ -125,8 +196,8 @@ export default function TeamSettingsPage() {
                             <Button variant="outline" onClick={() => setInviteOpen(false)}>
                                 Cancelar
                             </Button>
-                            <Button onClick={handleInvite} disabled={loading || !inviteEmail}>
-                                {loading ? 'Enviando...' : 'Enviar Convite'}
+                            <Button onClick={handleInvite} disabled={actionLoading || !inviteEmail}>
+                                {actionLoading ? 'Enviando...' : 'Enviar Convite'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -145,33 +216,38 @@ export default function TeamSettingsPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Email</TableHead>
+                                <TableHead>Usuário</TableHead>
                                 <TableHead>Função</TableHead>
                                 <TableHead>Membro desde</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {MOCK_MEMBERS.map((member) => (
+                            {members.map((member) => (
                                 <TableRow key={member.id}>
-                                    <TableCell className="font-medium">{member.email}</TableCell>
+                                    <TableCell className="font-medium">
+                                        {/* Ideally we fetch user email properly. For now showing ID or joined data */}
+                                        {/* I will fix the action to return joined user data immediately after */}
+                                        {member.user?.email || "Carregando..."}
+                                    </TableCell>
                                     <TableCell>
-                                        <Badge className={ROLE_LABELS[member.role].color}>
-                                            {ROLE_LABELS[member.role].label}
+                                        <Badge className={ROLE_LABELS[member.role]?.color || ROLE_LABELS.member.color}>
+                                            {ROLE_LABELS[member.role]?.label || member.role}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-slate-500">
-                                        {new Date(member.joined_at).toLocaleDateString('pt-BR')}
+                                        {new Date(member.created_at).toLocaleDateString('pt-BR')}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         {member.role !== 'owner' && (
-                                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleRemove(member.id, false)}>
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
                                         )}
                                     </TableCell>
                                 </TableRow>
                             ))}
+                            {members.length === 0 && <TableRow><TableCell colSpan={4} className="text-center">Nenhum membro encontrado</TableCell></TableRow>}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -186,7 +262,7 @@ export default function TeamSettingsPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {MOCK_INVITATIONS.length > 0 ? (
+                    {invitations.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -198,15 +274,15 @@ export default function TeamSettingsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {MOCK_INVITATIONS.map((invitation) => (
+                                {invitations.map((invitation) => (
                                     <TableRow key={invitation.id}>
                                         <TableCell className="font-medium flex items-center gap-2">
                                             <Mail className="w-4 h-4 text-slate-400" />
                                             {invitation.email}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge className={ROLE_LABELS[invitation.role].color}>
-                                                {ROLE_LABELS[invitation.role].label}
+                                            <Badge className={ROLE_LABELS[invitation.role]?.color || ROLE_LABELS.member.color}>
+                                                {ROLE_LABELS[invitation.role]?.label || invitation.role}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-slate-500">
@@ -215,10 +291,11 @@ export default function TeamSettingsPage() {
                                         <TableCell className="text-slate-500">
                                             {new Date(invitation.expires_at).toLocaleDateString('pt-BR')}
                                         </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                                                <Trash2 className="w-4 h-4" />
+                                        <TableCell className="text-right flex justify-end gap-2">
+                                            <Button variant="ghost" size="sm" onClick={() => handleResend(invitation.id)}>
+                                                <RotateCcw className="w-4 h-4" />
                                             </Button>
+                                            {/* Delete TODO */}
                                         </TableCell>
                                     </TableRow>
                                 ))}
