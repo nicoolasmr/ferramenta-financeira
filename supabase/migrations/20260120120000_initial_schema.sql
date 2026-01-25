@@ -203,6 +203,7 @@ LIMIT 1;
 $$ LANGUAGE sql SECURITY DEFINER;
 
 -- Function to check if user is in org
+DROP FUNCTION IF EXISTS is_org_member(uuid);
 CREATE OR REPLACE FUNCTION is_org_member(org_id UUID)
 RETURNS BOOLEAN AS $$
 SELECT EXISTS (
