@@ -124,38 +124,41 @@ export function Sidebar() {
                         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2 mt-4">
                             {t("common.settings")}
                         </div>
-                        {settingsRoutes.map((link) => {
-                            const Icon = link.icon;
-                            // Check if the current path starts with the link href
-                            // Special case for 'General' or other root settings if needed, but here structure is flat
-                            const isActive = pathname.startsWith(link.href);
-                            return (
-                                <div key={link.label}>
-                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1 mt-2">
-                                        {link.label}
+                        {settingsRoutes.map((section) => (
+                            <div key={section.label} className="mt-2">
+                                {/* Optional: If we want to show the section label, we can uncomment this. 
+                                    For now, "Configurações" is already the header above.
+                                    But if we have multiple sections, we should render them. 
+                                */}
+                                {section.label !== "Configurações" && (
+                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">
+                                        {section.label}
                                     </div>
-                                    {link.items.map((subItem) => {
-                                        const SubIcon = subItem.icon;
-                                        const isSubActive = pathname.startsWith(subItem.href);
+                                )}
+
+                                <div className="space-y-1">
+                                    {section.items.map((item) => {
+                                        const Icon = item.icon;
+                                        const isActive = pathname.startsWith(item.href);
                                         return (
                                             <Link
-                                                key={subItem.href}
-                                                href={subItem.href}
+                                                key={item.href}
+                                                href={item.href}
                                                 className={cn(
                                                     "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all outline-none",
-                                                    isSubActive
+                                                    isActive
                                                         ? "bg-primary/10 text-primary font-bold"
                                                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
                                                 )}
                                             >
-                                                <SubIcon className={cn("h-4 w-4", isSubActive ? "text-primary" : "text-muted-foreground/60")} />
-                                                {subItem.label}
+                                                <Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground/60")} />
+                                                {item.label}
                                             </Link>
                                         );
                                     })}
                                 </div>
-                            );
-                        })}
+                            </div>
+                        ))}
                     </nav>
                 </div>
                 <UserArea />
