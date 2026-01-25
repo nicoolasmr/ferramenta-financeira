@@ -24,7 +24,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { signOut } from "@/actions/auth";
+// import { signOut } from "@/actions/auth"; // Removed server action import
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
@@ -195,7 +196,9 @@ export function UserArea() {
                                     variant="destructive"
                                     className="flex-1 shadow-md hover:shadow-lg transition-all"
                                     onClick={async () => {
-                                        await signOut();
+                                        const supabase = createClient();
+                                        await supabase.auth.signOut();
+                                        window.location.href = "/login";
                                     }}
                                 >
                                     {t('common.sign_out')}
