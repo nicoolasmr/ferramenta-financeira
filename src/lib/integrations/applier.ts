@@ -55,7 +55,7 @@ export async function applyEvent(orgId: string, event: CanonicalEvent, provider:
                         // Delete existing items to replace (simple sync)
                         await supabase.from("order_items").delete().eq("order_id", order.id);
 
-                        const itemsToInsert = payload.items.map(item => ({
+                        const itemsToInsert = payload.items.map((item: any) => ({
                             order_id: order.id,
                             external_id: item.external_id,
                             name: item.name,
