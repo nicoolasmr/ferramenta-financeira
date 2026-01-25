@@ -100,9 +100,11 @@ export async function completeOnboarding(formData: FormData) {
         userSyncError = error;
     }
 
+    const debugInfo = `ServiceKey: ${!!process.env.SUPABASE_SERVICE_ROLE_KEY}, AdminClient: ${!!adminClient}`;
+
     if (userSyncError) {
         console.error("Onboarding Error (User Sync):", userSyncError);
-        return { error: { server: `Failed to confirm user profile. Database error: ${userSyncError.message}` } };
+        return { error: { server: `User Profile Sync Failed. ${debugInfo}. DB Error: ${userSyncError.message} (${userSyncError.code})` } };
     }
 
     // 2. Create Membership (Owner)
@@ -117,9 +119,7 @@ export async function completeOnboarding(formData: FormData) {
 
     if (membershipError) {
         console.error("Onboarding Error (Membership):", membershipError);
-        // If we failed with admin client, it's a real constraint issue.
-        // If we failed with user client, it might be RLS or constraint.
-        return { error: { server: `Membership creation failed: ${membershipError.message}. (Constraint: ${membershipError.details || 'unknown'})` } };
+        return { error: { server: `Membership Failed. ${debugInfo}. Error: ${membershipError.message}. Details: ${membershipError.details || 'None'}` } };
     }
 
     // 3. Create Settings
@@ -158,14 +158,13 @@ export async function completeOnboarding(formData: FormData) {
 
     // 6. Create Integration (if selected)
     if (data.integration && data.integration !== 'skip') {
-        // Map integration to provider key (lowercase)
         const provider = data.integration.toLowerCase();
         await supabase.from("gateway_integrations").insert({
-            project_id: firstProject.id, // Fixed: use project_id instead of org_id
+            project_id: firstProject.id,
             provider: provider,
             name: data.integration,
-            status: "active", // mock active for onboarding
-            credentials: {} // empty credentials for now
+            status: "active",
+            credentials: {}
         });
     }
 
