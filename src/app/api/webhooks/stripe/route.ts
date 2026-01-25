@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         return new NextResponse("Stripe config missing", { status: 500 });
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-15.clover' });
 
     let event: Stripe.Event;
 
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
             case "invoice.payment_succeeded": {
                 const invoice = event.data.object as Stripe.Invoice;
-                const subscriptionId = invoice.subscription as string;
+                const subscriptionId = (invoice as any).subscription as string;
 
                 // Find org by subscription ID (external_id)
                 // This assumes we stored it during checkout

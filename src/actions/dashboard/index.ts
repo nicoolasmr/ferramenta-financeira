@@ -142,3 +142,67 @@ export async function getRecentSales(orgId: string): Promise<RecentSale[]> {
         };
     });
 }
+
+export interface OnboardingStatus {
+    hasIntegrations: boolean;
+    hasCustomers: boolean;
+    hasTeam: boolean;
+    hasWebhooks: boolean;
+}
+
+export async function getOnboardingStatus(orgId: string): Promise<OnboardingStatus> {
+    const supabase = await createClient();
+
+    const [
+        { count: integrationsCount },
+        { count: customersCount },
+        { count: teamCount },
+        { count: webhooksCount }
+    ] = await Promise.all([
+        supabase.from("gateway_integrations").select("*", { count: 'exact', head: true }).eq("project_id", orgId), // Assuming project_id maps to org via joins, but schema implies gateway_integrations link to project. 
+        // Wait, gateway_integrations table has project_id, not org_id?
+        // Let's check schema.
+        // If org_id is not in gateway_integrations, we need to join or find projects first.
+        // However, I suspect gateway_integrations might not have org_id directly?
+        // Onboarding creates integration with project_id.
+        // Let's assume for now we search integrations via project lookup or if schema has org_id.
+        // Quick Schema Check:
+        // "gateway_integrations" -> project_id -> "projects" -> org_id.
+        // This is complex for a quick fix.
+        // But dashboard usually knows active project? Dashboard takes orgId.
+        // Let's simplify: fetch all projects for org, then check integrations.
+        // OR better: use rpc or just fetch projects first.
+
+        // Actually, let's look at schema quickly or try to query efficiently.
+        // To be safe and quick:
+        // 1. Get project IDs for org.
+        // 2. Count integrations in those projects.
+
+        // Simpler approach for now to unblock build:
+        // Just return true/false based on simple checks.
+
+        supabase.from("customers").select("*", { count: 'exact', head: true }).eq("org_id", orgId),
+        supabase.from("memberships").select("*", { count: 'exact', head: true }).eq("org_id", orgId),
+
+        // For webhooks, we check webhook_inbox for org_id.
+        supabase.from("webhook_inbox").select("*", { count: 'exact', head: true }).eq("org_id", orgId),
+    ]);
+
+    // For integrations, we need to be careful if we don't have direct org_id.
+    // Let's fetch projects and then check integrations count for them in a separate step if needed.
+    // Or just query:
+    // supabase.from("gateway_integrations").select("projects!inner(org_id)", { count: 'exact', head: true }).eq("projects.org_id", orgId)
+
+    // Let's use the second approach (Relation filtering)
+    const { count: realIntegrationsCount } = await supabase
+        .from("gateway_integrations")
+        .select("project:projects!inner(org_id)", { count: 'exact', head: true })
+        .eq("project.org_id", orgId);
+
+    return {
+        hasIntegrations: (realIntegrationsCount || 0) > 0,
+        hasCustomers: (customersCount || 0) > 0,
+        hasTeam: (teamCount || 0) > 1, // More than just me
+        hasWebhooks: (webhooksCount || 0) > 0
+    };
+}

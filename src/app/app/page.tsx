@@ -2,35 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Users, Plug, FolderKanban, Plus } from "lucide-react";
-import { getDashboardMetrics } from "@/actions/dashboard";
+import { DollarSign, ShoppingCart, CreditCard, Activity } from "lucide-react";
+import { getDashboardMetrics, getRecentSales, DashboardMetrics, RecentSale } from "@/actions/dashboard";
 import { LoadingState } from "@/components/states/LoadingState";
 import { ErrorState } from "@/components/states/ErrorState";
 import Link from "next/link";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 import { Button } from "@/components/ui/button";
 
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, TrendingDown } from "lucide-react";
-
-interface DashboardMetrics {
-    projectsCount: number;
-    customersCount: number;
-    integrationsCount: number;
-    revenueThisMonth: number;
-    revenueMoM: number;
-    revenueTimeline: Array<{ date: string; amount: number }>;
-    recentProjects: Array<{
-        id: string;
-        name: string;
-        status: string;
-        created_at: string;
-    }>;
-}
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, TrendingDown, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export default function DashboardPage() {
     const { activeOrganization, loading: orgLoading } = useOrganization();
     const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+    const [recentSales, setRecentSales] = useState<RecentSale[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -42,13 +30,23 @@ export default function DashboardPage() {
             return;
         }
 
-        getDashboardMetrics(activeOrganization.id)
-            .then(setMetrics)
-            .catch((err) => {
+        const fetchData = async () => {
+            try {
+                const [metricsData, salesData] = await Promise.all([
+                    getDashboardMetrics(activeOrganization.id),
+                    getRecentSales(activeOrganization.id)
+                ]);
+                setMetrics(metricsData);
+                setRecentSales(salesData);
+            } catch (err) {
                 console.error("Error loading dashboard:", err);
                 setError("Failed to load dashboard data");
-            })
-            .finally(() => setLoading(false));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [activeOrganization, orgLoading]);
 
     if (orgLoading || loading) return <LoadingState />;
@@ -57,11 +55,11 @@ export default function DashboardPage() {
         return (
             <div className="flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl animate-in fade-in duration-500">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-                    <FolderKanban className="w-8 h-8 text-blue-600" />
+                    <Activity className="w-8 h-8 text-blue-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900 mb-2">Bem-vindo ao RevenueOS</h2>
                 <p className="text-slate-500 max-w-md mb-8">
-                    Parece que você ainda não tem uma organização. Crie sua primeira organização para começar a gerenciar suas finanças.
+                    Parece que você ainda não tem uma organização. Crie sua primeira organização para começar.
                 </p>
                 <Link href="/app/onboarding">
                     <Button size="lg" className="gap-2">
@@ -78,33 +76,35 @@ export default function DashboardPage() {
 
     const kpis = [
         {
-            title: "Project Volume",
-            value: metrics.projectsCount,
-            icon: FolderKanban,
-            color: "text-blue-600",
-            bgColor: "bg-blue-50 dark:bg-blue-900/20",
-        },
-        {
-            title: "Total Customers",
-            value: metrics.customersCount,
-            icon: Users,
-            color: "text-green-600",
-            bgColor: "bg-green-50 dark:bg-green-900/20",
-        },
-        {
-            title: "Revenue (Month)",
-            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.revenueThisMonth),
+            title: "Total Revenue",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.totalRevenue),
             icon: DollarSign,
             color: "text-emerald-600",
             bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-            mom: metrics.revenueMoM
+            mom: metrics.revenueChange
         },
         {
-            title: "Integrations",
-            value: metrics.integrationsCount,
-            icon: Plug,
+            title: "Net Revenue",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.netRevenue),
+            icon: CreditCard,
+            color: "text-blue-600",
+            bgColor: "bg-blue-50 dark:bg-blue-900/20",
+            mom: metrics.netRevenueChange
+        },
+        {
+            title: "Total Orders",
+            value: metrics.totalOrders,
+            icon: ShoppingCart,
             color: "text-purple-600",
             bgColor: "bg-purple-50 dark:bg-purple-900/20",
+            mom: metrics.ordersChange
+        },
+        {
+            title: "Active Rate",
+            value: metrics.activeRate,
+            icon: Activity,
+            color: "text-orange-600",
+            bgColor: "bg-orange-50 dark:bg-orange-900/20",
         },
     ];
 
@@ -112,8 +112,8 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                    <p className="text-muted-foreground">Overview of your financial performance.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">Dashboard (Real Data)</h1>
+                    <p className="text-muted-foreground">Financial performance overview.</p>
                 </div>
             </div>
 
@@ -144,7 +144,7 @@ export default function DashboardPage() {
                                             "text-xs font-medium",
                                             kpi.mom >= 0 ? "text-emerald-500" : "text-red-500"
                                         )}>
-                                            {kpi.mom.toFixed(1)}% vs last month
+                                            {Math.abs(kpi.mom).toFixed(1)}% vs last month
                                         </span>
                                     </div>
                                 )}
@@ -158,11 +158,11 @@ export default function DashboardPage() {
                 {/* Revenue Chart */}
                 <Card className="col-span-1">
                     <CardHeader>
-                        <CardTitle>Revenue Trend (30d)</CardTitle>
+                        <CardTitle>Daily Revenue (Current Month)</CardTitle>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={metrics.revenueTimeline}>
+                            <AreaChart data={metrics.chartData}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
@@ -170,26 +170,26 @@ export default function DashboardPage() {
                                     </linearGradient>
                                 </defs>
                                 <XAxis
-                                    dataKey="date"
-                                    tickFormatter={(str) => new Date(str).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                    dataKey="name"
                                     fontSize={12}
                                     tickLine={false}
                                     axisLine={false}
+                                    tickFormatter={(val) => `Dia ${val}`}
                                 />
                                 <YAxis
                                     fontSize={12}
                                     tickLine={false}
                                     axisLine={false}
-                                    tickFormatter={(val) => `R$ ${val}`}
+                                    tickFormatter={(val) => `R$${val}`}
                                 />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                     formatter={(value: any) => [`R$ ${Number(value || 0).toFixed(2)}`, 'Revenue']}
-                                    labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                                    labelFormatter={(label) => `Dia ${label}`}
                                 />
                                 <Area
                                     type="monotone"
-                                    dataKey="amount"
+                                    dataKey="total"
                                     stroke="#10b981"
                                     strokeWidth={2}
                                     fillOpacity={1}
@@ -200,32 +200,42 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                {/* Recent Projects */}
+                {/* Recent Sales */}
                 <Card className="col-span-1">
                     <CardHeader>
-                        <CardTitle>Recent Projects</CardTitle>
+                        <CardTitle>Recent Sales</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {metrics.recentProjects.length === 0 ? (
+                        {recentSales.length === 0 ? (
                             <p className="text-sm text-muted-foreground text-center py-8">
-                                No projects yet. <Link href="/app/projects" className="text-primary hover:underline">Create your first project</Link>
+                                No sales yet. Connect an integration to start tracking.
                             </p>
                         ) : (
                             <div className="space-y-4">
-                                {metrics.recentProjects.map((project) => (
+                                {recentSales.map((sale) => (
                                     <div
-                                        key={project.id}
+                                        key={sale.id}
                                         className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                                     >
-                                        <div>
-                                            <p className="font-medium text-foreground">{project.name}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Created {new Date(project.created_at).toLocaleDateString()}
-                                            </p>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-600">
+                                                {sale.initials}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-foreground text-sm">{sale.customerName}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {sale.date}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <Badge variant={project.status === "active" ? "default" : "secondary"}>
-                                            {project.status}
-                                        </Badge>
+                                        <div className="text-right">
+                                            <p className="font-semibold text-sm">
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(sale.amount)}
+                                            </p>
+                                            <Badge variant="outline" className="text-[10px] h-5 px-1 bg-green-50 text-green-700 border-green-200">
+                                                {sale.status}
+                                            </Badge>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -236,6 +246,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";

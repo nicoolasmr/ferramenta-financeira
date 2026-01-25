@@ -54,11 +54,49 @@ export async function getBillingInfo(orgId: string): Promise<Subscription | null
     return data;
 }
 
-revalidatePath("/app/billing");
+export async function updatePlan(orgId: string, planId: string) {
+    const supabase = await createClient();
+
+    // Check if subscription exists
+    const { data: existing } = await supabase
+        .from("subscriptions")
+        .select("id")
+        .eq("org_id", orgId)
+        .single();
+
+    if (existing) {
+        const { error } = await supabase
+            .from("subscriptions")
+            .update({
+                plan_id: planId,
+                status: "active",
+                updated_at: new Date().toISOString(),
+            })
+            .eq("org_id", orgId);
+
+        if (error) throw new Error("Failed to update plan");
+    } else {
+        const { error } = await supabase
+            .from("subscriptions")
+            .insert({
+                org_id: orgId,
+                plan_id: planId,
+                status: "active",
+                provider: "stripe_mock", // Mocking provider for now
+            });
+
+        if (error) throw new Error("Failed to create subscription");
+    }
+
+    revalidatePath("/app/billing");
 }
 
-export async function createCheckoutSession(orgId: string, planId: string, email: string) {
+export async function createCheckoutSession(orgId: string, planId: string) {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !user.email) throw new Error("User not authenticated");
+    const email = user.email;
 
     // 1. Get Plan Details
     const { data: plan } = await supabase.from("plans").select("*").eq("id", planId).single();
@@ -76,7 +114,17 @@ export async function createCheckoutSession(orgId: string, planId: string, email
     }
 
     const { Stripe } = await import("stripe");
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-15.clover' }); // Actually let's try to remove it or match. 
+    // The error message `Type "2024-12-18.acacia" is not assignable to type "2025-12-15.clover"` implies the SDK expects the later one.
+    // I'll update to what it wants. Wait, 2025-12-15? We are in Jan 2026.
+    // Let's just use what the types say.
+    // Safest bet: remove explicit apiVersion or set to null/undefined to use default, or check package.json version.
+    // But error suggests strict typing.
+    // I will use '2025-01-27.acacia' if that's real, or just cast as any to bypass if I am sure.
+    // BETTER: The error explicitly said `is not assignable to type '"2025-12-15.clover"'`.
+    // So I will use that string.
+
+    // UPDATE: StartLine 117 contains the line.
 
     // 2. Create Session
     const session = await stripe.checkout.sessions.create({
