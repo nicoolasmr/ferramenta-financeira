@@ -7,7 +7,19 @@ import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import { CTABox } from "@/components/mdx/CTABox";
+import { Callout } from "@/components/mdx/Callout";
+
 const CONTENT_DIR = path.join(process.cwd(), "content/resources");
+
+const components = {
+    CTABox,
+    Callout
+};
+
+// ... inside BenchmarkPage ...
+
+<MDXRemote source={benchmark.content} components={components} />
 
 export async function generateStaticParams() {
     const files = fs.readdirSync(CONTENT_DIR);
@@ -65,7 +77,7 @@ export default async function BenchmarkPage({ params }: { params: Promise<{ slug
 
             <div className="container mx-auto px-4 max-w-4xl py-12">
                 <article className="prose prose-slate prose-lg max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-purple-600 hover:prose-a:text-purple-700">
-                    <MDXRemote source={benchmark.content} />
+                    <MDXRemote source={benchmark.content} components={components} />
                 </article>
 
                 <div className="mt-16 p-8 bg-slate-900 text-white rounded-2xl">
