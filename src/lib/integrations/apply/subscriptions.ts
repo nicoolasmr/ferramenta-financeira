@@ -6,26 +6,18 @@ export async function applySubscriptions(event: NormalizedEvent): Promise<boolea
     // Basic guard: if it doesn't look like a subscription event, ignore or log
     if (!check.domain_type && !check.canonical_type.startsWith('subscriptions.')) return false;
 
-    // We assume 'event' matches CanonicalEvent interface structure for domain_type
-    const canonical = event as any as import("@/lib/contracts/canonical").CanonicalEvent;
-
     // Lazy load supabase
     const { createClient } = await import("@/lib/supabase/server");
     const supabase = await createClient();
 
-    console.log(`[Subscriptions Engine] Applying ${canonical.canonical_type} (${canonical.domain_type})`);
+    console.log(`[Subscriptions Engine] Applying ${event.canonical_type} (${event.canonical_module})`);
 
     // 1. Handle Subscription State Updates
-    // domain_type might be "subscription" or "invoice" mapping to subs
-    // Let's assume we have a "CanonicalSubscription" interface we can cast to, 
-    // or we use the payload/data map.
-    // For now, using 'any' for data to be flexible with schema.
+    if ((event.canonical_type as string).includes('subscription.updated') ||
+        (event.canonical_type as string).includes('subscription.created') ||
+        (event.canonical_type as string).includes('subscription.canceled')) {
 
-    if (canonical.canonical_type.includes('subscription.updated') ||
-        canonical.canonical_type.includes('subscription.created') ||
-        canonical.canonical_type.includes('subscription.canceled')) {
-
-        const data = canonical.data as any; // Should be CanonicalSubscription
+        const data = event.data as any; // Should be CanonicalSubscription
 
         // Map status: active, past_due, canceled, unpaid, trialing
         // We use 'provider' + 'external_id' (provider_object_id) as composite key.
@@ -68,8 +60,8 @@ export async function applySubscriptions(event: NormalizedEvent): Promise<boolea
     }
 
     // 2. Handle Invoice Payment -> Revenue (Payments Table)
-    if (canonical.canonical_type === 'subscriptions.invoice.paid') {
-        const data = canonical.data as any; // CanonicalInvoice/Payment
+    if ((event.canonical_type as string) === 'subscriptions.invoice.paid') {
+        const data = event.data as any; // CanonicalInvoice/Payment
 
         const { error } = await supabase.from('payments').upsert({
             org_id: event.org_id,
