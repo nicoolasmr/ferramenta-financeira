@@ -5,8 +5,8 @@ import { getConnector } from "@/connectors/registry";
 import { createId } from "@paralleldrive/cuid2";
 import crypto from "crypto";
 
-export async function POST(req: NextRequest, { params }: { params: { provider: string } }) {
-    const provider = params.provider;
+export async function POST(req: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
+    const { provider } = await params;
     const searchParams = req.nextUrl.searchParams;
     const webhookKey = searchParams.get("key");
 
