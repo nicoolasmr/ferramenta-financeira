@@ -124,9 +124,9 @@ export const landingContent = {
         tier1: [
             { name: "Stripe", logo: "/logos/stripe.png", tags: ["Billing", "Webhooks"], isImage: true },
             { name: "Hotmart", logo: "/logos/hotmart.png", tags: ["Infoproduto"], isImage: true },
-            { name: "Asaas", logo: "/logos/asaas.png", tags: ["Boleto/PIX"], isImage: true },
+            { name: "Asaas", logo: "/logos/asaas.png", tags: ["Boleto/PIX"], isImage: true, className: "h-12 md:h-16 max-w-[140px]" },
             { name: "Mercado Pago", logo: "/logos/mercadopago.png", tags: ["Checkout"], isImage: true },
-            { name: "Kiwify", logo: "/logos/kiwify.png", tags: ["Checkout"], isImage: true },
+            { name: "Kiwify", logo: "/logos/kiwify.png", tags: ["Checkout"], isImage: true, className: "h-12 md:h-16 max-w-[140px]" },
             { name: "Eduzz", logo: "/logos/eduzz.png", tags: ["Lançamentos"], isImage: true },
             { name: "Lastlink", logo: "/logos/lastlink.png", tags: ["Comunidade"], isImage: true },
             { name: "PagSeguro", logo: "/logos/pagseguro.png", tags: ["Gateway"], isImage: true }
