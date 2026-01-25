@@ -12,6 +12,7 @@
 ## 📚 Documentation
 The engineering team maintains a strict **Source of Truth**. Please consult these documents before contributing:
 
+- **[Customer Journey](docs/CUSTOMER_JOURNEY.md)**: Visual map of the platform logic (End-to-End). (Visual)
 - **[Master Documentation](docs/MASTER_DOC.md)**: Architecture, Schema, Invariants, and API Spec. (Start Here)
 - **[Provider Matrix](docs/PROVIDER_MATRIX.md)**: Capabilities and setup for Stripe, Hotmart, Asaas, Kiwify, MercadoPago, etc.
 - **[Security Policy](docs/SECURITY.md)**: Encryption, SSRF protection, and Auth rules.
@@ -19,6 +20,12 @@ The engineering team maintains a strict **Source of Truth**. Please consult thes
 - **[Ops Runbook](docs/OPS_RUNBOOK.md)**: Incident response and maintenance.
 - **[Release Checklist](docs/RELEASE_CHECKLIST.md)**: Deployment safety checks.
 - **[Changelog](docs/CHANGELOG.md)**: Version history.
+
+## ✨ Core Features
+- **Unified Ledger**: All your sales (Stripe, Kiwify, Asaas) in one place.
+- **Manual Sales**: Launch non-integrated revenue via `/app/sales/new`.
+- **Receivables Engine**: Automatic "Installment Explosion" for future cashflow projection.
+- **AI Copilot**: 12-month revenue forecasting and anomaly detection.
 
 ---
 

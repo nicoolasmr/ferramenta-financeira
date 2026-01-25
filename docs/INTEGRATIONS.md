@@ -9,6 +9,7 @@ graph LR
     Ingest -->|Job: normalize_event| Worker
     Worker -->|SDK: normalize()| Canonical[Canonical Event]
     Canonical -->|Job: apply_event| Ledger[DB: orders/payments]
+    Manual[User Input] -->|Server Action| Ledger
 ```
 
 ## 1. Ingestion (Raw)
