@@ -139,7 +139,7 @@ export function UserArea() {
                                 <div className="flex items-center gap-2 mt-1">
                                     <Button
                                         variant={language === 'pt-BR' ? 'default' : 'outline'}
-                                        size="xs"
+                                        size="sm"
                                         className="h-7 text-[10px] flex-1 px-1"
                                         onClick={() => setLanguage('pt-BR')}
                                     >
@@ -147,7 +147,7 @@ export function UserArea() {
                                     </Button>
                                     <Button
                                         variant={language === 'en-US' ? 'default' : 'outline'}
-                                        size="xs"
+                                        size="sm"
                                         className="h-7 text-[10px] flex-1 px-1"
                                         onClick={() => setLanguage('en-US')}
                                     >
