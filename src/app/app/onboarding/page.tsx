@@ -10,29 +10,23 @@ import { StepOrg } from "@/components/onboarding/steps/org-step";
 import { StepPlan } from "@/components/onboarding/steps/plan-step";
 import { StepIntegration } from "@/components/onboarding/steps/integration-step";
 import { StepProject } from "@/components/onboarding/steps/project-step";
+import { StepAha } from "@/components/onboarding/steps/aha-step";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
-    // Steps: 0=Welcome, 1=Org, 2=Integration, 3=Project (Plan step removed from UI, defaulted in state)
-    // We map internal step numbers to UI: 
-    // UI Step 1: Org (Internal 1)
-    // UI Step 2: Integration (Internal 3) - Skipped 2
-    // UI Step 3: Project (Internal 4)
-
-    // Actually simpler: re-index.
-    // 0=Welcome
-    // 1=Org
-    // 2=Integration
-    // 3=Project
+    const router = useRouter();
+    // Steps: 0=Welcome, 1=Org, 2=Integration, 3=Project, 4=AHA
     const [step, setStep] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [createdOrgId, setCreatedOrgId] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         orgName: "",
         orgSlug: "",
         projectName: "",
-        planCode: "pro", // Default to pro for now, or logic to detect
+        planCode: "pro",
         integration: ""
     });
 
@@ -41,7 +35,7 @@ export default function OnboardingPage() {
     const handleChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
     const handleSet = (key: string, value: string) => setFormData({ ...formData, [key]: value });
 
-    const handleAction = async (data: FormData) => {
+    const handleAction = async () => {
         setIsSubmitting(true);
         try {
             const formDataToSend = new FormData();
@@ -59,53 +53,56 @@ export default function OnboardingPage() {
                     (typeof result.error === 'object' ? Object.values(result.error).flat().join(', ') : '') ||
                     "Falha ao completar onboarding. Verifique os dados.";
                 toast.error(errorMessage);
+            } else if (result?.success) {
+                setCreatedOrgId(result.orgId);
+                setStep(4); // Move to AHA
             }
         } catch (error) {
             setIsSubmitting(false);
-            if (error instanceof Error && (error.message === 'NEXT_REDIRECT' || error.message.includes('NEXT_REDIRECT'))) {
-                return;
-            }
             console.error(error);
             toast.error("Erro inesperado ao processar onboarding.");
         }
     };
 
+    const handleFinish = () => {
+        if (createdOrgId) {
+            window.location.href = `/app?org=${createdOrgId}`;
+        }
+    };
+
     return (
-        <div className="h-full w-full flex items-center justify-center -mt-8"> {/* Negative margin to offset parent padding for perfect center */}
+        <div className="h-full w-full flex items-center justify-center -mt-8">
             <Card className="w-full max-w-lg shadow-xl animate-in fade-in zoom-in duration-300">
                 {step > 0 && (
                     <CardHeader>
-                        <StepIndicator currentStep={step} totalSteps={3} />
+                        <StepIndicator currentStep={step} totalSteps={4} />
                         <CardTitle className="text-center text-2xl">
-                            {step === 1 && "Start your Organization"}
-                            {step === 2 && "Connect Integration"}
-                            {step === 3 && "Create your First Project"}
+                            {step === 1 && "Inicie sua Organização"}
+                            {step === 2 && "Conecte sua Integração"}
+                            {step === 3 && "Crie seu Primeiro Projeto"}
+                            {step === 4 && "Verificação Final"}
                         </CardTitle>
                         <CardDescription className="text-center">
-                            Let&apos;s get your workspace ready for business.
+                            {step < 4 ? "Vamos preparar seu ambiente de negócios." : "Validando o fluxo de caixa..."}
                         </CardDescription>
                     </CardHeader>
                 )}
 
                 <CardContent className={step === 0 ? "pt-6" : ""}>
                     {step === 0 && <StepWelcome onNext={handleNext} />}
-
-                    {step === 1 && (
-                        <StepOrg data={formData} onChange={handleChange} />
-                    )}
-
-                    {/* Step Plan skipped */}
-
-                    {step === 2 && (
-                        <StepIntegration value={formData.integration} onChange={(val) => handleSet('integration', val)} />
-                    )}
-
-                    {step === 3 && (
-                        <StepProject data={formData} onChange={handleChange} />
+                    {step === 1 && <StepOrg data={formData} onChange={handleChange} />}
+                    {step === 2 && <StepIntegration value={formData.integration} onChange={(val) => handleSet('integration', val)} />}
+                    {step === 3 && <StepProject data={formData} onChange={handleChange} />}
+                    {step === 4 && createdOrgId && (
+                        <StepAha
+                            orgId={createdOrgId}
+                            integration={formData.integration || "Stripe"}
+                            onFinish={handleFinish}
+                        />
                     )}
                 </CardContent>
 
-                {step > 0 && (
+                {step > 0 && step < 4 && (
                     <CardFooter className="flex justify-between border-t pt-6">
                         <Button type="button" variant="ghost" onClick={handleBack} disabled={isSubmitting}>
                             Voltar
@@ -123,12 +120,10 @@ export default function OnboardingPage() {
                                 Continuar
                             </Button>
                         ) : (
-                            <form action={() => handleAction(new FormData())}>
-                                <Button type="submit" disabled={!formData.projectName || isSubmitting}>
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Finalizar Setup
-                                </Button>
-                            </form>
+                            <Button type="button" onClick={handleAction} disabled={!formData.projectName || isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Finalizar Setup
+                            </Button>
                         )}
                     </CardFooter>
                 )}

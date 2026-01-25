@@ -13,6 +13,13 @@ export interface AIProvider {
     extractEnrollment(text: string): Promise<any>; // Returns partial AIEnrollment
 }
 
+/**
+ * REVENUEOS AI POLICY: ANTI-FAKE & DETERMINISTIC
+ * 1. No decision making: AI suggests, user decides.
+ * 2. No hallucinations: Responses MUST cite SQL Views or specific data counts.
+ * 3. Confidence reporting: Always specify source (e.g., Confidence 100% - SQL).
+ * 4. Language: Default to Portuguese (PT-BR) for business insights.
+ */
 class MockAIProvider implements AIProvider {
     async chat(messages: AIMessage[], context: AIContext): Promise<string> {
         const lastMsg = messages[messages.length - 1].content.toLowerCase();
@@ -21,7 +28,7 @@ class MockAIProvider implements AIProvider {
         // 1. Wizard Mode (Data Entry)
         if (context.mode === "wizard") {
             if (lastMsg.includes("reset")) return "WIZARD:RESET";
-            return "I'm ready to register a new sale. Please provide: Customer Name, Product, Value, Installments.";
+            return "Estou pronto para registrar uma nova venda. Por favor, forneça: Nome do Cliente, Produto, Valor e Parcelas.";
         }
 
         // 2. Project Analysis (Deterministic View Query)
@@ -33,7 +40,7 @@ class MockAIProvider implements AIProvider {
 
             const staleProviders = freshness?.filter(f => f.status === 'stale') || [];
             if (staleProviders.length > 0) {
-                return `[WARNING] Data might be outdated. Providers disconnected: ${staleProviders.map(p => p.provider).join(', ')}.`;
+                return `[Atenção] Os dados podem estar desatualizados. Provedores desconectados: ${staleProviders.map(p => p.provider).join(', ')}.`;
             }
 
             if (lastMsg.includes("risk") || lastMsg.includes("risco")) {
@@ -47,25 +54,25 @@ class MockAIProvider implements AIProvider {
                 const critical = aging?.overdue_90_plus || 0;
 
                 if (totalOverdue === 0) {
-                    return `[Project ${context.projectId}] Analysis (Confidence: 100% - SQL View): **Healthy**. No overdue payments found for this project.`;
+                    return `[Projeto ${context.projectId}] Análise (Confiança: 100% - SQL View): **Saudável**. Nenhum pagamento atrasado encontrado para este projeto.`;
                 }
 
-                return `[Project ${context.projectId}] Analysis (Confidence: 100% - SQL View): Found **${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOverdue / 100)}** in overdue payments.
+                return `[Projeto ${context.projectId}] Análise (Confiança: 100% - SQL View): Encontramos **${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOverdue / 100)}** em pagamentos atrasados.
                 
-**Breakdown:**
-- Recent (30d): ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((aging?.overdue_30 || 0) / 100)}
-- Critical (90d+): ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(critical / 100)}
+**Detalhamento:**
+- Recente (30d): ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((aging?.overdue_30 || 0) / 100)}
+- Crítico (90d+): ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(critical / 100)}
 
-**Recommended Action:**
-1. Go to **/app/projects/${context.projectId}/receivables** to send reminders.
-2. ${critical > 0 ? "URGENT: Block access for users with 90+ days overdue." : "Send 'Friendly Reminder' to recent defaults."}`;
+**Ação Recomendada:**
+1. Vá para **/app/projects/${context.projectId}/receivables** para enviar lembretes.
+2. ${critical > 0 ? "URGENTE: Bloqueie o acesso de usuários com 90+ dias de atraso." : "Envie um 'Lembrete Amigável' para os inadimplentes recentes."}`;
             }
-            return `[Project ${context.projectId}] I am your Project Analyst. Ask me about sales, overdue payments, or churn.`;
+            return `[Projeto ${context.projectId}] Sou seu Analista de Projeto. Pergunte-me sobre vendas, pagamentos atrasados ou churn.`;
         }
 
         // 3. Page-Specific Context (Heuristics)
         if (context.path?.includes("/reconciliation")) {
-            return "I see you're in the Reconciliation dashboard. Remember to check if the 'match_id' is already linked to a payment to avoid duplicates.";
+            return "Vejo que você está no painel de Conciliação. Lembre-se de verificar se o 'match_id' já está vinculado a um pagamento para evitar duplicidade.";
         }
 
         if (context.path?.includes("/sales")) {
@@ -79,16 +86,16 @@ class MockAIProvider implements AIProvider {
                 .select("*")
                 .eq("org_id", context.orgId);
 
-            if (!summary || summary.length === 0) return "No data available for health check.";
+            if (!summary || summary.length === 0) return "Nenhum dado disponível para o check de saúde operacional.";
 
             const report = summary.map(s =>
-                `- ${s.provider}: Raw=${s.total_raw}, Normalized=${s.total_normalized} (Conv: ${s.conversion_rate}%)`
+                `- ${s.provider}: Bruto=${s.total_raw}, Normalizado=${s.total_normalized} (Conv: ${s.conversion_rate}%)`
             ).join("\n");
 
-            return `**Operational Health Report (Deterministic)**\nData Source: 'reconciliation_summary_view'\n\n${report}\n\nConfidence: 100%`;
+            return `**Relatório de Saúde Operacional (Determinístico)**\nFonte: 'reconciliation_summary_view'\n\n${report}\n\nConfiança: 100%`;
         }
 
-        return "I am the RevenueOS Copilot. I can help you with Global Insights, Project Analysis, or Data Entry. Where should we start?";
+        return "Eu sou o Copilot do RevenueOS. Posso te ajudar com Insights Globais, análise de projetos ou entrada de dados. Por onde começamos?";
     }
 
     async extractEnrollment(text: string): Promise<any> {

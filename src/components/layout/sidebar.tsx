@@ -33,6 +33,16 @@ export function Sidebar() {
             icon: LayoutDashboard,
         },
         {
+            href: "/app/copilot",
+            label: t("common.copilot"),
+            icon: Sparkles,
+        },
+        {
+            href: "/app/receivables/aging",
+            label: "Calendário / Aging",
+            icon: Calendar,
+        },
+        {
             href: "/app/projects",
             label: t("common.projects"),
             icon: FolderKanban,
@@ -43,24 +53,14 @@ export function Sidebar() {
             icon: Users,
         },
         {
-            href: "/app/integrations",
-            label: t("common.integrations"),
-            icon: Plug,
-        },
-        {
-            href: "/app/receivables/aging",
-            label: t("common.receivables"),
-            icon: Calendar,
-        },
-        {
             href: "/app/sales",
             label: t("common.sales_funnel"),
             icon: TrendingUp,
         },
         {
-            href: "/app/copilot",
-            label: t("common.copilot"),
-            icon: Sparkles,
+            href: "/app/integrations",
+            label: t("common.integrations"),
+            icon: Plug,
         },
     ];
 

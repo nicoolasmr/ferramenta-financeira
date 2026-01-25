@@ -86,5 +86,78 @@ export async function completeOnboarding(formData: FormData) {
     }
 
     console.log("Onboarding Complete. Redirecting to Org:", payload.org_id);
-    redirect(`/app?org=${payload.org_id}`);
+    return { success: true, orgId: payload.org_id };
+}
+
+export async function simulateAhaEvent(orgId: string, integration: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Não autorizado");
+
+    // 1. Get a project for this org
+    const { data: project } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("org_id", orgId)
+        .limit(1)
+        .single();
+
+    if (!project) throw new Error("Projeto não encontrado");
+
+    // 2. Create a Test Customer
+    const { data: customer } = await supabase
+        .from("customers")
+        .insert({
+            org_id: orgId,
+            name: "João Silva (Teste)",
+            email: "joao.teste@exemplo.com",
+            source: integration.toLowerCase()
+        })
+        .select("id")
+        .single();
+
+    // 3. Create a Test Order
+    const { data: order } = await supabase
+        .from("orders")
+        .insert({
+            org_id: orgId,
+            project_id: project.id,
+            customer_id: customer?.id,
+            status: "paid",
+            source: integration.toLowerCase(),
+            gross_amount_cents: 15000,
+            net_amount_cents: 14250,
+            purchase_datetime: new Date().toISOString()
+        })
+        .select("id")
+        .single();
+
+    // 4. Create Normalized Event (for the main chart & feed)
+    await supabase.from("external_events_normalized").insert({
+        org_id: orgId,
+        provider: integration.toLowerCase(),
+        external_id: `test_${Date.now()}`,
+        canonical_type: "sales.order.paid",
+        money_amount_cents: 15000,
+        money_currency: "BRL",
+        created_at: new Date().toISOString(),
+        canonical_payload: {
+            customer: { name: "João Silva (Teste)", email: "joao.teste@exemplo.com" },
+            money: { amount_cents: 15000, currency: "BRL" }
+        }
+    });
+
+    // 5. Create Payment (Triggers Receivables explosion)
+    await supabase.from("payments").insert({
+        org_id: orgId,
+        order_id: order?.id,
+        method: "credit_card",
+        gateway: integration.toLowerCase(),
+        status: "paid",
+        installments: 1,
+        amount_cents: 15000,
+        paid_at: new Date().toISOString()
+    });
+
+    return { success: true };
 }

@@ -76,35 +76,33 @@ export default function DashboardPage() {
 
     const kpis = [
         {
-            title: "Total Revenue",
-            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.totalRevenue),
+            title: "Total Recebido (Mês)",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.totalPaid),
             icon: DollarSign,
             color: "text-emerald-600",
             bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-            mom: metrics.revenueChange
         },
         {
-            title: "Net Revenue",
-            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.netRevenue),
+            title: "A Receber (Próximos 7 dias)",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.pendingNext7Days),
             icon: CreditCard,
             color: "text-blue-600",
             bgColor: "bg-blue-50 dark:bg-blue-900/20",
-            mom: metrics.netRevenueChange
         },
         {
-            title: "Total Orders",
-            value: metrics.totalOrders,
-            icon: ShoppingCart,
+            title: "Total Vencido (Atraso)",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.totalOverdue),
+            icon: Activity,
+            color: "text-red-600",
+            bgColor: "bg-red-50 dark:bg-red-900/20",
+        },
+        {
+            title: "Faturamento (Vendas)",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.totalRevenue),
+            icon: TrendingUp,
             color: "text-purple-600",
             bgColor: "bg-purple-50 dark:bg-purple-900/20",
-            mom: metrics.ordersChange
-        },
-        {
-            title: "Active Rate",
-            value: metrics.activeRate,
-            icon: Activity,
-            color: "text-orange-600",
-            bgColor: "bg-orange-50 dark:bg-orange-900/20",
+            mom: metrics.revenueChange
         },
     ];
 

@@ -3,13 +3,11 @@
 import { createClient } from "@/lib/supabase/server";
 
 export interface DashboardMetrics {
-    totalRevenue: number;
+    totalPaid: number;          // Total Recebido (Mês)
+    pendingNext7Days: number;   // A Receber (7d)
+    totalOverdue: number;       // Total Vencido
+    totalRevenue: number;       // Faturamento Total (Vendas)
     revenueChange: number;
-    totalOrders: number;
-    ordersChange: number;
-    netRevenue: number;
-    netRevenueChange: number;
-    activeRate: string;
     chartData: { name: string; total: number }[];
 }
 
@@ -26,91 +24,108 @@ export interface RecentSale {
 export async function getDashboardMetrics(orgId: string): Promise<DashboardMetrics> {
     const supabase = await createClient();
 
-    // Date ranges
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
+    try {
+        // Date ranges
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
 
-    // Fetch normalized sales events
-    // We filter by 'sales.order.paid' to calculate revenue.
-    const { data: currentMonthEvents, error: currentError } = await supabase
-        .from("external_events_normalized")
-        .select("*")
-        .eq("org_id", orgId)
-        .eq("canonical_type", "sales.order.paid")
-        .gte("created_at", startOfMonth);
+        // 1. Total Recebido (Mês Atual)
+        const { data: paidMonth } = await supabase
+            .from("receivables")
+            .select("amount_cents")
+            .eq("org_id", orgId)
+            .eq("status", "paid")
+            .gte("due_date", startOfMonth);
 
-    const { data: lastMonthEvents, error: lastError } = await supabase
-        .from("external_events_normalized")
-        .select("*")
-        .eq("org_id", orgId)
-        .eq("canonical_type", "sales.order.paid")
-        .gte("created_at", startOfLastMonth)
-        .lte("created_at", endOfLastMonth);
+        // 2. A Receber (Próximos 7 dias)
+        const next7Days = new Date();
+        next7Days.setDate(next7Days.getDate() + 7);
+        const { data: pending7d } = await supabase
+            .from("receivables")
+            .select("amount_cents")
+            .eq("org_id", orgId)
+            .eq("status", "pending")
+            .lte("due_date", next7Days.toISOString())
+            .gte("due_date", now.toISOString());
 
-    if (currentError || lastError) {
-        console.error("Dashboard Metadata Error:", currentError || lastError);
-        // Fallback to zeros rather than mock data, so user knows it's empty
+        // 3. Total Vencido
+        const { data: overdue } = await supabase
+            .from("receivables")
+            .select("amount_cents")
+            .eq("org_id", orgId)
+            .eq("status", "pending")
+            .lt("due_date", now.toISOString());
+
+        // 4. Faturamento (Vendas - Month over Month)
+        const { data: currentMonthEvents } = await supabase
+            .from("external_events_normalized")
+            .select("*")
+            .eq("org_id", orgId)
+            .eq("canonical_type", "sales.order.paid")
+            .gte("created_at", startOfMonth);
+
+        const { data: lastMonthEvents } = await supabase
+            .from("external_events_normalized")
+            .select("*")
+            .eq("org_id", orgId)
+            .eq("canonical_type", "sales.order.paid")
+            .gte("created_at", startOfLastMonth)
+            .lte("created_at", endOfLastMonth);
+
+        // Calculations
+        const sumCents = (arr: any[] | null) => (arr || []).reduce((acc, curr) => acc + (curr.amount_cents || 0), 0);
+        const sumEvents = (arr: any[] | null) => (arr || []).reduce((acc, evt) => acc + (evt.money_amount_cents || 0), 0);
+
+        const totalPaid = sumCents(paidMonth);
+        const pendingNext7Days = sumCents(pending7d);
+        const totalOverdue = sumCents(overdue);
+
+        const currentRevenue = sumEvents(currentMonthEvents);
+        const lastRevenue = sumEvents(lastMonthEvents);
+
+        const calcChange = (curr: number, prev: number) => {
+            if (prev === 0) return curr > 0 ? 100 : 0;
+            return ((curr - prev) / prev) * 100;
+        };
+
+        // Daily breakdown for chart (Revenue)
+        const dailyMap = new Map<string, number>();
+        for (let d = new Date(startOfMonth); d <= now; d.setDate(d.getDate() + 1)) {
+            dailyMap.set(d.getDate().toString(), 0);
+        }
+
+        (currentMonthEvents || []).forEach(evt => {
+            const d = new Date(evt.created_at).getDate().toString();
+            const amt = (evt.money_amount_cents || 0) / 100;
+            dailyMap.set(d, (dailyMap.get(d) || 0) + amt);
+        });
+
+        const chartData = Array.from(dailyMap.entries()).map(([name, total]) => ({
+            name,
+            total
+        }));
+
         return {
+            totalPaid: totalPaid / 100,
+            pendingNext7Days: pendingNext7Days / 100,
+            totalOverdue: totalOverdue / 100,
+            totalRevenue: currentRevenue / 100,
+            revenueChange: calcChange(currentRevenue, lastRevenue),
+            chartData
+        };
+    } catch (error) {
+        console.error("Dashboard Metadata Error:", error);
+        return {
+            totalPaid: 0,
+            pendingNext7Days: 0,
+            totalOverdue: 0,
             totalRevenue: 0,
             revenueChange: 0,
-            totalOrders: 0,
-            ordersChange: 0,
-            netRevenue: 0,
-            netRevenueChange: 0,
-            activeRate: "0%",
             chartData: []
         };
     }
-
-    // Calculations
-    const calculateTotal = (events: any[]) => events.reduce((acc, evt) => acc + (evt.money_amount_cents || evt.canonical_payload?.money?.amount_cents || 0), 0);
-    const countOrders = (events: any[]) => events.length;
-
-    const currentRevenue = calculateTotal(currentMonthEvents || []);
-    const lastRevenue = calculateTotal(lastMonthEvents || []);
-
-    const currentOrders = countOrders(currentMonthEvents || []);
-    const lastOrders = countOrders(lastMonthEvents || []);
-
-    const calcChange = (curr: number, prev: number) => {
-        if (prev === 0) return curr > 0 ? 100 : 0;
-        return ((curr - prev) / prev) * 100;
-    };
-
-    // Chart Data (Last 6 Months)
-    // For MVP, we'll just do current month daily breakdown to avoid complex SQL grouping without RPC
-    // Or we can fetch last 6 months raw and group in JS (fine for small data)
-    // Let's do daily breakdown of current month for the chart
-    const dailyMap = new Map<string, number>();
-
-    // Initialize days
-    for (let d = new Date(startOfMonth); d <= now; d.setDate(d.getDate() + 1)) {
-        dailyMap.set(d.getDate().toString(), 0);
-    }
-
-    (currentMonthEvents || []).forEach(evt => {
-        const d = new Date(evt.created_at).getDate().toString();
-        const amt = (evt.money_amount_cents || evt.canonical_payload?.money?.amount_cents || 0) / 100;
-        dailyMap.set(d, (dailyMap.get(d) || 0) + amt);
-    });
-
-    const chartData = Array.from(dailyMap.entries()).map(([name, total]) => ({
-        name,
-        total
-    }));
-
-    return {
-        totalRevenue: currentRevenue / 100, // Return distinct from cents
-        revenueChange: calcChange(currentRevenue, lastRevenue),
-        totalOrders: currentOrders,
-        ordersChange: calcChange(currentOrders, lastOrders),
-        netRevenue: (currentRevenue * 0.95) / 100, // Mock net calc (deduct 5%) for now
-        netRevenueChange: calcChange(currentRevenue, lastRevenue),
-        activeRate: "98.5%", // Hard to calc without user activity tracking
-        chartData
-    };
 }
 
 export async function getRecentSales(orgId: string): Promise<RecentSale[]> {
