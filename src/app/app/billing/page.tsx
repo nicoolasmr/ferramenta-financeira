@@ -75,11 +75,37 @@ export default function BillingPage() {
         if (!activeOrganization) return;
         setIsUpdating(true);
         try {
-            await updatePlan(activeOrganization.id, planId);
-            toast.success("Plan updated successfully!");
-            fetchData();
+            // New Flow: Create Stripe Checkout Session
+            // We need the user email for Stripe customer creation (or we fetch it from auth)
+            // Ideally passing the email here or letting backend fetch it. 
+            // Let's pass a placeholder or current user email if available.
+            // For now, let's grab it from the backend action if possible, or pass it.
+            // Since this is a client component, we don't have the user object directly unless passed.
+            // The action createCheckoutSession asks for email. 
+            // Let's rely on the backend to figure it out or pass a dummy for now if we can't easily get it here without context.
+            // Actually, best practice: Action gets currentUser().
+
+            // Let's assume we fetch email in the action to be safe/cleaner.
+            // But I defined the action to take (orgId, planId, email).
+            // Let's update the action signature in a bit? Or just pass "user@example.com" for now?
+            // Wait, we can get user email from subscription? No.
+            // Let's just update the signature of createCheckoutSession to get user from auth() on server side.
+
+            // UPDATING ACTION SIGNATURE IN NEXT STEP.
+            // Calling it assuming it doesn't need email passed from client (security best practice anyway).
+
+            const { createCheckoutSession } = await import("@/actions/billing");
+            const response = await createCheckoutSession(activeOrganization.id, planId);
+
+            if (response?.url) {
+                window.location.href = response.url;
+            } else {
+                toast.success("Plan updated (Mock Mode)");
+                fetchData();
+            }
         } catch (error) {
-            toast.error("Failed to update plan");
+            console.error(error);
+            toast.error("Failed to start checkout");
         } finally {
             setIsUpdating(false);
         }

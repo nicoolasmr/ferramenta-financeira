@@ -1,10 +1,8 @@
 -- 1. Drop the harmful trigger that relies on auth.uid()
--- This trigger breaks Admin insertions because auth.uid() is null in Service Role context.
 DROP TRIGGER IF EXISTS on_organization_created ON organizations;
 DROP FUNCTION IF EXISTS add_creator_as_owner();
 
 -- 2. Create a Robust RPC for atomic onboarding
--- This functions encapsulates the entire transaction: Org + Membership + Settings + Project + Plan + Integration
 CREATE OR REPLACE FUNCTION public.create_onboarding_package(
     p_user_id UUID,
     p_org_name TEXT,
@@ -22,6 +20,11 @@ DECLARE
     v_project_id UUID;
     v_plan_id UUID;
 BEGIN
+    -- [SELF-HEALING] Delete zombie organization if it exists (Same slug, 0 members)
+    DELETE FROM organizations 
+    WHERE slug = p_org_slug 
+    AND id NOT IN (SELECT DISTINCT org_id FROM memberships);
+
     -- A. Create Organization
     INSERT INTO organizations (name, slug)
     VALUES (p_org_name, p_org_slug)

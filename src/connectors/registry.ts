@@ -1,6 +1,6 @@
 import { ProviderConnector } from "@/lib/integrations/sdk";
 
-const loaders: Record<string, () => Promise<any>> = {
+const loaders: Record<string, () => Promise<ProviderConnector>> = {
     'asaas': () => import("./asaas/connector").then(m => new m.AsaasConnector()),
     'kiwify': () => import("./kiwify/connector").then(m => new m.KiwifyConnector()),
     'stripe': () => import("./stripe/connector").then(m => new m.StripeConnector()),

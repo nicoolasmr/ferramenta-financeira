@@ -77,30 +77,58 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
 
         rawEventId = result.id;
         isNew = result.isNew;
-
-        // If duplicate (isNew = false), we might still want to return 200.
-        // If ingestEvent handled the duplication by returning existing ID, we proceed or skip?
-        // Usually we skip processing if it's a duplicate, unless we force re-process.
-        // For now, let's log and maybe skip enqueueing if it's not new?
-        // Actually, sometimes we want to retry processing if previous attempt failed.
-        // But `ingestEvent` returns the ID.
-
     } catch (err: any) {
         console.error("Ingest failed:", err);
         return NextResponse.json({ error: "Ingest failed" }, { status: 500 });
     }
 
-    // 6. Enqueue 'normalize_event' Job (Async)
-    // Only if signature is valid.
+    // 6. Sync Normalization (Fast-Fail)
+    // "Regras de Webhook Runtime (do SSOT): 5) Normalize (sync/fast-fail) => NormalizedEvent[]"
     if (isValid && rawEventId) {
-        await enqueueJob(route.org_id, 'normalize_event', {
-            raw_event_id: rawEventId,
-            provider: provider,
-        }, route.project_id);
+        try {
+            const connector = await getConnector(provider);
+            if (connector) {
+                // We normalize immediately
+                const normalizedEvents = await connector.normalize(
+                    {
+                        payload: bodyJson,
+                        event_type: bodyJson.event || bodyJson.topic || "unknown",
+                        headers: Object.fromEntries(req.headers)
+                    },
+                    {
+                        org_id: route.org_id,
+                        project_id: route.project_id,
+                        trace_id: rawEventId
+                    }
+                );
+
+                // 7. Enqueue Apply Jobs
+                for (const evt of normalizedEvents) {
+                    // Ensure we link the canonical event to the raw event for tracing
+                    evt.external_event_id = rawEventId;
+                    await enqueueJob(route.org_id, 'apply_event', evt, route.project_id);
+                }
+
+                return NextResponse.json({ received: true, processed: normalizedEvents.length });
+            }
+        } catch (normError: any) {
+            console.error("Normalization Error:", normError);
+            // We accepted the raw event, but failed to process. 
+            // Return 200 (since we have the raw data safely stored) but log error.
+            // Or return 400 if we want the provider to retry?
+            // "Ack 200 OK" rule implies we generally return 200 if raw is saved.
+            // But if normalization fails, we might want to flag it in DB.
+            if (rawEventId) {
+                await supabase.from('external_events_raw')
+                    .update({
+                        status: 'normalization_failed',
+                        error_message: normError.message
+                    })
+                    .eq('id', rawEventId);
+            }
+            return NextResponse.json({ received: true, warning: "Normalization failed" });
+        }
     } else if (!isValid) {
-        // If we ingested but it's invalid, we might want to mark it as ignored or error in DB?
-        // ingestEvent sets status='pending' by default. 
-        // We should probably update it to 'ignored' if invalid signature.
         if (rawEventId) {
             await supabase.from('external_events_raw')
                 .update({

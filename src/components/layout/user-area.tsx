@@ -66,9 +66,8 @@ export function UserArea() {
         loadUserData();
     }, [activeOrganization]);
 
-    const isMaster = user?.email === 'nicoolascf5@gmail.com';
-    const planName = isMaster ? "Master Plan" : (subscription?.plan?.name || "Free Plan");
-    const isPro = subscription?.plan?.code === "pro" || subscription?.plan?.code === "agency" || isMaster;
+    const planName = subscription?.plan?.name || "Free Plan";
+    const isPro = subscription?.plan?.code === "pro" || subscription?.plan?.code === "agency";
 
     if (orgLoading || loading) {
         return (
