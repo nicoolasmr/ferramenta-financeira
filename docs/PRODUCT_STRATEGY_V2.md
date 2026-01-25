@@ -86,21 +86,21 @@ O chat/IA do RevenueOS segue uma política rígida de **evidência baseada em da
 ## ✅ Checklist de Implementação (Auditado)
 
 ### Product & UX
-- [ ] Mudar a página inicial padrão do app (`/app/dashboard`) para focar em **Recebíveis (Cash-in)**.
-- [ ] Implementar tela de `/onboarding/connect` com logos claros de Stripe/Kiwify.
-- [ ] Criar modal de "AHA" que celebra o primeiro dado recebido.
-- [ ] Navbar fixo com botão rápido para o Copilot.
+- [x] Mudar a página inicial padrão do app (`/app/dashboard`) para focar em **Recebíveis (Cash-in)**.
+- [x] Implementar tela de `/onboarding/connect` com logos claros de Stripe/Kiwify.
+- [x] Criar modal de "AHA" que celebra o primeiro dado recebido.
+- [x] Navbar fixo com botão rápido para o Copilot. (Sidebar Prioritário)
 
 ### Data & Intelligence
-- [ ] Criar Trigger SQL para `customer_merge` automático via email.
-- [ ] View `customer_ltv_view` agregando dados de todas as fontes por cliente.
-- [ ] Engine de sugestões determinística (Ex: Faturamento caiu > 15% = Alerta).
-- [ ] Prompt System do Copilot que proibe alucinação e exige fontes.
+- [x] Criar Trigger SQL para `customer_merge` automático via email.
+- [x] View `customer_ltv_view` agregando dados de todas as fontes por cliente.
+- [x] Engine de sugestões determinística (Ex: Faturamento caiu > 15% = Alerta).
+- [x] Prompt System do Copilot que proibe alucinação e exige fontes.
 
 ### Security & Ops
-- [ ] Validação de assinatura de Webhook para Kiwify/Stripe/Asaas.
-- [ ] Logs de auditoria para cada dado normalizado (origem original preservada).
-- [ ] RLS (Row Level Security) garantindo `activeOrganization` em todas as queries.
+- [/] Validação de assinatura de Webhook para Kiwify/Stripe/Asaas. (Em progresso)
+- [x] Logs de auditoria para cada dado normalizado (origem original preservada).
+- [x] RLS (Row Level Security) garantindo `activeOrganization` em todas as queries.
 
 ### Infra
 - [ ] Rate limits na API de Ingestão para evitar ataques de DOS.
