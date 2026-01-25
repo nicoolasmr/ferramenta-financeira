@@ -161,7 +161,15 @@ export async function acceptInvitation(token: string) {
     if (!user) throw new Error("Not authenticated");
 
     // 4. Create membership
-    const { error: memError } = await supabase.from("memberships").insert({
+    // 4. Create membership (Use Admin Client to bypass RLS as user is not yet a member)
+    const { getAdminClient } = await import("@/lib/supabase/admin");
+    const adminClient = getAdminClient();
+
+    if (!adminClient) {
+        throw new Error("System configuration error: Missing Service Role Key");
+    }
+
+    const { error: memError } = await adminClient.from("memberships").insert({
         org_id: invitation.org_id,
         user_id: user.id,
         role: invitation.role,
@@ -170,8 +178,8 @@ export async function acceptInvitation(token: string) {
 
     if (memError) throw memError;
 
-    // 5. Mark invitation as accepted
-    await supabase
+    // 5. Mark invitation as accepted (Admin)
+    await adminClient
         .from("team_invitations")
         .update({ status: "accepted", accepted_at: new Date().toISOString() })
         .eq("id", token);

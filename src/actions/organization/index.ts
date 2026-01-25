@@ -95,19 +95,27 @@ export async function createOrganization(formData: {
         throw new Error("Slug must be at least 3 characters");
     }
 
-    const { data, error } = await supabase
+    // Nuclear Option: Use Admin Client to ensure atomic creation of Org + Membership
+    const { getAdminClient } = await import("@/lib/supabase/admin");
+    const adminClient = getAdminClient();
+
+    if (!adminClient) {
+        throw new Error("System configuration error: Missing Service Role Key");
+    }
+
+    const { data, error } = await adminClient
         .from("organizations")
         .insert({
             ...formData,
             slug,
-            owner_id: user.id, // Ensure owner logic
+            owner_id: user.id,
         })
         .select()
         .single();
 
-    // Add membership for creator
+    // Add membership for creator via Admin
     if (data) {
-        await supabase.from("memberships").insert({
+        await adminClient.from("memberships").insert({
             org_id: data.id,
             user_id: user.id,
             role: "owner"
