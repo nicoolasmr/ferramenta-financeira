@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 import { Toaster } from "@/components/ui/sonner";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 
 export default function RootLayout({
   children,
@@ -24,8 +25,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
+          <LanguageProvider>
+            {children}
+            <Toaster />
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
