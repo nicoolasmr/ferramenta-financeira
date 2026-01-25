@@ -1,29 +1,33 @@
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     const requestId = crypto.randomUUID();
 
     // Tag request with ID
     requestHeaders.set('x-request-id', requestId);
 
-    // You can also add other logic here (auth redirection etc.)
-    // For stabilization pack, we focus on traceability.
+    // Filter requests - do not process static files
+    if (request.nextUrl.pathname.match(/\.(png|jpg|jpeg|svg|css|js|ico|json)$/)) {
+        return NextResponse.next();
+    }
 
-    const response = NextResponse.next({
-        request: {
-            headers: requestHeaders,
-        },
-    });
-
-    // Make ID available to client in response header mostly for debugging
-    response.headers.set('x-request-id', requestId);
-
-    return response;
+    // Refresh Session (Supabase Auth)
+    // This is critical for Server Components to access cookies
+    return await updateSession(request);
 }
 
 export const config = {
-    matcher: '/:path*',
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * Feel free to modify this pattern to include more paths.
+         */
+        '/((?!_next/static|_next/image|favicon.ico).*)',
+    ],
 };
