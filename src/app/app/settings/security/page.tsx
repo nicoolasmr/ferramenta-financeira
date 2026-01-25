@@ -16,7 +16,7 @@ import {
     disableMFA,
 } from "@/actions/mfa";
 
-export default function SecurityMFAPage() {
+export default function SecurityPage() {
     const [loading, setLoading] = useState(true);
     const [mfaEnabled, setMfaEnabled] = useState(false);
     const [step, setStep] = useState<"overview" | "setup" | "verification" | "success">("overview");

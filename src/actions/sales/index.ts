@@ -84,7 +84,10 @@ export async function createOpportunity(formData: {
     const supabase = await createClient();
     const { error } = await supabase.from("sales_opportunities").insert(formData);
 
-    if (error) throw error;
+    if (error) {
+        console.error("Error creating opportunity:", error);
+        throw error;
+    }
     revalidatePath("/app/sales");
 }
 

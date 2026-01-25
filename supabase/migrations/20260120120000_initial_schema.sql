@@ -262,10 +262,19 @@ CREATE POLICY "Users can update own profile" ON users
 FOR UPDATE USING (auth.uid() = id);
 
 -- Memberships
--- Members can view memberships of their org
+-- Users can view their own membership
+DROP POLICY IF EXISTS "Users can view own memberships" ON memberships;
+CREATE POLICY "Users can view own memberships" ON memberships
+FOR SELECT USING (user_id = auth.uid());
+
+-- Members can view memberships of their org (using subquery to avoid recursion)
 DROP POLICY IF EXISTS "Members can view org memberships" ON memberships;
 CREATE POLICY "Members can view org memberships" ON memberships
-FOR SELECT USING (is_org_member(org_id));
+FOR SELECT USING (
+  org_id IN (
+    SELECT m.org_id FROM memberships m WHERE m.user_id = auth.uid()
+  )
+);
 
 -- Products
 DROP POLICY IF EXISTS "Org members can view products" ON products;
