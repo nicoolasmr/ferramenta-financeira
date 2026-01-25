@@ -124,23 +124,36 @@ export function Sidebar() {
                         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2 mt-4">
                             {t("common.settings")}
                         </div>
-                        {settingsLinks.map((link) => {
+                        {settingsRoutes.map((link) => {
                             const Icon = link.icon;
+                            // Check if the current path starts with the link href
+                            // Special case for 'General' or other root settings if needed, but here structure is flat
                             const isActive = pathname.startsWith(link.href);
                             return (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    className={cn(
-                                        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all outline-none",
-                                        isActive
-                                            ? "bg-primary/10 text-primary font-bold"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                                    )}
-                                >
-                                    <Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground/60")} />
-                                    {link.label}
-                                </Link>
+                                <div key={link.label}>
+                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1 mt-2">
+                                        {link.label}
+                                    </div>
+                                    {link.items.map((subItem) => {
+                                        const SubIcon = subItem.icon;
+                                        const isSubActive = pathname.startsWith(subItem.href);
+                                        return (
+                                            <Link
+                                                key={subItem.href}
+                                                href={subItem.href}
+                                                className={cn(
+                                                    "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all outline-none",
+                                                    isSubActive
+                                                        ? "bg-primary/10 text-primary font-bold"
+                                                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                                                )}
+                                            >
+                                                <SubIcon className={cn("h-4 w-4", isSubActive ? "text-primary" : "text-muted-foreground/60")} />
+                                                {subItem.label}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
                             );
                         })}
                     </nav>

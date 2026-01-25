@@ -22,6 +22,7 @@ export async function completeOnboarding(formData: FormData) {
 
     // NUCLEAR OPTION: Use Admin Client for EVERYTHING to bypass RLS during setup
     // This guarantees we don't hit "Foreign Key" or "Policy" errors if the user context is not yet fully established
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { getAdminClient } = await import("@/lib/supabase/admin");
     const adminClient = getAdminClient();
 
