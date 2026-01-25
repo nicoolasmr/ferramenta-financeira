@@ -16,6 +16,7 @@ import {
     Calendar,
     TrendingUp,
     Shield,
+    AlertCircle,
 } from "lucide-react";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -41,6 +42,11 @@ export function Sidebar() {
             href: "/app/receivables/aging",
             label: "Calendário / Aging",
             icon: Calendar,
+        },
+        {
+            href: "/app/receivables/overdue",
+            label: "Faturas Vencidas",
+            icon: AlertCircle,
         },
         {
             href: "/app/projects",

@@ -15,6 +15,15 @@ export interface Customer {
     created_at: string;
 }
 
+export interface CustomerLTV {
+    email: string;
+    org_id: string;
+    first_seen: string;
+    last_seen: string;
+    source_count: number;
+    total_ltv_cents: number;
+}
+
 export interface CustomerFilters {
     search?: string;
     dateRange?: {
@@ -65,6 +74,25 @@ export async function getCustomers(orgId: string, filters?: CustomerFilters): Pr
     }
 
     return data || [];
+}
+
+export async function getCustomerLTV(orgId: string, email: string): Promise<CustomerLTV | null> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from("customer_ltv_view")
+        .select("*")
+        .eq("org_id", orgId)
+        .eq("email", email)
+        .single();
+
+    if (error) {
+        if (error.code === "PGRST116") return null;
+        console.error("Error fetching customer LTV:", error);
+        return null;
+    }
+
+    return data;
 }
 
 export async function createCustomer(formData: {
