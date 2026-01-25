@@ -37,14 +37,19 @@ export default function OnboardingPage() {
             const result = await completeOnboarding(data);
             if (result?.error) {
                 setIsSubmitting(false);
-                toast.error("Falha ao completar onboarding. Verifique os dados.");
+                const errorMessage = result.error.server ||
+                    (typeof result.error === 'object' ? Object.values(result.error).flat().join(', ') : '') ||
+                    "Falha ao completar onboarding. Verifique os dados.";
+                toast.error(errorMessage);
             }
         } catch (error) {
             setIsSubmitting(false);
             // Ignore redirect errors as they are expected
-            if (!(error instanceof Error && error.message === 'NEXT_REDIRECT')) {
-                toast.error("Erro inesperado ao processar onboarding.");
+            if (error instanceof Error && (error.message === 'NEXT_REDIRECT' || error.message.includes('NEXT_REDIRECT'))) {
+                return;
             }
+            console.error(error);
+            toast.error("Erro inesperado ao processar onboarding.");
         }
     };
 

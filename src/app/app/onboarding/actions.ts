@@ -22,7 +22,7 @@ export async function completeOnboarding(formData: FormData) {
 
     const data = {
         orgName: formData.get("orgName") as string,
-        orgSlug: formData.get("orgSlug") as string,
+        orgSlug: (formData.get("orgSlug") as string)?.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || "",
         projectName: formData.get("projectName") as string,
         planCode: formData.get("planCode") as string || "starter",
         integration: formData.get("integration") as string,
