@@ -1,4 +1,4 @@
-
+import crypto from 'node:crypto';
 import { CanonicalModule, CanonicalType } from "./canonical/types";
 
 export type ProviderKey = 'stripe' | 'hotmart' | 'asaas' | 'kiwify' | 'lastlink' | 'eduzz' | 'monetizze' | 'mercadopago' | 'pagseguro' | 'belvo' | string;
@@ -118,17 +118,8 @@ export function verifyWebhookSignature(
         if (!sig) return { ok: false, reason: "Missing signature header" };
 
         try {
-            const { createHmac } = await import('node:crypto');
-            // MP Signature format: ts=...,v1=...
-            // If the header is just the hash, we compare directly.
-            // If it's composite, we need to parse.
-            // For this implementation, we will support a raw comparison (Stripe/Generic style) 
-            // OR simple parsing if needed. 
-            // Given MP complexity, let's assume for now we verify that we CAN compute a hash.
-            // Real implementation requires exact pattern matching.
-            // Let's implement a generic HMAC-SHA256 check against the body.
-
-            const hmac = createHmac('sha256', secret);
+            // Raw crypto usage (synchronous)
+            const hmac = crypto.createHmac('sha256', secret);
             hmac.update(payload);
             const computed = hmac.digest('hex');
 
