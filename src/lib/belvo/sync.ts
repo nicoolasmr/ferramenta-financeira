@@ -158,3 +158,8 @@ async function getBankAccountId(supabase: any, orgId: string, externalAccountId:
 
     return data?.id;
 }
+
+function generateTxHash(orgId: string, tx: any): string {
+    const raw = `${orgId}:${tx.id}:${tx.amount}:${tx.value_date}:${tx.description}`;
+    return crypto.createHash('sha256').update(raw).digest('hex');
+}

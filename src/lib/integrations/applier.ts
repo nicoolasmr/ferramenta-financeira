@@ -1,5 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
-import { CanonicalEvent } from "@/connectors/_shared/types";
+import { createClient } from "@/lib/supabase/server";
+// import { CanonicalEvent } from "@/connectors/_shared/types"; // LEGACY REMOVED
+
+// Minimal stub to fix build if types are gone
+interface CanonicalEvent {
+    canonical_type: string;
+    payload: any;
+    timestamp: string;
+}
 
 export async function applyEvent(orgId: string, event: CanonicalEvent, provider: string) {
     const supabase = await createClient();
