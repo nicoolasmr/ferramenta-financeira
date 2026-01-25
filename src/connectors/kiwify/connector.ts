@@ -1,6 +1,6 @@
 
 import { BaseConnectorV2 } from "../base-v2";
-import { CapabilityMatrix, NormalizedEvent, WebhookConfig } from "@/lib/integrations/sdk";
+import { CapabilityMatrix, NormalizedEvent, WebhookConfig, verifyWebhookSignature } from "@/lib/integrations/sdk";
 import { getWebhookUrl } from "@/lib/integrations/setup";
 import { verifySignature } from "./verifySignature"; // Reusing existing util
 
