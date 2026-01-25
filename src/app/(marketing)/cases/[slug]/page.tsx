@@ -29,8 +29,9 @@ async function getCase(slug: string) {
     }
 }
 
-export default async function CasePage({ params }: { params: { slug: string } }) {
-    const caseStudy = await getCase(params.slug);
+export default async function CasePage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const caseStudy = await getCase(slug);
 
     if (!caseStudy) {
         notFound();

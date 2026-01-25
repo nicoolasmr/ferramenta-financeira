@@ -65,7 +65,6 @@ export default function TeamPage() {
                 email: data.email,
                 role: data.role as "owner" | "admin" | "member",
                 org_id: activeOrganization.id,
-                invited_by: "current-user-id", // TODO: Get from auth
             });
             toast.success("Invitation sent!");
             window.location.reload();

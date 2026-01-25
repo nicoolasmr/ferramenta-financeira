@@ -7,8 +7,9 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default async function ProjectDashboardPage({ params }: { params: { id: string } }) {
-    const projectId = params.id;
+export default async function ProjectDashboardPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = await params;
+    const projectId = resolvedParams.id;
     const supabase = await createClient();
 
     const { data: project } = await supabase

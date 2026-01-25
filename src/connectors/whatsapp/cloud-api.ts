@@ -3,6 +3,8 @@
  * Handles sending templates and receiving status callbacks.
  */
 
+import crypto from "crypto";
+
 export interface WhatsAppTemplateVar {
     type: 'text';
     text: string;
@@ -30,7 +32,7 @@ export class WhatsAppCloudAPI {
     ): Promise<{ message_id: string }> {
         if (!this.accessToken || !this.phoneNumberId) {
             console.warn("WhatsAppCloudAPI: Missing credentials, mock mode.");
-            return { message_id: `wamid.HBgL${Math.random().toString(36).substr(2, 20)}` };
+            return { message_id: `wamid.HBgL${crypto.randomUUID()}` };
         }
 
         const url = `https://graph.facebook.com/${this.apiVersion}/${this.phoneNumberId}/messages`;

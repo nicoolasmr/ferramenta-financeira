@@ -61,16 +61,21 @@ export async function createProject(formData: {
     const supabase = await createClient();
 
     // Generate slug using database function
-    const { data: slugData } = await supabase.rpc('generate_project_slug', {
+    let slug = `project-${Date.now()}`;
+    const { data: slugData, error: slugError } = await supabase.rpc('generate_project_slug', {
         project_name: formData.name,
         org_id: formData.org_id
     });
+
+    if (!slugError && slugData) {
+        slug = slugData;
+    }
 
     const { data, error } = await supabase
         .from("projects")
         .insert({
             name: formData.name,
-            slug: slugData || `project-${Date.now()}`,
+            slug: slug,
             description: formData.description || null,
             environment: formData.environment,
             region: formData.region,

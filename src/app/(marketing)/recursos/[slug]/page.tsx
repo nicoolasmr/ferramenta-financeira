@@ -29,8 +29,9 @@ async function getResource(slug: string) {
     }
 }
 
-export default async function ResourcePage({ params }: { params: { slug: string } }) {
-    const resource = await getResource(params.slug);
+export default async function ResourcePage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const resource = await getResource(slug);
 
     if (!resource) {
         notFound();

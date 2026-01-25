@@ -47,7 +47,20 @@ export class EduzzConnector extends BaseConnectorV2 {
     }
 
     async verifyWebhook(body: string, headers: Record<string, string>, secrets: Record<string, string>): Promise<{ ok: boolean; reason?: string }> {
-        return { ok: true }; // Stub
+        const apiKey = secrets["api_key"];
+
+        // Eduzz sends 'token' field in body OR we can configured a header.
+        // Let's check body.token
+        try {
+            const json = JSON.parse(body);
+            // It's usually `api_key` or `token` in payload
+            if (json.api_key === apiKey || json.token === apiKey) return { ok: true };
+        } catch (e) { }
+
+        // Fallback: Check header if configured
+        if (headers["authorization"] === apiKey) return { ok: true };
+
+        return { ok: false, reason: "Token mismatch" };
     }
 
     async normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string }): Promise<NormalizedEvent[]> {

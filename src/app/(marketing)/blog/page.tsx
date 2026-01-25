@@ -10,7 +10,8 @@ export const metadata = {
     description: "Artigos sobre Receita Previsível, Gestão Financeira, SaaS Metrics e estratégias para escalar sua operação B2B.",
 };
 
-export default function BlogIndex({ searchParams }: { searchParams: { category?: string } }) {
+export default async function BlogIndex({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
+    const { category } = await searchParams;
     const allPosts = getAllPosts();
     // Await searchParams in Next.js 15 if needed, but for static generation typically it's fine.
     // In Next 15, searchParams might be a promise in some contexts, but let's assume standard usage for now.
@@ -47,23 +48,23 @@ export default function BlogIndex({ searchParams }: { searchParams: { category?:
                                 <li>
                                     <Link
                                         href="/blog"
-                                        className={`block font-medium px-4 py-3 rounded-lg transition-all ${!searchParams.category
-                                                ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                                                : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                                        className={`block font-medium px-4 py-3 rounded-lg transition-all ${!category
+                                            ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                                            : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
                                             }`}
                                     >
                                         Todas
                                     </Link>
                                 </li>
                                 {CATEGORIES.map(cat => {
-                                    const isActive = searchParams.category === cat;
+                                    const isActive = category === cat;
                                     return (
                                         <li key={cat}>
                                             <Link
                                                 href={`/blog?category=${encodeURIComponent(cat)}`}
                                                 className={`block font-medium px-4 py-3 rounded-lg transition-all ${isActive
-                                                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                                                        : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                                                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                                                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
                                                     }`}
                                             >
                                                 {cat}

@@ -26,6 +26,7 @@ export type SetupField = {
     required: boolean;
     description?: string;
     defaultValue?: string;
+    help?: string;
 };
 
 export type WebhookConfig = {

@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-export default async function ReceivablesPage({ params }: { params: { id: string } }) {
+export default async function ReceivablesPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = await params;
     const supabase = await createClient();
-    const projectId = params.id;
+    const projectId = resolvedParams.id;
 
     // Fetch Aging Summary
     const { data: aging } = await supabase

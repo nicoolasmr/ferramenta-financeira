@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
-export default async function ReconciliationPage({ params }: { params: { id: string } }) {
+export default async function ReconciliationPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = await params;
     const supabase = await createClient();
-    const projectId = params.id;
+    const projectId = resolvedParams.id;
 
     const { data: recon } = await supabase
         .from('reconciliation_summary_view')

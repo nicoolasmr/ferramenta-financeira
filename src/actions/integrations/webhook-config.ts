@@ -61,13 +61,57 @@ export const WEBHOOK_INSTRUCTIONS = {
         title: "Configure Kiwify Webhook",
         description: "Get notifications from Kiwify sales",
         steps: [
-            "Go to Kiwify → Settings → Webhooks",
-            "Add webhook",
+            "Go to Kiwify → Apps → Webhooks",
+            "Create new webhook",
             "Paste the webhook URL shown below",
-            "Select events",
-            "Save"
+            "Select events: Order Approved, Refunded",
+            "Save and copy the Signature Token"
         ],
         docsUrl: "https://kiwify.com.br/ajuda"
+    },
+    mercadopago: {
+        title: "Configure Mercado Pago Webhook",
+        description: "Receive payment notifications from Mercado Pago",
+        steps: [
+            "Go to Mercado Pago Developers → Your Integrations",
+            "Select your application",
+            "Webhooks notifications",
+            "Add Production URL",
+            "Paste the webhook URL shown below"
+        ],
+        docsUrl: "https://www.mercadopago.com.br/developers"
+    },
+    belvo: {
+        title: "Configure Belvo Webhook",
+        description: "Receive Open Finance transaction updates",
+        steps: [
+            "Go to Belvo Dashboard → Developers → Webhooks",
+            "Add subscription",
+            "Paste the webhook URL",
+            "Select 'transactions.check' and 'accounts.check'"
+        ],
+        docsUrl: "https://docs.belvo.com/"
+    },
+    lastlink: {
+        title: "Configure Lastlink",
+        description: "Receive sale notifications",
+        steps: [
+            "Go to Lastlink Dashboard",
+            "Paste the webhook URL"
+        ],
+        docsUrl: "https://lastlink.com/developers"
+    },
+    monetizze: {
+        title: "Configure Monetizze",
+        description: "Receive events from Monetizze",
+        steps: ["Paste the webhook URL in Monetizze Tools"],
+        docsUrl: "https://ajuda.monetizze.com.br/"
+    },
+    pagseguro: {
+        title: "Configure PagSeguro",
+        description: "Receive notifications from PagSeguro",
+        steps: ["Configure Notification URL in PagSeguro"],
+        docsUrl: "https://dev.pagseguro.uol.com.br/"
     }
 } as const;
 

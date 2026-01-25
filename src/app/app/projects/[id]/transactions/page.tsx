@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export default async function TransactionsPage({ params }: { params: { id: string } }) {
+export default async function TransactionsPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = await params;
     const supabase = await createClient();
-    const projectId = params.id;
+    const projectId = resolvedParams.id;
 
     // Fetch Orders (Sales)
     // Ideally we assume 'orders' table.

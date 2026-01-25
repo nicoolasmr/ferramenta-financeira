@@ -1,4 +1,5 @@
 import { BankProviderAdapter, BankAccount, BankTransaction } from "./types";
+import crypto from "crypto";
 
 /**
  * AggregatorGeneric: A reference implementation for a generic bank aggregator.
@@ -22,10 +23,10 @@ export class AggregatorGeneric implements BankProviderAdapter {
     async exchangeToken(public_token: string): Promise<{ connection_id: string; config: any }> {
         // Mocking token exchange
         return {
-            connection_id: `conn_${Math.random().toString(36).substr(2, 9)}`,
+            connection_id: `conn_${crypto.randomUUID()}`,
             config: {
-                access_token: `at_${Math.random().toString(36).substr(2, 20)}`,
-                refresh_token: `rt_${Math.random().toString(36).substr(2, 20)}`,
+                access_token: `at_${crypto.randomUUID()}`,
+                refresh_token: `rt_${crypto.randomUUID()}`,
                 expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
             }
         };
@@ -56,7 +57,7 @@ export class AggregatorGeneric implements BankProviderAdapter {
         // Mocking transaction fetch
         return [
             {
-                external_id: `tx_${Math.random().toString(36).substr(2, 9)}`,
+                external_id: `tx_${crypto.randomUUID()}`,
                 amount_cents: 500000, // +R$ 5.000,00 credit
                 description: "STRIPE PAYOUT",
                 occurred_at: new Date(),
@@ -64,7 +65,7 @@ export class AggregatorGeneric implements BankProviderAdapter {
                 raw_payload: { original: "Stripe payout x123" }
             },
             {
-                external_id: `tx_${Math.random().toString(36).substr(2, 9)}`,
+                external_id: `tx_${crypto.randomUUID()}`,
                 amount_cents: -15000, // -R$ 150,00 debit
                 description: "OFFICE SUPPLIES",
                 occurred_at: new Date(Date.now() - 86400000),

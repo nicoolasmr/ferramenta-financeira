@@ -30,14 +30,28 @@ export async function testConnection(
                 return await testHotmartConnection(credentials.client_id, credentials.client_secret);
 
             case 'asaas':
-                if (!credentials.api_key) {
+                // Asaas connector field is "webhook_token" but it acts as API Key for Asaas usually (depending on type)
+                // Actually Asaas connector config asks for "webhook_token" (Access Token) label.
+                const asaasKey = credentials.webhook_token || credentials.api_key;
+                if (!asaasKey) {
                     return {
                         success: false,
-                        message: 'API Key is required',
+                        message: 'Access Token is required',
                         error: 'MISSING_API_KEY'
                     };
                 }
-                return await testAsaasConnection(credentials.api_key);
+                return await testAsaasConnection(asaasKey);
+
+            case 'mercadopago':
+                if (!credentials.access_token) {
+                    return {
+                        success: false,
+                        message: 'Access Token is required',
+                        error: 'MISSING_TOKEN'
+                    };
+                }
+                const { testMercadoPagoConnection } = await import("@/lib/integrations/testers/mercadopago");
+                return await testMercadoPagoConnection(credentials.access_token);
 
             case 'eduzz':
             case 'kiwify':

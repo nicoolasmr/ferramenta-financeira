@@ -52,24 +52,44 @@ export async function inviteTeamMember(formData: {
     email: string;
     role: "owner" | "admin" | "member";
     org_id: string;
-    invited_by: string;
 }) {
     const supabase = await createClient();
+
+    // 1. Get authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
 
     // Set expiration to 7 days from now
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    const { error } = await supabase.from("team_invitations").insert({
-        ...formData,
-        status: "pending",
-        expires_at: expiresAt.toISOString(),
-    });
+    // 2. Insert invitation
+    // Schema uses 'token' (default generated), 'created_by' (references auth.users), 'org_id'.
+    // We rely on default token generation by DB or generate one?
+    // DB default: encode(gen_random_bytes(32), 'hex').
+    // We should let DB generate it OR select it back to send email.
 
-    if (error) throw error;
+    // We match schema cols: org_id, email, role, created_by, expires_at.
+    const { data, error } = await supabase.from("team_invitations").insert({
+        org_id: formData.org_id,
+        email: formData.email,
+        role: formData.role,
+        created_by: user.id, // Securely set from auth
+        expires_at: expiresAt.toISOString(),
+    }).select().single();
+
+    if (error) {
+        // Handle unique violation or other errors
+        if (error.code === '23505') throw new Error("Invitation already exists for this email");
+        throw error;
+    }
+
     revalidatePath("/app/settings/team");
 
-    // TODO: Send invitation email
+    // TODO: Send invitation email using data.token
+    // await sendInviteEmail(data.email, data.token);
 }
 
 export async function updateMemberRole(memberId: string, role: "owner" | "admin" | "member") {

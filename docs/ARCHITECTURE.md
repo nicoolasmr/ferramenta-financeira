@@ -14,13 +14,21 @@ graph TD
         Auth[GoTrue Auth]
         DB[(PostgreSQL)]
         RLS[Row Level Security]
+        Worker[Background Worker]
     end
     
     Frontend -->|Supabase SDK| API
     Frontend -->|Supabase SDK| Auth
     API --> RLS
     RLS --> DB
+    Worker -->|Poll/RPC| DB
 ```
+
+## Integrations Pipeline
+Robust "Ingest -> Normalize -> Apply" flow for financial data consistency.
+1. **Ingest**: Webhooks saved raw to `external_events_raw` (Indempotency Key).
+2. **Normalize**: Worker converts raw JSON to `CanonicalEvent`.
+3. **Apply**: Transactional updates to `orders`, `payments`, `ledger`.
 
 ## Multi-Tenancy Strategy
 - **Isolation**: Shared database, logical isolation via `org_id`.

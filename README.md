@@ -13,7 +13,9 @@
 The engineering team maintains a strict **Source of Truth**. Please consult these documents before contributing:
 
 - **[Master Documentation](docs/MASTER_DOC.md)**: Architecture, Schema, Invariants, and API Spec. (Start Here)
-- **[Provider Matrix](docs/PROVIDER_MATRIX.md)**: Capabilities and setup for Stripe, Hotmart, Asaas, etc.
+- **[Provider Matrix](docs/PROVIDER_MATRIX.md)**: Capabilities and setup for Stripe, Hotmart, Asaas, Kiwify, MercadoPago, etc.
+- **[Security Policy](docs/SECURITY.md)**: Encryption, SSRF protection, and Auth rules.
+- **[Integrations Pipeline](docs/INTEGRATIONS.md)**: Webhook ingestion and normalization flow.
 - **[Ops Runbook](docs/OPS_RUNBOOK.md)**: Incident response and maintenance.
 - **[Release Checklist](docs/RELEASE_CHECKLIST.md)**: Deployment safety checks.
 - **[Changelog](docs/CHANGELOG.md)**: Version history.

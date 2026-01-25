@@ -82,6 +82,42 @@ export class AsaasConnector extends BaseConnectorV2 {
                 external_refs: [{ kind: 'payment', external_id: payment.id }]
             });
         }
+        else if (type === 'PAYMENT_REFUNDED') {
+            events.push({
+                provider_key: this.providerKey,
+                project_id: ctx.project_id,
+                org_id: ctx.org_id,
+                trace_id: ctx.trace_id,
+                external_event_id: payment.id,
+                occurred_at: new Date().toISOString(),
+                canonical_module: 'disputes',
+                canonical_type: 'refunds.created',
+                payload: payment,
+                money: {
+                    amount_cents: Math.round(payment.value * 100),
+                    currency: 'BRL'
+                },
+                external_refs: [{ kind: 'payment', external_id: payment.id }]
+            });
+        }
+        else if (type === 'PAYMENT_OVERDUE') {
+            events.push({
+                provider_key: this.providerKey,
+                project_id: ctx.project_id,
+                org_id: ctx.org_id,
+                trace_id: ctx.trace_id,
+                external_event_id: payment.id,
+                occurred_at: new Date().toISOString(),
+                canonical_module: 'sales',
+                canonical_type: 'sales.payment.failed', // Mapped to failed/overdue
+                payload: payment,
+                money: {
+                    amount_cents: Math.round(payment.value * 100),
+                    currency: 'BRL'
+                },
+                external_refs: [{ kind: 'payment', external_id: payment.id }]
+            });
+        }
 
         return events;
     }

@@ -44,7 +44,18 @@ export function WebhookWizard({ provider, orgId, open, onOpenChange, onComplete 
                     { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: 'Your Client Secret' }
                 ];
             case 'asaas':
-                return [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: '$aact_...' }];
+                return [{ key: 'webhook_token', label: 'Access Token ($aact_...)', type: 'password', placeholder: '$aact_...' }];
+            case 'mercadopago':
+                return [{ key: 'access_token', label: 'Access Token', type: 'password', placeholder: 'APP_USR-...' }];
+            case 'kiwify':
+                return [{ key: 'webhook_token', label: 'Webhook Token (Signature)', type: 'password', placeholder: 'Compare against this secret' }];
+            case 'eduzz':
+                return [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: '...' }];
+            case 'belvo':
+                return [
+                    { key: 'secret_id', label: 'Secret ID', type: 'password', placeholder: '...' },
+                    { key: 'secret_password', label: 'Secret Password', type: 'password', placeholder: '...' }
+                ];
             default:
                 return [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: 'Your API Key' }];
         }

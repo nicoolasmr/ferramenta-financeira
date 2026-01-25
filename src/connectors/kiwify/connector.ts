@@ -58,23 +58,64 @@ export class KiwifyConnector extends BaseConnectorV2 {
     async normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string }): Promise<NormalizedEvent[]> {
         const body = raw.payload || raw;
         const status = body.order_status;
-
         const events: NormalizedEvent[] = [];
 
+        // Kiwify Payloads
+        // paid: order_approved
+        // refunded: order_refunded
+        // chargedback: order_chargedback
+
         if (status === 'paid') {
-            const amount = body.Commission?.charge_amount || body.order_total_value_cents / 100 || 0; // Depends on payload structure
+            const amount = body.Commission?.charge_amount || body.order_total_value_cents / 100 || 0; // Check real payload structure
             events.push({
                 provider_key: this.providerKey,
                 project_id: ctx.project_id,
                 org_id: ctx.org_id,
                 trace_id: ctx.trace_id,
                 external_event_id: body.order_id,
-                occurred_at: new Date().toISOString(), // Kiwify often misses timestamp in root
+                occurred_at: body.approved_date ? new Date(body.approved_date).toISOString() : new Date().toISOString(),
                 canonical_module: 'sales',
                 canonical_type: 'sales.order.paid',
                 payload: body,
                 money: {
-                    amount_cents: Math.round(amount * 100),
+                    amount_cents: body.order_total_value_cents || Math.round(amount * 100),
+                    currency: 'BRL'
+                },
+                external_refs: [{ kind: 'order', external_id: body.order_id }]
+            });
+        }
+        else if (status === 'refunded') {
+            events.push({
+                provider_key: this.providerKey,
+                project_id: ctx.project_id,
+                org_id: ctx.org_id,
+                trace_id: ctx.trace_id,
+                external_event_id: body.order_id, // Or refund_id if available?
+                occurred_at: new Date().toISOString(),
+                canonical_module: 'disputes',
+                canonical_type: 'refunds.created',
+                payload: body,
+                money: {
+                    amount_cents: body.order_total_value_cents, // Full refund usually?
+                    currency: 'BRL'
+                },
+                external_refs: [{ kind: 'order', external_id: body.order_id }]
+            });
+        }
+
+        else if (status === 'chargedback') {
+            events.push({
+                provider_key: this.providerKey,
+                project_id: ctx.project_id,
+                org_id: ctx.org_id,
+                trace_id: ctx.trace_id,
+                external_event_id: body.order_id,
+                occurred_at: new Date().toISOString(),
+                canonical_module: 'disputes',
+                canonical_type: 'disputes.opened',
+                payload: body,
+                money: {
+                    amount_cents: body.order_total_value_cents,
                     currency: 'BRL'
                 },
                 external_refs: [{ kind: 'order', external_id: body.order_id }]

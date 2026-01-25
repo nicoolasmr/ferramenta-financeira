@@ -4,6 +4,8 @@ import { enqueueJob } from "@/lib/queue/enqueue";
 import { getConnector } from "@/connectors/registry";
 import { createId } from "@paralleldrive/cuid2";
 import crypto from "crypto";
+import { ingestEvent } from "@/lib/pipeline/ingest";
+import { getProjectSecrets } from "@/lib/integrations/secrets";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
     const { provider } = await params;
@@ -30,14 +32,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
     }
 
     // 2. Fetch Secrets
-    const { data: secretData } = await supabase
-        .from('project_secrets')
-        .select('secrets')
-        .eq('project_id', route.project_id)
-        .eq('provider', provider)
-        .single();
-
-    const secrets = secretData?.secrets || {};
+    // 2. Fetch Secrets (Decrypted)
+    const secrets = await getProjectSecrets(route.project_id, provider) || {};
 
     // 3. Read Body
     const bodyText = await req.text();
@@ -65,46 +61,54 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
         errorMessage = `Verification Exception: ${err.message}`;
     }
 
-    // 5. Compute Idempotency Key (Hash of provider + payload)
-    // We want to avoid duplicate rows for the exact same event delivery
-    const payloadHash = crypto.createHash('sha256').update(bodyText).digest('hex');
-    const idempotencyKey = `${provider}:${payloadHash}`;
+    // 5. Ingest Event (Pipeline Contract)
+    // Uses centralized logic for idempotency and storage
+    let rawEventId: string | undefined;
+    let isNew = false;
 
-    // 6. Insert into external_events_raw (Strict Ingest)
-    // We do this EVEN IF signature is invalid if we want to debug, but strictly speaking we should reject invalid.
-    // However, saving invalid events as 'ignored' helps debugging.
+    try {
+        const result = await ingestEvent({
+            provider: provider,
+            event_type: bodyJson.event || bodyJson.topic || bodyJson.type || "unknown",
+            payload: bodyJson,
+            headers: Object.fromEntries(req.headers),
+            occurred_at: new Date().toISOString(), // Connector specific usually, fallback to now
+        } as any, route.org_id, route.project_id);
 
-    // Note: external_event_id extraction is connector specific, so we skip it for raw for now to keep it generic.
-    // We rely on the Normalized Event to extract the ID later.
+        rawEventId = result.id;
+        isNew = result.isNew;
 
-    const { data: rawEvent, error: rawError } = await supabase.from('external_events_raw').insert({
-        org_id: route.org_id,
-        project_id: route.project_id,
-        provider: provider,
-        event_type: bodyJson.event || bodyJson.topic || bodyJson.type || "unknown",
-        payload: bodyJson,
-        headers: Object.fromEntries(req.headers),
-        signature_valid: isValid,
-        idempotency_key: idempotencyKey,
-        status: isValid ? 'pending' : 'ignored',
-        error_message: isValid ? null : errorMessage
-    }).select('id').single();
+        // If duplicate (isNew = false), we might still want to return 200.
+        // If ingestEvent handled the duplication by returning existing ID, we proceed or skip?
+        // Usually we skip processing if it's a duplicate, unless we force re-process.
+        // For now, let's log and maybe skip enqueueing if it's not new?
+        // Actually, sometimes we want to retry processing if previous attempt failed.
+        // But `ingestEvent` returns the ID.
 
-    if (rawError) {
-        // If duplicate, we just return 200 (Idempotency)
-        if (rawError.code === '23505') { // Unique constraint violation
-            return NextResponse.json({ received: true, status: 'duplicate' });
-        }
-        console.error("Failed to insert raw event:", rawError);
+    } catch (err: any) {
+        console.error("Ingest failed:", err);
         return NextResponse.json({ error: "Ingest failed" }, { status: 500 });
     }
 
-    // 7. Enqueue 'normalize_event' Job (Async)
-    if (isValid && rawEvent) {
+    // 6. Enqueue 'normalize_event' Job (Async)
+    // Only if signature is valid.
+    if (isValid && rawEventId) {
         await enqueueJob(route.org_id, 'normalize_event', {
-            raw_event_id: rawEvent.id,
+            raw_event_id: rawEventId,
             provider: provider,
         }, route.project_id);
+    } else if (!isValid) {
+        // If we ingested but it's invalid, we might want to mark it as ignored or error in DB?
+        // ingestEvent sets status='pending' by default. 
+        // We should probably update it to 'ignored' if invalid signature.
+        if (rawEventId) {
+            await supabase.from('external_events_raw')
+                .update({
+                    status: 'ignored',
+                    error_message: errorMessage
+                })
+                .eq('id', rawEventId);
+        }
     }
 
     return NextResponse.json({ received: true });

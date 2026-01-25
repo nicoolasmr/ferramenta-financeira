@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getConnector } from "@/connectors/registry";
 import { NormalizedEvent } from "@/lib/integrations/sdk";
 import { enqueueJob } from "@/lib/queue/enqueue";
+import { getProjectSecrets } from "@/lib/integrations/secrets";
 
 /**
  * Worker Logic Hardened (V2)
@@ -94,10 +95,9 @@ export async function processPendingJobs() {
                     const connector = await getConnector(provider);
 
                     if (connector && connector.triggerBackfill) {
-                        const { data: secretData } = await supabase.from('project_secrets')
-                            .select('secrets').eq('project_id', job.project_id).single();
-                        if (secretData?.secrets) {
-                            await connector.triggerBackfill(job.project_id, secretData.secrets);
+                        const secrets = await getProjectSecrets(job.project_id, provider);
+                        if (secrets) {
+                            await connector.triggerBackfill(job.project_id, secrets);
                         }
                     }
                     break;

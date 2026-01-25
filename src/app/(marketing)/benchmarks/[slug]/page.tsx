@@ -29,8 +29,9 @@ async function getBenchmark(slug: string) {
     }
 }
 
-export default async function BenchmarkPage({ params }: { params: { slug: string } }) {
-    const benchmark = await getBenchmark(params.slug);
+export default async function BenchmarkPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const benchmark = await getBenchmark(slug);
 
     if (!benchmark) {
         notFound();

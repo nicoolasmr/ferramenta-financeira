@@ -20,11 +20,20 @@ export function verifySignature(body: string, headers: Record<string, string>, s
     // If body contains token?
     try {
         const json = JSON.parse(body);
-        // Kiwify usually sends 'token' or 'signature' in payload or query.
-        // We check against the secret configured in the connector.
-        if (json.webhook_token === secret) return true;
-        if (json.token === secret) return true;
+        // Kiwify sends the token/signature in the payload as 'signature' or 'token' in some versions.
+        // We compare strict equality against our stored secret.
         if (json.signature === secret) return true;
+        if (json.token === secret) return true;
+
+        // Also check if passed via query params (which might not be in body/headers based on how we ingest?)
+        // The webhook handler reads body and headers. Query params are in `req.nextUrl.searchParams` but passed to us?
+        // Wait, `verifyWebhook` signature is (body, headers, secrets).
+        // If Kiwify sends signature in Query String, our generic handler needs to pass it?
+        // Generic handler: `const searchParams = req.nextUrl.searchParams;`
+        // We currently do NOT pass query params to verifyWebhook.
+        // We might need to update Generic Handler to pass query params if robust verification needs it.
+        // But for now, let's assume body/header.
+
     } catch (e) {
         console.error("Kiwify signature verification failed - invalid JSON", e);
     }

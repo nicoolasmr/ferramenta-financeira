@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +17,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function IntegrationChecklistPage({ params }: { params: { id: string, provider: string } }) {
+export default function IntegrationChecklistPage({ params }: { params: Promise<{ id: string, provider: string }> }) {
+    const resolvedParams = React.use(params);
     const steps = [
         { title: "Configuração no Provedor", status: "completed", description: "Configurar webhooks e chaves de API no painel do provedor." },
         { title: "Recebimento de Dados", status: "completed", description: "O RevenueOS recebeu os primeiros eventos com sucesso." },
