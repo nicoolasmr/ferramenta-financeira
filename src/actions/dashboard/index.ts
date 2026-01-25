@@ -61,3 +61,39 @@ export async function getDashboardMetrics(orgId: string) {
         recentProjects: []
     };
 }
+
+export async function getOnboardingStatus(orgId: string) {
+    const supabase = await createClient();
+
+    // Check for active integrations
+    const { count: integrationsCount } = await supabase
+        .from("gateway_integrations")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", orgId)
+        .eq("status", "active");
+
+    // Check for customers
+    const { count: customersCount } = await supabase
+        .from("customers")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", orgId);
+
+    // Check for team members (more than 1 means invites happened)
+    const { count: teamCount } = await supabase
+        .from("memberships")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", orgId);
+
+    // Check if webhooks are configured
+    const { count: webhooksCount } = await supabase
+        .from("webhook_endpoints")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", orgId);
+
+    return {
+        hasIntegrations: (integrationsCount || 0) > 0,
+        hasCustomers: (customersCount || 0) > 0,
+        hasTeam: (teamCount || 0) > 1, // Assumes creator is 1
+        hasWebhooks: (webhooksCount || 0) > 0,
+    };
+}
