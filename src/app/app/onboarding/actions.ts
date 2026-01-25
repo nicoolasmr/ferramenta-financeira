@@ -47,12 +47,34 @@ export async function completeOnboarding(formData: FormData) {
 
     console.log("Onboarding: Created organization", org.id);
 
+    // 1.5 Ensure User Exists in Public Table
+    // This is necessary because the trigger might have failed or not fired
+    const { error: userError } = await supabase.from("users").upsert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
+        avatar_url: user.user_metadata?.avatar_url,
+        updated_at: new Date().toISOString(),
+    }, { onConflict: "id" });
+
+    if (userError) {
+        console.error("Onboarding Error (User Sync):", userError);
+        // We continue even if this fails, hoping the user exists, 
+        // but logging it is important. 
+        // If it fails because table doesn't exist, we might be in trouble essentially.
+    }
+
     // 2. Create Membership (Owner)
-    await supabase.from("memberships").insert({
+    const { error: membershipError } = await supabase.from("memberships").insert({
         org_id: org.id,
         user_id: user.id,
         role: "owner"
     });
+
+    if (membershipError) {
+        console.error("Onboarding Error (Membership):", membershipError);
+        return { error: { server: membershipError.message } };
+    }
 
     // 3. Create Settings
     await supabase.from("settings").insert({
