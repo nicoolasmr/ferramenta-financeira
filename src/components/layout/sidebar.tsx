@@ -34,17 +34,17 @@ export function Sidebar() {
         },
         {
             href: "/app/projects",
-            label: "Projects",
+            label: t("common.projects"),
             icon: FolderKanban,
         },
         {
             href: "/app/customers",
-            label: "Customers",
+            label: t("common.customers"),
             icon: Users,
         },
         {
             href: "/app/integrations",
-            label: "Integrations",
+            label: t("common.integrations"),
             icon: Plug,
         },
         {
@@ -54,12 +54,12 @@ export function Sidebar() {
         },
         {
             href: "/app/sales",
-            label: "Sales Funnel",
+            label: t("common.sales_funnel"),
             icon: TrendingUp,
         },
         {
             href: "/app/copilot",
-            label: "IA Copilot",
+            label: t("common.copilot"),
             icon: Sparkles,
         },
     ];

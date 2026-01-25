@@ -1,26 +1,34 @@
 {
-    "common": {
-        "dashboard": "Dashboard",
-        "receivables": "Receivables",
-        "reconciliation": "Reconciliation",
-        "portfolio": "Portfolio",
-        "revenue": "Revenue",
-        "orders": "Orders",
-        "net_revenue": "Net Revenue",
-        "active_rate": "Active Rate",
-        "recent_sales": "Recent Sales",
-        "billing": "Billing",
-        "settings": "Settings",
-        "sign_out": "Sign Out",
-        "my_profile": "My Profile",
-        "upgrade": "Upgrade to Pro",
-        "language": "Language"
-    },
-    "onboarding": {
-        "title": "Welcome to RevenueOS",
-        "step1": "Organization",
-        "step2": "Project",
-        "step3": "Plan",
-        "finish": "Finish Setup"
-    }
+    "dashboard": "Dashboard",
+    "receivables": "Receivables",
+    "reconciliation": "Reconciliation",
+    "portfolio": "Portfolio",
+    "revenue": "Revenue",
+    "orders": "Orders",
+    "net_revenue": "Net Revenue",
+    "active_rate": "Active Rate",
+    "recent_sales": "Recent Sales",
+    "billing": "Billing",
+    "settings": "Settings",
+    "sign_out": "Sign Out",
+    "my_profile": "My Profile",
+    "upgrade": "Upgrade to Pro",
+    "language": "Language",
+    "projects": "Projects",
+    "customers": "Customers",
+    "integrations": "Integrations",
+    "sales_funnel": "Sales Funnel",
+    "copilot": "IA Copilot",
+    "organization": "Organization",
+    "team": "Team",
+    "security": "Security",
+    "platform": "Platform"
+},
+"onboarding": {
+    "title": "Welcome to RevenueOS",
+    "step1": "Organization",
+    "step2": "Project",
+    "step3": "Plan",
+    "finish": "Finish Setup"
+}
 }

@@ -1,26 +1,34 @@
 {
-    "common": {
-        "dashboard": "Dashboard",
-        "receivables": "Recebíveis",
-        "reconciliation": "Reconciliação",
-        "portfolio": "Portfolio",
-        "revenue": "Receita",
-        "orders": "Pedidos",
-        "net_revenue": "Receita Líquida",
-        "active_rate": "Taxa de Atividade",
-        "recent_sales": "Vendas Recentes",
-        "billing": "Faturamento",
-        "settings": "Configurações",
-        "sign_out": "Sair",
-        "my_profile": "Meu Perfil",
-        "upgrade": "Upgrade para Pro",
-        "language": "Idioma"
-    },
-    "onboarding": {
-        "title": "Bem-vindo ao RevenueOS",
-        "step1": "Organização",
-        "step2": "Projeto",
-        "step3": "Plano",
-        "finish": "Finalizar Configuração"
-    }
+    "dashboard": "Dashboard",
+    "receivables": "Recebíveis",
+    "reconciliation": "Reconciliação",
+    "portfolio": "Portfolio",
+    "revenue": "Receita",
+    "orders": "Pedidos",
+    "net_revenue": "Receita Líquida",
+    "active_rate": "Taxa de Atividade",
+    "recent_sales": "Vendas Recentes",
+    "billing": "Faturamento",
+    "settings": "Configurações",
+    "sign_out": "Sair",
+    "my_profile": "Meu Perfil",
+    "upgrade": "Upgrade para Pro",
+    "language": "Idioma",
+    "projects": "Projetos",
+    "customers": "Clientes",
+    "integrations": "Integrações",
+    "sales_funnel": "Funil de Vendas",
+    "copilot": "IA Copilot",
+    "organization": "Organização",
+    "team": "Time",
+    "security": "Segurança",
+    "platform": "Plataforma"
+},
+"onboarding": {
+    "title": "Bem-vindo ao RevenueOS",
+    "step1": "Organização",
+    "step2": "Projeto",
+    "step3": "Plano",
+    "finish": "Finalizar Configuração"
+}
 }
