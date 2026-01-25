@@ -35,7 +35,7 @@ export class AsaasConnector extends BaseConnectorV2 {
                     label: "Access Token",
                     type: "password",
                     required: true,
-                    help: "Generated in Asaas Integrations"
+                    description: "Generated in Asaas Integrations"
                 }
             ],
             instructions: [
