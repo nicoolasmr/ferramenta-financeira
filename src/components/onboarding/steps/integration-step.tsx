@@ -48,7 +48,7 @@ export function StepIntegration({ value, onChange }: StepIntegrationProps) {
                     className="text-muted-foreground"
                     onClick={() => onChange('skip')}
                 >
-                    {value === 'skip' ? "Selected: I'll connect later" : "I'll connect later"}
+                    {value === 'skip' ? "Selecionado: Conectar mais tarde" : "Pular e conectar depois"}
                 </Button>
             </div>
         </div>

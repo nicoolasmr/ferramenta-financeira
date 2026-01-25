@@ -44,12 +44,18 @@ export async function completeOnboarding(formData: FormData) {
         return { error: validation.error.flatten().fieldErrors };
     }
 
-    console.log("Onboarding (Admin Mode): Starting for user", user.id);
+    if (!user || !user.id) {
+        console.error("Onboarding Error: User or User ID missing", user);
+        return { error: { server: "Falha na autenticação: ID do usuário não encontrado." } };
+    }
+    const userId = user.id;
+
+    console.log("Onboarding (Admin Mode): Starting for user", userId);
 
     // 0. FORCE SYNC USER (Admin)
     // We do this first to ensure FK satisfied
     const { error: userSyncError } = await adminClient.from("users").upsert({
-        id: user.id,
+        id: userId,
         email: user.email,
         full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
         avatar_url: user.user_metadata?.avatar_url,
@@ -73,10 +79,10 @@ export async function completeOnboarding(formData: FormData) {
     }
 
     // 2. Create Membership (Owner) (Admin)
-    console.log("Onboarding (Admin Mode): Creating owner membership");
+    console.log("Onboarding (Admin Mode): Creating owner membership for user", userId, "org", org.id);
     const { error: membershipError } = await adminClient.from("memberships").insert({
         org_id: org.id,
-        user_id: user.id,
+        user_id: userId,
         role: "owner"
     });
 

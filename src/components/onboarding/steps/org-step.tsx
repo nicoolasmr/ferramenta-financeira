@@ -12,11 +12,11 @@ export function StepOrg({ data, onChange }: StepOrgProps) {
 
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="orgName">Organization Name</Label>
+                    <Label htmlFor="orgName">Nome da Organização</Label>
                     <Input
                         id="orgName"
                         name="orgName"
-                        placeholder="Acme Corp"
+                        placeholder="Ex: Minha Empresa Ltda"
                         value={data.orgName}
                         onChange={onChange}
                         autoFocus
@@ -25,7 +25,7 @@ export function StepOrg({ data, onChange }: StepOrgProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="orgSlug">Workspace URL</Label>
+                    <Label htmlFor="orgSlug">URL do Workspace</Label>
                     <div className="flex items-center">
                         <span className="bg-slate-100 border border-r-0 rounded-l-md px-3 py-2 text-sm text-muted-foreground whitespace-nowrap">
                             app.revenueos.com/
@@ -34,14 +34,14 @@ export function StepOrg({ data, onChange }: StepOrgProps) {
                             id="orgSlug"
                             className="rounded-l-none"
                             name="orgSlug"
-                            placeholder="acme"
+                            placeholder="minha-empresa"
                             value={data.orgSlug}
                             onChange={onChange}
                             required
                         />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        Lower case, numbers and hyphens only.
+                        Apenas letras minúsculas, números e hífens.
                     </p>
                 </div>
             </div>

@@ -108,7 +108,7 @@ export default function OnboardingPage() {
                 {step > 0 && (
                     <CardFooter className="flex justify-between border-t pt-6">
                         <Button type="button" variant="ghost" onClick={handleBack} disabled={isSubmitting}>
-                            Back
+                            Voltar
                         </Button>
 
                         {step < 3 ? (
@@ -120,13 +120,13 @@ export default function OnboardingPage() {
                                     (step === 2 && !formData.integration && formData.integration !== 'skip')
                                 }
                             >
-                                Continue
+                                Continuar
                             </Button>
                         ) : (
                             <form action={() => handleAction(new FormData())}>
                                 <Button type="submit" disabled={!formData.projectName || isSubmitting}>
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Complete Setup
+                                    Finalizar Setup
                                 </Button>
                             </form>
                         )}

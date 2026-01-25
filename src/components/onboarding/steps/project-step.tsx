@@ -12,11 +12,11 @@ export function StepProject({ data, onChange }: StepProjectProps) {
 
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="projectName">Project Name</Label>
+                    <Label htmlFor="projectName">Nome do Projeto</Label>
                     <Input
                         id="projectName"
                         name="projectName"
-                        placeholder="e.g. Q1 Product Launch"
+                        placeholder="Ex: Lançamento Q1"
                         value={data.projectName}
                         onChange={onChange}
                         autoFocus
@@ -26,7 +26,7 @@ export function StepProject({ data, onChange }: StepProjectProps) {
 
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm text-slate-600">
                     <p>
-                        This project will be automatically created and pinned to your dashboard. You can add more projects later.
+                        Este projeto será criado automaticamente e fixado no seu dashboard. Você poderá criar outros projetos depois.
                     </p>
                 </div>
             </div>

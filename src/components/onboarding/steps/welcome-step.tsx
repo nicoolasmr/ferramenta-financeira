@@ -15,9 +15,9 @@ export function StepWelcome({ onNext }: StepWelcomeProps) {
             </div>
 
             <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Welcome to RevenueOS</h2>
+                <h2 className="text-3xl font-bold tracking-tight">Bem-vindo ao RevenueOS</h2>
                 <p className="text-slate-500 max-w-sm mx-auto">
-                    The all-in-one financial operating system for high-performance SaaS. Let's set up your workspace in less than 2 minutes.
+                    O sistema operacional financeiro definitivo para operações de alta escala. Vamos configurar seu ambiente em menos de 2 minutos.
                 </p>
             </div>
 
@@ -25,17 +25,17 @@ export function StepWelcome({ onNext }: StepWelcomeProps) {
                 <div className="flex items-center justify-center gap-8 text-sm text-slate-600">
                     <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        <span>Financial Control</span>
+                        <span>Controle Financeiro</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        <span>Sales CRM</span>
+                        <span>CRM de Vendas</span>
                     </div>
                 </div>
             </div>
 
             <Button onClick={onNext} size="lg" className="w-full max-w-xs">
-                Get Started
+                Começar Agora
             </Button>
         </div>
     );
