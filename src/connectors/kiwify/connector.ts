@@ -50,9 +50,8 @@ export class KiwifyConnector extends BaseConnectorV2 {
     }
 
     async verifyWebhook(body: string, headers: Record<string, string>, secrets: Record<string, string>): Promise<{ ok: boolean; reason?: string }> {
-        // Compat with existing verifySignature logic
-        if (verifySignature(body, headers, secrets["webhook_token"])) return { ok: true };
-        return { ok: false, reason: "Signature mismatch" };
+        // Use SDK centralized logic
+        return verifyWebhookSignature('header_token', body, headers, secrets, { secretKey: 'token' });
     }
 
     async normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string }): Promise<NormalizedEvent[]> {

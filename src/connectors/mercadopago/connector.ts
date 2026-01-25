@@ -1,6 +1,6 @@
 
 import { BaseConnectorV2 } from "../base-v2";
-import { CapabilityMatrix, NormalizedEvent, WebhookConfig } from "@/lib/integrations/sdk";
+import { CapabilityMatrix, NormalizedEvent, WebhookConfig, verifyWebhookSignature } from "@/lib/integrations/sdk";
 import { getWebhookUrl } from "@/lib/integrations/setup";
 
 export class MercadoPagoConnector extends BaseConnectorV2 {
@@ -40,37 +40,18 @@ export class MercadoPagoConnector extends BaseConnectorV2 {
                     step: 1,
                     title: "Setup",
                     description: `Use URL: \`${url}\``,
-                    action: { label: "Go to MP", url: "https://www.mercadopago.com.br/developers" }
+                    action: { label: "Go to MP", url: "https://www.mercadopago.com.br.br/developers" }
                 }
             ]
         };
     }
 
     async verifyWebhook(body: string, headers: Record<string, string>, secrets: Record<string, string>): Promise<{ ok: boolean; reason?: string }> {
-        const accessToken = secrets["access_token"];
-        const signature = headers["x-signature"];
-        const requestId = headers["x-request-id"];
-
-        if (!accessToken) return { ok: false, reason: "Access Token not configured" };
-
-        // MP uses x-signature: ts=...,v1=...
-        // We need to recompute HMAC. 
-        // Docs: https://www.mercadopago.com.br/developers/en/docs/your-integrations/notifications/webhooks#verification
-
-        if (!signature || !requestId) {
-            // Fallback: If no signature, maybe it's a test? Or we accept implicit trust via webhook_key URL?
-            // Strictly speaking, we should fail.
-            // But for MVP, let's allow if we have the generic key mechanism.
-            return { ok: true, reason: "Signature missing, but URL key valid" };
-        }
-
-        // TODO: Implement actual HMAC check (crypto)
-        // const [tsPart, v1Part] = signature.split(',');
-        // const ts = tsPart.split('=')[1];
-        // const hash = v1Part.split('=')[1];
-        // ...
-
-        return { ok: true };
+        // Use SDK Centralized Logic
+        return verifyWebhookSignature('hmac_signature', body, headers, secrets, {
+            signatureHeader: 'x-signature',
+            secretKey: 'access_token'
+        });
     }
 
     async normalize(raw: any, ctx: { org_id: string; project_id: string; trace_id: string }): Promise<NormalizedEvent[]> {

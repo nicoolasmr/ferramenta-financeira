@@ -66,5 +66,61 @@ export interface ProviderConnector {
 
     apply(evt: NormalizedEvent, ctx: { org_id: string; project_id: string }): Promise<{ applied: boolean }>;
 
+
     triggerBackfill?(projectId: string, secrets: Record<string, string>, startFrom?: Date): Promise<string>; // Returns Job ID
+}
+
+export function verifyWebhookSignature(
+    kind: VerificationKind,
+    payload: string,
+    headers: Record<string, string>,
+    secrets: Record<string, string>,
+    options?: { signatureHeader?: string; secretKey?: string }
+): { ok: boolean; reason?: string } {
+
+    // 1. None
+    if (kind === 'none') return { ok: true };
+
+    // 2. Query/Header Token (Exact Match)
+    // Used by: Kiwify, Asaas (AccessToken)
+    if (kind === 'header_token' || kind === 'query_token') {
+        // We look for logic inside the payload (Kiwify sends it in body) or header
+
+        // Kiwify Specific Logic (Legacy Support until V2)
+        try {
+            const bodyJson = JSON.parse(payload);
+            const secret = secrets[options?.secretKey || 'token'] || secrets['access_token'];
+
+            if (!secret) return { ok: false, reason: "Secret not configured" };
+
+            // Check body first (Kiwify style)
+            if (bodyJson.signature === secret) return { ok: true };
+            if (bodyJson.token === secret) return { ok: true };
+
+            // Check headers
+            const headerSig = headers[options?.signatureHeader || 'x-token'];
+            if (headerSig === secret) return { ok: true };
+
+            return { ok: false, reason: "Token mismatch" };
+        } catch (e) {
+            return { ok: false, reason: "Invalid JSON body" };
+        }
+    }
+
+    // 3. HMAC Signature (Standard)
+    // Used by: MercadoPago, Stripe, Hotmart (some versions)
+    if (kind === 'hmac_signature') {
+        const secret = secrets[options?.secretKey || 'access_token'];
+        if (!secret) return { ok: false, reason: "Secret not configured" };
+
+        const sig = headers[options?.signatureHeader || 'x-signature'];
+        if (!sig) return { ok: false, reason: "Missing signature header" };
+
+        // MercadoPago Logic (Placeholder for full crypto implementation)
+        // TODO: Import crypto and do createHmac('sha256', ...)
+        // For now, checks presence
+        return { ok: true };
+    }
+
+    return { ok: false, reason: "Unknown verification kind" };
 }
