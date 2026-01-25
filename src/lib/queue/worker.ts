@@ -1,13 +1,15 @@
 
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { getConnector } from "@/connectors/registry";
 import { NormalizedEvent } from "@/lib/integrations/sdk";
+import { enqueueJob } from "@/lib/queue/enqueue";
 
 /**
  * Worker Logic Hardened (V2)
  */
 export async function processPendingJobs() {
-    const supabase = await createClient();
+    // Worker runs in background, no user session -> Use Service Client
+    const supabase = createServiceClient();
 
     // 1. Safe Poll via RPC
     const { data: jobs, error } = await supabase.rpc('fetch_next_jobs', { p_limit: 5 });
@@ -21,6 +23,51 @@ export async function processPendingJobs() {
 
             // EXECUTE Logic
             switch (job.job_type) {
+                case 'normalize_event':
+                    // 1. Fetch Raw Event
+                    const rawId = job.payload.raw_event_id;
+                    const { data: rawEvent, error: rawFetchError } = await supabase
+                        .from('external_events_raw')
+                        .select('*')
+                        .eq('id', rawId)
+                        .single();
+
+                    if (rawFetchError || !rawEvent) {
+                        throw new Error(`Raw event not found: ${rawId}`);
+                    }
+
+                    // 2. Load Connector
+                    const normalizeConnector = await getConnector(rawEvent.provider);
+                    if (!normalizeConnector) {
+                        throw new Error(`Connector not found: ${rawEvent.provider}`);
+                    }
+
+                    // 3. Normalize (Pure Function)
+                    // We construct a context object if needed
+                    const normalizedEvents = await normalizeConnector.normalize(
+                        {
+                            ...rawEvent,
+                            payload: rawEvent.payload // Ensure payload matches expected SDK structure
+                        },
+                        {
+                            org_id: rawEvent.org_id,
+                            project_id: rawEvent.project_id,
+                            trace_id: rawEvent.trace_id || `trace_${rawEvent.id}`
+                        }
+                    );
+
+                    // 4. Enqueue Apply Jobs
+                    for (const evt of normalizedEvents) {
+                        await enqueueJob(rawEvent.org_id, 'apply_event', evt, rawEvent.project_id);
+                    }
+
+                    // 5. Update Raw Status
+                    await supabase.from('external_events_raw')
+                        .update({ status: 'processed', processed_at: new Date().toISOString() })
+                        .eq('id', rawId);
+
+                    break;
+
                 case 'apply_event':
                     // V2 Logic: 'apply_event' payload can be CanonicalEvent (V1) or NormalizedEvent (V2)
                     // If V2, we use connector.apply()
@@ -64,12 +111,6 @@ export async function processPendingJobs() {
 
             // BILLING METERING
             if (job.job_type === 'apply_event') {
-                // Determine Org ID (it's in job usually, or we query it, assuming job has org_id column or payload has it)
-                // My job structure usually has org_id column or inside payload.
-                // Assuming job row has org_id (best practice) OR we take from payload.
-                // Let's use payload.org_id since worker fetch logic was generic.
-                // Re-reading worker fetch: it returns * from jobs_queue. jobs_queue "usually" has org_id.
-                // If not, we use payload.
                 const orgId = job.org_id || job.payload.org_id;
                 if (orgId) {
                     await supabase.rpc('increment_usage', {

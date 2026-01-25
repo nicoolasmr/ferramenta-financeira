@@ -4,12 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { PaymentWithoutOrderDetector } from "@/lib/consistency/detectors/payment_without_order";
 import { PayoutUnmatchedDetector } from "@/lib/consistency/detectors/payout_unmatched";
 
+import { requireInternalAuth } from "@/lib/security/internalAuth";
+
 export async function POST(req: NextRequest) {
     const supabase = await createClient();
 
-    // Auth Check (Cron Secret) - Optional for MVP local but critical for prod
-    // const authHeader = req.headers.get('authorization');
-    // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+    // Auth Check (Cron Secret)
+    const authError = requireInternalAuth(req);
+    if (authError) return authError;
 
     const results = {
         checked: 0,

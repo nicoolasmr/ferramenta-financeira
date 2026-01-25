@@ -2,12 +2,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processPendingJobs } from "@/lib/queue/worker";
 
+import { requireInternalAuth } from "@/lib/security/internalAuth";
+
 export async function POST(req: NextRequest) {
     // Auth Check (CRON_SECRET)
-    const authHeader = req.headers.get('authorization');
-    // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    //    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    const authError = requireInternalAuth(req);
+    if (authError) return authError;
 
     try {
         const result = await processPendingJobs();

@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { runCopilotForOrg } from "@/lib/copilot/scheduler";
 import { createClient } from "@/lib/supabase/server";
 
+import { requireInternalAuth } from "@/lib/security/internalAuth";
+
 export async function POST(req: NextRequest) {
-    const authHeader = req.headers.get("Authorization");
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        return new NextResponse("Unauthorized", { status: 401 });
-    }
+    const authError = requireInternalAuth(req);
+    if (authError) return authError;
 
     const supabase = await createClient();
     // Get all Active Organizations

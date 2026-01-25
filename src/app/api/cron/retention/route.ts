@@ -2,10 +2,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+import { requireInternalAuth } from "@/lib/security/internalAuth";
+
 export async function POST(req: NextRequest) {
-    const authHeader = req.headers.get('authorization');
-    // Ensure CRON_SECRET check
-    // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authError = requireInternalAuth(req);
+    if (authError) return authError;
 
     const supabase = await createClient();
 

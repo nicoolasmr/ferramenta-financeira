@@ -1,9 +1,9 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { enqueueJob } from "@/lib/queue/enqueue";
 import { getConnector } from "@/connectors/registry";
-import { ProviderConnector } from "@/lib/integrations/sdk";
+import { createId } from "@paralleldrive/cuid2";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest, { params }: { params: { provider: string } }) {
     const provider = params.provider;
@@ -61,66 +61,46 @@ export async function POST(req: NextRequest, { params }: { params: { provider: s
         errorMessage = `Verification Exception: ${err.message}`;
     }
 
-    // 5. App Integrity Check (Force Fail if connector missing or invalid)
-    // Note: Some legacy webhooks might not sign (e.g. basic auth), handled by connector returning true.
+    // 5. Compute Idempotency Key (Hash of provider + payload)
+    // We want to avoid duplicate rows for the exact same event delivery
+    const payloadHash = crypto.createHash('sha256').update(bodyText).digest('hex');
+    const idempotencyKey = `${provider}:${payloadHash}`;
 
-    const rawEvent = {
+    // 6. Insert into external_events_raw (Strict Ingest)
+    // We do this EVEN IF signature is invalid if we want to debug, but strictly speaking we should reject invalid.
+    // However, saving invalid events as 'ignored' helps debugging.
+
+    // Note: external_event_id extraction is connector specific, so we skip it for raw for now to keep it generic.
+    // We rely on the Normalized Event to extract the ID later.
+
+    const { data: rawEvent, error: rawError } = await supabase.from('external_events_raw').insert({
         org_id: route.org_id,
         project_id: route.project_id,
         provider: provider,
         event_type: bodyJson.event || bodyJson.topic || bodyJson.type || "unknown",
         payload: bodyJson,
         headers: Object.fromEntries(req.headers),
-        occurred_at: new Date().toISOString(),
-        status: isValid ? "pending" : "ignored",
-        processing_error: isValid ? null : errorMessage
-    };
+        signature_valid: isValid,
+        idempotency_key: idempotencyKey,
+        status: isValid ? 'pending' : 'ignored',
+        error_message: isValid ? null : errorMessage
+    }).select('id').single();
 
-    // 6. Enqueue Pipeline Job
-    if (isValid) {
-        // We pass the raw payload. The worker will call normalize() -> apply().
-        // Since we are using the Standard Pack, the worker should be generic too.
-        await enqueueJob(route.org_id, 'apply_event', {
-            provider: provider,
-            raw: rawEvent,
-            // Pass context if needed, but worker usually reconstructs context from payload or DB.
-            // Wait, 'apply_event' job type in current worker expects 'CanonicalEvent'.
-            // If we pass 'raw' here, we break the contract of 'apply_event'.
-
-            // OPTION A: Normalize HERE (Sync)
-            // OPTION B: Change Job Type to 'process_raw_event' (Async)
-
-            // Given "Webhook handler responds 200 fast", Option B is better.
-            // BUT for the sake of the existing 'apply_event' logic which is simple:
-            // Let's normalize here. It's fast (pure function).
-
-        }, route.project_id);
-
-        // REVISION: The prompt says "Webhook handler... enfileira job; nunca processar pesado na request".
-        // Normalization is light (JSON transform). Verification is light (HMAC).
-        // So normalizing here is acceptable to keep the 'apply_event' queue contract simple (CanonicalEvent).
-
-        // HOWEVER, to be truly robust (Standardization Pack), we should normalize in the worker to allow re-processing code changes.
-        // If we normalize here, we burn the logic into the queue payload.
-        // Let's stick to normalizing here for MVP Speed, OR switch to 'process_raw_webhook' job.
-
-        // DECISION: I will NORMALIZE here to leverage the existing 'apply_event' worker.
-        // Why? Because 'apply_event' accepts CanonicalEvent[].
-
-        const connector = await getConnector(provider);
-        if (connector) {
-            const events = connector.normalize(rawEvent); // Note: rawEvent follows SDK structure? SDK RawEvent vs local rawEvent
-            // SDK RawEvent uses CanonicalProvider enum. We used string. Cast needed.
-            // Local RawEvent above has 'status' and 'processing_error' which SDK RawEvent doesn't strictly have in interface, but extra props are fine.
-
-            for (const event of events) {
-                // Enrich with context if missing?
-                if (event.org_id === 'unknown') event.org_id = route.org_id;
-                event.project_id = route.project_id; // Ensure project context
-
-                await enqueueJob(route.org_id, 'apply_event', event, route.project_id);
-            }
+    if (rawError) {
+        // If duplicate, we just return 200 (Idempotency)
+        if (rawError.code === '23505') { // Unique constraint violation
+            return NextResponse.json({ received: true, status: 'duplicate' });
         }
+        console.error("Failed to insert raw event:", rawError);
+        return NextResponse.json({ error: "Ingest failed" }, { status: 500 });
+    }
+
+    // 7. Enqueue 'normalize_event' Job (Async)
+    if (isValid && rawEvent) {
+        await enqueueJob(route.org_id, 'normalize_event', {
+            raw_event_id: rawEvent.id,
+            provider: provider,
+        }, route.project_id);
     }
 
     return NextResponse.json({ received: true });

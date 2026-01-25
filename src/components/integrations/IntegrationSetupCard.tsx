@@ -10,6 +10,7 @@ import { CheckCircle, AlertTriangle, Copy, ExternalLink, Loader2 } from "lucide-
 import { useState } from "react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { saveProjectSecrets } from "@/actions/integrations/save-secrets";
 
 interface Step {
     title: string;
@@ -47,31 +48,15 @@ export function IntegrationSetupCard({
 
     const supabase = createClient();
 
+
+
     const handleSave = async () => {
         setSaving(true);
         try {
-            // Save to project_secrets via Server Action (or API)
-            // For MVP: We assume an API route available or use direct insert if policy allows (owner).
-            // But we should encrypt. The prompt says "Secrects Management... encrypted".
-            // Since we don't have encryption middleware yet in stabilization pack, 
-            // we will simulate the save to `project_secrets` table directly.
+            // Save to project_secrets via Server Action (Encrypted)
+            const secrets = { ...credentials, provider };
 
-            // Note: In real production, this MUST go through a server action that encrypts content.
-            // We'll trust RLS logic implemented in 20260403000000_integrations_security.sql
-
-            const secrets = { ...credentials, provider }; // Add provider just in case
-
-            const { error } = await supabase.from('project_secrets').upsert({
-                project_id: projectId,
-                org_id: (await supabase.auth.getUser()).data.user?.user_metadata.org_id, // naive for client
-                provider,
-                secrets,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'project_id, provider' });
-
-            if (error) throw error;
-
-            // Activate Webhook Key logic if needed (usually handled by page load generation)
+            await saveProjectSecrets(projectId, provider, secrets);
 
             toast.success(`${providerName} settings saved!`);
             setStatus('success');

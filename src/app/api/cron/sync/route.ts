@@ -1,13 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { processPendingBatch } from "@/lib/sync/engine";
+import { requireInternalAuth } from "@/lib/security/internalAuth";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     // Check for Cron Secret (Vercel Cron)
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV !== 'development') {
-        // return new NextResponse('Unauthorized', { status: 401 });
-        // Allowing for now for manual calling during dev
-    }
+    const authError = requireInternalAuth(req);
+    if (authError) return authError;
 
     try {
         const result = await processPendingBatch(20);

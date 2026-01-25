@@ -46,6 +46,7 @@ export interface NormalizedEvent {
     canonical_module: CanonicalModule;
     canonical_type: CanonicalType;
     payload: Record<string, any>; // Clean standardized payload
+    data?: any; // Canonical Data Object (Order, Payment, etc.)
     money?: { amount_cents: number; currency: string };
     external_refs: { kind: string; external_id: string }[];
 }
