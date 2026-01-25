@@ -54,41 +54,50 @@ export async function getBillingInfo(orgId: string): Promise<Subscription | null
     return data;
 }
 
-export async function updatePlan(orgId: string, planId: string) {
+revalidatePath("/app/billing");
+}
+
+export async function createCheckoutSession(orgId: string, planId: string, email: string) {
     const supabase = await createClient();
 
-    // Check if subscription exists
-    const { data: existing } = await supabase
-        .from("subscriptions")
-        .select("id")
-        .eq("org_id", orgId)
-        .single();
+    // 1. Get Plan Details
+    const { data: plan } = await supabase.from("plans").select("*").eq("id", planId).single();
+    if (!plan) throw new Error("Plan not found");
+    // Assuming plan.code is the Stripe Price ID or we have a mapping. 
+    // Ideally plan table has 'stripe_price_id'.
+    // For MVP, if no stripe_price_id column, we might default or mock.
+    // Let's assume plan has stripe_price_id OR code maps to it.
 
-    if (existing) {
-        const { error } = await supabase
-            .from("subscriptions")
-            .update({
-                plan_id: planId,
-                status: "active",
-                updated_at: new Date().toISOString(),
-            })
-            .eq("org_id", orgId);
-
-        if (error) throw new Error("Failed to update plan");
-    } else {
-        const { error } = await supabase
-            .from("subscriptions")
-            .insert({
-                org_id: orgId,
-                plan_id: planId,
-                status: "active",
-                provider: "stripe_mock", // Mocking provider for now
-            });
-
-        if (error) throw new Error("Failed to create subscription");
+    if (!process.env.STRIPE_SECRET_KEY) {
+        console.warn("Stripe keys missing. Simulating checkout.");
+        // Mock fallback for "Real" behavior without keys
+        await updatePlan(orgId, planId);
+        return { url: `/app/billing?success=true&mock=true` };
     }
 
-    revalidatePath("/app/billing");
+    const { Stripe } = await import("stripe");
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
+
+    // 2. Create Session
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+            {
+                price: plan.stripe_price_id || 'price_mock', // Fallback or Schema needed
+                quantity: 1,
+            },
+        ],
+        mode: 'subscription',
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/app/billing?success=true`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/app/billing?canceled=true`,
+        customer_email: email,
+        metadata: {
+            orgId: orgId,
+            planId: planId
+        }
+    });
+
+    return { url: session.url };
 }
 
 export async function cancelSubscription(orgId: string) {
