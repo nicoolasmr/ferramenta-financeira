@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { createClient } from "@/lib/supabase/server";
+
 // import { CanonicalEvent } from "@/connectors/_shared/types"; // LEGACY REMOVED
 
 // Minimal stub to fix build if types are gone
