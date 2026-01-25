@@ -54,7 +54,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
             errorMessage = `Connector not found for provider: ${provider}`;
             console.error(errorMessage);
         } else {
-            isValid = await connector.verifyWebhook(bodyText, Object.fromEntries(req.headers), secrets);
+            const verification = await connector.verifyWebhook(bodyText, Object.fromEntries(req.headers), secrets);
+            isValid = verification.ok;
+            if (!isValid && verification.reason) {
+                errorMessage = verification.reason;
+            }
         }
     } catch (err: any) {
         console.error(`Verification error for ${provider}:`, err);
