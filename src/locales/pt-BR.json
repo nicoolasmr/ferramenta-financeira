@@ -22,7 +22,12 @@
     "organization": "Organização",
     "team": "Time",
     "security": "Segurança",
-    "platform": "Plataforma"
+    "platform": "Plataforma",
+    "plan": "Seu Plano",
+    "upgrade_short": "Upgrade",
+    "sign_out_confirm": "Confirmar Saída",
+    "sign_out_message": "Tem certeza que deseja sair?",
+    "cancel": "Cancelar"
 },
 "onboarding": {
     "title": "Bem-vindo ao RevenueOS",

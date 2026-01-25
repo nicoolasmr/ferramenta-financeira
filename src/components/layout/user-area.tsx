@@ -116,7 +116,7 @@ export function UserArea() {
                     <div className="px-2 mb-2">
                         <div className="bg-slate-50 border rounded-lg p-3 relative overflow-hidden">
                             <div className="relative z-10">
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Your Plan</p>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{t('common.plan') || "Your Plan"}</p>
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                                         {isPro ? <Crown className="h-3.5 w-3.5 text-amber-500" /> : <Zap className="h-3.5 w-3.5 text-blue-500" />}
@@ -124,7 +124,7 @@ export function UserArea() {
                                     </p>
                                     {!isPro && (
                                         <Link href="/app/billing">
-                                            <span className="text-[10px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Upgrade</span>
+                                            <span className="text-[10px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer">{t('common.upgrade_short') || "Upgrade"}</span>
                                         </Link>
                                     )}
                                 </div>
@@ -165,7 +165,7 @@ export function UserArea() {
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                        <Link href="/app/settings/organization" className="flex items-center gap-2 cursor-pointer">
+                        <Link href="/app/billing" className="flex items-center gap-2 cursor-pointer">
                             <CreditCard className="h-4 w-4" />
                             <span>{t('common.billing')}</span>
                         </Link>
@@ -182,14 +182,14 @@ export function UserArea() {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
-                                <DialogTitle>Confirm Sign Out</DialogTitle>
+                                <DialogTitle>{t('common.sign_out_confirm') || "Confirm Sign Out"}</DialogTitle>
                                 <DialogDescription>
-                                    Are you sure you want to sign out? You will need to log in again to access your financial operations.
+                                    {t('common.sign_out_message') || "Are you sure you want to sign out?"}
                                 </DialogDescription>
                             </DialogHeader>
                             <DialogFooter className="flex items-center gap-3 mt-6">
                                 <DialogClose asChild>
-                                    <Button variant="outline" className="flex-1">Cancel</Button>
+                                    <Button variant="outline" className="flex-1">{t('common.cancel') || "Cancel"}</Button>
                                 </DialogClose>
                                 <Button
                                     variant="destructive"
@@ -198,7 +198,7 @@ export function UserArea() {
                                         await signOut();
                                     }}
                                 >
-                                    Sign Out
+                                    {t('common.sign_out')}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -211,7 +211,7 @@ export function UserArea() {
                     <Button asChild size="sm" className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white border-0 shadow-sm h-8">
                         <Link href="/app/billing" className="flex items-center justify-center gap-2">
                             <Zap className="h-3.5 w-3.5 fill-white" />
-                            <span className="text-xs font-bold uppercase tracking-wider">Upgrade to Pro</span>
+                            <span className="text-xs font-bold uppercase tracking-wider">{t('common.upgrade')}</span>
                         </Link>
                     </Button>
                 </div>
