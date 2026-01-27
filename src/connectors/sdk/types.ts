@@ -12,6 +12,8 @@ export interface RawEvent {
     headers: Record<string, string>;
     occurred_at: Date;
     verify_signature?: boolean;
+    org_id?: string;
+    project_id?: string;
 }
 
 /**
