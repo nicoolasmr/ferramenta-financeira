@@ -8,6 +8,12 @@ export interface DashboardMetrics {
     totalOverdue: number;       // Total Vencido
     totalRevenue: number;       // Faturamento Total (Vendas)
     revenueChange: number;
+    // New Fields
+    totalOrders: number;
+    ordersChange: number;
+    netRevenue: number;
+    netRevenueChange: number;
+    activeRate: string;
     chartData: { name: string; total: number }[];
 }
 
@@ -38,6 +44,15 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
             .eq("org_id", orgId)
             .eq("status", "paid")
             .gte("due_date", startOfMonth);
+
+        // 1b. Total Recebido (Mês Anterior) - for Net Revenue Change
+        const { data: lastMonthPaid } = await supabase
+            .from("receivables")
+            .select("amount_cents")
+            .eq("org_id", orgId)
+            .eq("status", "paid")
+            .gte("due_date", startOfLastMonth)
+            .lte("due_date", endOfLastMonth);
 
         // 2. A Receber (Próximos 7 dias)
         const next7Days = new Date();
@@ -74,38 +89,19 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
             .gte("created_at", startOfLastMonth)
             .lte("created_at", endOfLastMonth);
 
-        // Calculations
-        const sumCents = (arr: any[] | null) => (arr || []).reduce((acc, curr) => acc + (curr.amount_cents || 0), 0);
-        const sumEvents = (arr: any[] | null) => (arr || []).reduce((acc, evt) => acc + (evt.money_amount_cents || 0), 0);
+        // ... existing code ...
 
         const totalPaid = sumCents(paidMonth);
-        const pendingNext7Days = sumCents(pending7d);
-        const totalOverdue = sumCents(overdue);
+        const totalPaidLastMonth = sumCents(lastMonthPaid);
+        // ... existing code ...
 
         const currentRevenue = sumEvents(currentMonthEvents);
         const lastRevenue = sumEvents(lastMonthEvents);
 
-        const calcChange = (curr: number, prev: number) => {
-            if (prev === 0) return curr > 0 ? 100 : 0;
-            return ((curr - prev) / prev) * 100;
-        };
+        const currentOrdersCount = (currentMonthEvents || []).length;
+        const lastOrdersCount = (lastMonthEvents || []).length;
 
-        // Daily breakdown for chart (Revenue)
-        const dailyMap = new Map<string, number>();
-        for (let d = new Date(startOfMonth); d <= now; d.setDate(d.getDate() + 1)) {
-            dailyMap.set(d.getDate().toString(), 0);
-        }
-
-        (currentMonthEvents || []).forEach(evt => {
-            const d = new Date(evt.created_at).getDate().toString();
-            const amt = (evt.money_amount_cents || 0) / 100;
-            dailyMap.set(d, (dailyMap.get(d) || 0) + amt);
-        });
-
-        const chartData = Array.from(dailyMap.entries()).map(([name, total]) => ({
-            name,
-            total
-        }));
+        // ... existing code ...
 
         return {
             totalPaid: totalPaid / 100,
@@ -113,6 +109,12 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
             totalOverdue: totalOverdue / 100,
             totalRevenue: currentRevenue / 100,
             revenueChange: calcChange(currentRevenue, lastRevenue),
+            // New Fields
+            totalOrders: currentOrdersCount,
+            ordersChange: calcChange(currentOrdersCount, lastOrdersCount),
+            netRevenue: totalPaid / 100,
+            netRevenueChange: calcChange(totalPaid, totalPaidLastMonth),
+            activeRate: "98.5%", // Placeholder for now
             chartData
         };
     } catch (error) {
@@ -123,6 +125,11 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
             totalOverdue: 0,
             totalRevenue: 0,
             revenueChange: 0,
+            totalOrders: 0,
+            ordersChange: 0,
+            netRevenue: 0,
+            netRevenueChange: 0,
+            activeRate: "0%",
             chartData: []
         };
     }
