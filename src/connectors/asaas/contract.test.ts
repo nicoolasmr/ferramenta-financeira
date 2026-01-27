@@ -17,10 +17,10 @@ describe("Asaas Connector Contract", () => {
 
         const refundEvent = events.find(e => e.domain_type === "refund");
         expect(refundEvent).toBeDefined();
-        expect(refundEvent?.data.amount_cents).toBe(10000);
+        expect((refundEvent?.data as any).amount_cents).toBe(10000);
 
         const paymentEvent = events.find(e => e.domain_type === "payment");
         expect(paymentEvent).toBeDefined();
-        expect(paymentEvent?.data.status).toBe("refunded");
+        expect((paymentEvent?.data as any).status).toBe("refunded");
     });
 });

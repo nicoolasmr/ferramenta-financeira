@@ -38,12 +38,14 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
         const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
 
         // 1. Total Recebido (Mês Atual)
-        const { data: paidMonth } = await supabase
+        const { data: paidMonth, error: paidMonthErr } = await supabase
             .from("receivables")
             .select("amount_cents")
             .eq("org_id", orgId)
             .eq("status", "paid")
             .gte("due_date", startOfMonth);
+
+        if (paidMonthErr) throw new Error(`paidMonth: ${paidMonthErr.message}`);
 
         // 1b. Total Recebido (Mês Anterior) - for Net Revenue Change
         const { data: lastMonthPaid } = await supabase
@@ -81,13 +83,29 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
             .eq("canonical_type", "sales.order.paid")
             .gte("created_at", startOfMonth);
 
-        const { data: lastMonthEvents } = await supabase
+        const { data: lastMonthEvents, error: lastMonthEventsErr } = await supabase
             .from("external_events_normalized")
             .select("*")
             .eq("org_id", orgId)
             .eq("canonical_type", "sales.order.paid")
             .gte("created_at", startOfLastMonth)
             .lte("created_at", endOfLastMonth);
+
+        if (lastMonthEventsErr) throw new Error(`lastMonthEvents: ${lastMonthEventsErr.message}`);
+
+        // 5. Active Rate Calculation (Real logic)
+        // Active customers = customers with at least one paid receivable ever
+        const [
+            { count: totalCustomers },
+            { data: activeCustomersData }
+        ] = await Promise.all([
+            supabase.from("customers").select("*", { count: 'exact', head: true }).eq("org_id", orgId),
+            supabase.from("receivables").select("customer_id").eq("org_id", orgId).eq("status", "paid")
+        ]);
+
+        const uniqueActiveCustomers = new Set((activeCustomersData || []).map(r => r.customer_id)).size;
+        const totalCust = totalCustomers || 0;
+        const activeRateVal = totalCust > 0 ? (uniqueActiveCustomers / totalCust) * 100 : 0;
 
         // Calculations Helpers
         const sumCents = (arr: any[] | null) => (arr || []).reduce((acc, curr) => acc + (curr.amount_cents || 0), 0);
@@ -141,7 +159,7 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
             ordersChange: calcChange(currentOrdersCount, lastOrdersCount),
             netRevenue: totalPaid / 100,
             netRevenueChange: calcChange(totalPaid, totalPaidLastMonth),
-            activeRate: "98.5%", // Placeholder for now
+            activeRate: `${activeRateVal.toFixed(1)}%`,
             chartData
         };
     } catch (error) {
