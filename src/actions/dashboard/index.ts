@@ -89,6 +89,14 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
             .gte("created_at", startOfLastMonth)
             .lte("created_at", endOfLastMonth);
 
+        // Calculations Helpers
+        const sumCents = (arr: any[] | null) => (arr || []).reduce((acc, curr) => acc + (curr.amount_cents || 0), 0);
+        const sumEvents = (arr: any[] | null) => (arr || []).reduce((acc, evt) => acc + (evt.money_amount_cents || 0), 0);
+        const calcChange = (curr: number, prev: number) => {
+            if (prev === 0) return curr > 0 ? 100 : 0;
+            return ((curr - prev) / prev) * 100;
+        };
+
         // ... existing code ...
 
         const totalPaid = sumCents(paidMonth);
