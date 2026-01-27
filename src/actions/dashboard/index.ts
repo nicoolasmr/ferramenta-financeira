@@ -164,19 +164,10 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
         };
     } catch (error) {
         console.error("Dashboard Metadata Error:", error);
-        return {
-            totalPaid: 0,
-            pendingNext7Days: 0,
-            totalOverdue: 0,
-            totalRevenue: 0,
-            revenueChange: 0,
-            totalOrders: 0,
-            ordersChange: 0,
-            netRevenue: 0,
-            netRevenueChange: 0,
-            activeRate: "0%",
-            chartData: []
-        };
+        // Instead of silent failure, we could throw or return a partial state with error flag
+        // For now, let's keep it safe but log properly. 
+        // In a real app, you might want to return { error: "Failed to load metrics" }
+        throw error;
     }
 }
 
