@@ -61,7 +61,22 @@ We enforce a **Contract First** approach for Integrations.
 ```bash
 npm run test           # Run all tests
 npm run test:contracts # Verify Provider SDK compliance
+npm run test:contracts # Verify Provider SDK compliance
 ```
+
+## 🔒 Security & Integrations
+We strictly adhere to official webhook security standards:
+
+| Provider | Method | Status |
+|----------|--------|--------|
+| **Stripe** | `Stripe-Signature` (HMAC-SHA256) | ✅ Compliant |
+| **Asaas** | `asaas-access-token` Header | ✅ Compliant |
+| **Hotmart**| `hottok` (Header/Body) | ✅ Legacy Compliant |
+| **Kiwify** | Token Match (Payload) | ⚠️ Best Effort |
+
+See [`docs/INTEGRATION_AUDIT.md`](docs/INTEGRATION_AUDIT.md) for the full audit.
+
+---
 
 ---
 
