@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -25,6 +26,14 @@ const columns: ColumnDef<Project>[] = [
     {
         accessorKey: "name",
         header: "Name",
+        cell: ({ row }) => (
+            <Link
+                href={`/app/projects/${row.original.id}`}
+                className="font-medium text-blue-600 hover:underline"
+            >
+                {row.original.name}
+            </Link>
+        ),
     },
     {
         accessorKey: "description",

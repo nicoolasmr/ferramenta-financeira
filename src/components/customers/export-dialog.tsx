@@ -7,7 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
-import { exportCustomers, AVAILABLE_COLUMNS } from "@/actions/customers/export";
+import { exportCustomers } from "@/actions/customers/export";
+import { AVAILABLE_COLUMNS } from "@/actions/customers/constants";
 import { generateCSV, downloadCSV } from "@/lib/csv/parser";
 
 interface ExportDialogProps {

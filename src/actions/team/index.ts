@@ -25,17 +25,37 @@ export interface TeamMember {
 
 export async function getTeamMembers(orgId: string): Promise<TeamMember[]> {
     const supabase = await createClient();
-    const { data, error } = await supabase
+    const { data: memberships, error: memError } = await supabase
         .from("memberships")
-        .select(`
-            *,
-            user:users(email, full_name, avatar_url)
-        `)
+        .select("*")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    return data || [];
+    if (memError) {
+        console.error("Error fetching memberships:", memError);
+        throw new Error("Failed to fetch team members");
+    }
+
+    if (!memberships || memberships.length === 0) return [];
+
+    const userIds = memberships.map(m => m.user_id);
+    const { data: users, error: userError } = await supabase
+        .from("users")
+        .select("id, email, full_name, avatar_url")
+        .in("id", userIds);
+
+    if (userError) {
+        console.error("Error fetching users for team:", userError);
+        // Don't throw here, just return members with default user data
+    }
+
+    return memberships.map(member => {
+        const user = (users || []).find(u => u.id === member.user_id);
+        return {
+            ...member,
+            user: user || { email: 'Unknown', full_name: 'Unknown User', avatar_url: null }
+        };
+    }) as any;
 }
 
 export async function getPendingInvitations(orgId: string): Promise<TeamInvitation[]> {

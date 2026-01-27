@@ -212,14 +212,12 @@ export function UserArea() {
 
             {!isPro && (
                 <div className="px-2 mt-2">
-                    <DropdownMenuItem asChild className="p-0 focus:bg-transparent">
-                        <Link href="/app/billing" className="w-full cursor-pointer">
-                            <Button size="sm" className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white border-0 shadow-sm h-8 gap-2">
-                                <Zap className="h-3.5 w-3.5 fill-white" />
-                                <span className="text-xs font-bold uppercase tracking-wider">{t('common.upgrade')}</span>
-                            </Button>
-                        </Link>
-                    </DropdownMenuItem>
+                    <Link href="/app/billing" className="w-full cursor-pointer">
+                        <Button size="sm" className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white border-0 shadow-sm h-8 gap-2">
+                            <Zap className="h-3.5 w-3.5 fill-white" />
+                            <span className="text-xs font-bold uppercase tracking-wider">{t('common.upgrade')}</span>
+                        </Button>
+                    </Link>
                 </div>
             )}
         </div>

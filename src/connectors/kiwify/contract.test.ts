@@ -1,42 +1,40 @@
 
 import { describe, it, expect } from "vitest";
-import { normalizeKiwify } from "./normalize";
+import { KiwifyConnector } from "./connector";
 import orderPaid from "./fixtures/order_paid.json";
 import orderRefunded from "./fixtures/order_refunded.json";
 
 describe("Kiwify Connector Contract", () => {
-    it("should normalize PAID order correctly", () => {
+    const connector = new KiwifyConnector();
+    const ctx = { org_id: "test_org", project_id: "test_proj", trace_id: "test_trace" };
+
+    it("should normalize PAID order correctly", async () => {
         const raw = {
             project_id: "test_proj",
             payload: orderPaid,
             occurred_at: new Date()
         };
 
-        const events = normalizeKiwify(raw as any);
-        expect(events.length).toBe(2); // Order + Payment
+        const events = await connector.normalize(raw as any, ctx);
+        expect(events.length).toBe(1); // Order Paid
 
-        const order = events.find(e => e.domain_type === "order");
+        const order = events.find(e => e.canonical_type === "sales.order.paid");
         expect(order).toBeDefined();
-        expect(order?.data.total_cents).toBe(19700);
-        expect(order?.data.status).toBe("confirmed");
-
-        const payment = events.find(e => e.domain_type === "payment");
-        expect(payment?.data.installments).toBe(12);
-        expect(payment?.data.method).toBe("credit_card");
+        expect(order!.money!.amount_cents).toBe(19700);
     });
 
-    it("should normalize REFUNDED order correctly", () => {
+    it("should normalize REFUNDED order correctly", async () => {
         const raw = {
             project_id: "test_proj",
             payload: orderRefunded,
             occurred_at: new Date()
         };
 
-        const events = normalizeKiwify(raw as any);
+        const events = await connector.normalize(raw as any, ctx);
         expect(events.length).toBe(1); // Refund event
 
         const refund = events[0];
-        expect(refund.domain_type).toBe("refund");
-        expect(refund.data.amount_cents).toBe(4990);
+        expect(refund.canonical_module).toBe("disputes");
+        expect(refund.money!.amount_cents).toBe(4990);
     });
 });

@@ -29,7 +29,7 @@ export function Sidebar() {
 
     const links = [
         {
-            href: "/app",
+            href: "/app/dashboard",
             label: t("common.dashboard"),
             icon: LayoutDashboard,
         },

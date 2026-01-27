@@ -1,4 +1,5 @@
 
+import { describe, it, expect } from "vitest";
 import { StripeConnector } from "./connector";
 import { RawEvent } from "@/connectors/sdk/types";
 
@@ -15,7 +16,8 @@ const CHARGE_SUCCEEDED = {
             "amount_refunded": 0,
             "currency": "brl",
             "payment_intent": "pi_3Q...",
-            "status": "succeeded"
+            "status": "succeeded",
+            "created": 1737740000
         }
     },
     "type": "charge.succeeded",
@@ -24,12 +26,13 @@ const CHARGE_SUCCEEDED = {
 
 describe("Stripe Connector Contract", () => {
     const connector = new StripeConnector();
+    const ctx = { org_id: "test_org", project_id: "test_proj", trace_id: "test_trace" };
 
     it("should carry the correct provider key", () => {
         expect(connector.providerKey).toBe("stripe");
     });
 
-    it("should normalize 'charge.succeeded' strictly", () => {
+    it("should normalize 'charge.succeeded' strictly", async () => {
         const raw: RawEvent = {
             provider: "stripe",
             event_type: "charge.succeeded",
@@ -38,20 +41,18 @@ describe("Stripe Connector Contract", () => {
             occurred_at: new Date(1737740000 * 1000)
         };
 
-        const canonical = connector.normalize(raw);
+        const canonical = await connector.normalize(raw, ctx);
         expect(canonical).toHaveLength(1);
 
         const event = canonical[0];
-        expect(event.domain_type).toBe("payment");
-        expect(event.data.amount_cents).toBe(2000);
-        expect(event.data.currency).toBe("BRL");
-        expect(event.data.status).toBe("paid");
-        expect(event.refs.provider_object_id).toBe("ch_3Q...");
+        expect(event.canonical_module).toBe("sales");
+        expect(event.money!.amount_cents).toBe(2000);
+        expect(event.money!.currency).toBe("BRL");
+        expect(event.canonical_type).toBe("sales.payment.succeeded");
+        expect(event.external_event_id).toBe("ch_3Q...");
     });
 
     it("should verify signature (mocked)", () => {
-        // Since we mock the actual verification logic in unit tests usually
-        // Here we just test the method exists
         expect(connector.verifyWebhook).toBeDefined();
     });
 });

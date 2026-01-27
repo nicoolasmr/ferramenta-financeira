@@ -1,9 +1,25 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ManualSaleForm } from "@/components/sales/manual-sale-form";
+import { getActiveOrganization } from "@/actions/organization";
 
-export default async function NewSalePage({ searchParams }: { searchParams: Promise<{ org: string }> }) {
-    const orgId = (await searchParams).org;
+export default async function NewSalePage({ searchParams }: { searchParams: Promise<{ org?: string }> }) {
+    const params = await searchParams;
+    let orgId = params.org;
+
+    if (!orgId) {
+        const activeOrg = await getActiveOrganization();
+        orgId = activeOrg?.id;
+    }
+
+    if (!orgId) {
+        return (
+            <div className="flex-1 p-8">
+                <p className="text-red-500 font-medium">Organization not found. Please select an organization first.</p>
+            </div>
+        );
+    }
+
     const supabase = await createClient();
 
     const { data: projects } = await supabase

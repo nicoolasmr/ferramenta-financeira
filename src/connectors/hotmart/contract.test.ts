@@ -1,12 +1,12 @@
 
 import { describe, it, expect } from 'vitest';
 import { HotmartConnector } from './connector';
-import { OrderStatus } from '@/lib/contracts/canonical';
 
 describe('Hotmart Connector', () => {
     const connector = new HotmartConnector();
+    const ctx = { org_id: 'test_org', project_id: 'test_proj', trace_id: 'test_trace' };
 
-    it('should normalize PURCHASE_APPROVED event', () => {
+    it('should normalize PURCHASE_APPROVED event', async () => {
         const rawPayload = {
             event: 'PURCHASE_APPROVED',
             purchase_date: 1672531200000,
@@ -25,12 +25,12 @@ describe('Hotmart Connector', () => {
             occurred_at: new Date(1672531200000)
         };
 
-        const canonicalEvents = connector.normalize(rawEvent);
+        const canonicalEvents = await connector.normalize(rawEvent, ctx);
         expect(canonicalEvents).toHaveLength(1);
-        const order = canonicalEvents[0].data as any;
+        const event = canonicalEvents[0];
 
-        expect(order.total_cents).toBe(9990);
-        expect(order.status).toBe(OrderStatus.CONFIRMED);
-        expect(canonicalEvents[0].refs.provider_object_id).toBe('HP123456');
+        expect(event.money!.amount_cents).toBe(9990);
+        expect(event.canonical_type).toBe('sales.order.paid');
+        expect(event.external_event_id).toBe('HP123456');
     });
 });

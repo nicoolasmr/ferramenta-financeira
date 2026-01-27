@@ -73,10 +73,10 @@ export function DashboardClient({ metrics, recentSales }: DashboardClientProps) 
             {/* KPI Cards (Real Data) */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {[
-                    { title: t("common.revenue"), value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.totalRevenue), change: `${metrics.revenueChange > 0 ? '+' : ''}${metrics.revenueChange.toFixed(1)}%`, icon: DollarSign },
-                    { title: t("common.orders"), value: metrics.totalOrders.toString(), change: `${metrics.ordersChange > 0 ? '+' : ''}${metrics.ordersChange.toFixed(1)}%`, icon: ShoppingCart },
-                    { title: t("common.net_revenue"), value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.netRevenue), change: `${metrics.netRevenueChange > 0 ? '+' : ''}${metrics.netRevenueChange.toFixed(1)}%`, icon: CreditCard },
-                    { title: t("common.active_rate"), value: metrics.activeRate, change: "+0.0%", icon: Activity },
+                    { title: t("common.revenue"), value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics?.totalRevenue || 0), change: `${(metrics?.revenueChange || 0) > 0 ? '+' : ''}${(metrics?.revenueChange || 0).toFixed(1)}%`, icon: DollarSign },
+                    { title: t("common.orders"), value: (metrics?.totalOrders || 0).toString(), change: `${(metrics?.ordersChange || 0) > 0 ? '+' : ''}${(metrics?.ordersChange || 0).toFixed(1)}%`, icon: ShoppingCart },
+                    { title: t("common.net_revenue"), value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics?.netRevenue || 0), change: `${(metrics?.netRevenueChange || 0) > 0 ? '+' : ''}${(metrics?.netRevenueChange || 0).toFixed(1)}%`, icon: CreditCard },
+                    { title: t("common.active_rate"), value: metrics?.activeRate || "0%", change: "+0.0%", icon: Activity },
                 ].map((kpi, i) => (
                     <Card key={i} className="glass dark:glass-dark group hover:border-blue-500/50 transition-all duration-300">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

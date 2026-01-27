@@ -56,6 +56,10 @@ export default function OnboardingPage() {
             } else if (result?.success) {
                 setCreatedOrgId(result.orgId);
                 setStep(4); // Move to AHA
+            } else {
+                // Fallback for unexpected response shapes
+                setIsSubmitting(false);
+                toast.error("Resposta inesperada do servidor. Tente novamente.");
             }
         } catch (error) {
             setIsSubmitting(false);

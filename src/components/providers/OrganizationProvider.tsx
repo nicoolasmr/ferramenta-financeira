@@ -12,29 +12,45 @@ interface OrganizationContextType {
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
-export function OrganizationProvider({ children }: { children: React.ReactNode }) {
-    const [activeOrganization, setActiveOrg] = useState<Organization | null>(null);
-    const [loading, setLoading] = useState(true);
+export function OrganizationProvider({
+    children,
+    initialOrganization = null
+}: {
+    children: React.ReactNode;
+    initialOrganization?: Organization | null;
+}) {
+    const [activeOrganization, setActiveOrg] = useState<Organization | null>(initialOrganization);
+    const [loading, setLoading] = useState(!initialOrganization);
 
     useEffect(() => {
+        if (initialOrganization) {
+            setLoading(false);
+            return;
+        }
+
+        let isMounted = true;
         async function loadActiveOrg() {
             try {
                 const org = await getActiveOrganization();
-                if (org) {
-                    setActiveOrg(org);
-                } else {
-                    console.log('[OrganizationProvider] No active organization found');
-                    setActiveOrg(null);
+                if (isMounted) {
+                    if (org) {
+                        console.log('[OrganizationProvider] Active organization loaded:', org.name);
+                        setActiveOrg(org);
+                    } else {
+                        console.warn('[OrganizationProvider] No active organization found after fetch');
+                        setActiveOrg(null);
+                    }
                 }
             } catch (error) {
                 console.error('[OrganizationProvider] Error loading active organization:', error);
-                setActiveOrg(null);
+                if (isMounted) setActiveOrg(null);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         }
         loadActiveOrg();
-    }, []);
+        return () => { isMounted = false; };
+    }, [initialOrganization]);
 
     return (
         <OrganizationContext.Provider value={{ activeOrganization, loading, setActiveOrganization: setActiveOrg }}>

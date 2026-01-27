@@ -90,22 +90,29 @@ export async function completeOnboarding(formData: FormData) {
 }
 
 export async function simulateAhaEvent(orgId: string, integration: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Não autorizado");
+    // 1. Get Admin Client to bypass RLS during setup
+    const { getAdminClient } = await import("@/lib/supabase/admin");
+    const adminClient = getAdminClient();
 
-    // 1. Get a project for this org
-    const { data: project } = await supabase
+    if (!adminClient) {
+        return { error: "Service Role Key missing for simulation." };
+    }
+
+    // 2. Get a project for this org
+    const { data: project, error: projectError } = await adminClient
         .from("projects")
         .select("id")
         .eq("org_id", orgId)
         .limit(1)
         .single();
 
-    if (!project) throw new Error("Projeto não encontrado");
+    if (projectError || !project) {
+        console.error("Simulation Error (Project):", projectError);
+        return { error: "Projeto não encontrado para simulação." };
+    }
 
-    // 2. Create a Test Customer
-    const { data: customer } = await supabase
+    // 3. Create a Test Customer
+    const { data: customer, error: customerError } = await adminClient
         .from("customers")
         .insert({
             org_id: orgId,
@@ -116,8 +123,13 @@ export async function simulateAhaEvent(orgId: string, integration: string) {
         .select("id")
         .single();
 
-    // 3. Create a Test Order
-    const { data: order } = await supabase
+    if (customerError) {
+        console.error("Simulation Error (Customer):", customerError);
+        return { error: "Falha ao criar cliente de teste." };
+    }
+
+    // 4. Create a Test Order
+    const { data: order, error: orderError } = await adminClient
         .from("orders")
         .insert({
             org_id: orgId,
@@ -132,8 +144,13 @@ export async function simulateAhaEvent(orgId: string, integration: string) {
         .select("id")
         .single();
 
-    // 4. Create Normalized Event (for the main chart & feed)
-    await supabase.from("external_events_normalized").insert({
+    if (orderError) {
+        console.error("Simulation Error (Order):", orderError);
+        return { error: "Falha ao criar ordem de teste." };
+    }
+
+    // 5. Create Normalized Event (for the main chart & feed)
+    const { error: eventError } = await adminClient.from("external_events_normalized").insert({
         org_id: orgId,
         provider: integration.toLowerCase(),
         external_id: `test_${Date.now()}`,
@@ -147,8 +164,13 @@ export async function simulateAhaEvent(orgId: string, integration: string) {
         }
     });
 
-    // 5. Create Payment (Triggers Receivables explosion)
-    await supabase.from("payments").insert({
+    if (eventError) {
+        console.error("Simulation Error (Event):", eventError);
+        return { error: "Falha ao normalizar evento de teste." };
+    }
+
+    // 6. Create Payment (Triggers Receivables explosion)
+    const { error: paymentError } = await adminClient.from("payments").insert({
         org_id: orgId,
         order_id: order?.id,
         method: "credit_card",
@@ -158,6 +180,11 @@ export async function simulateAhaEvent(orgId: string, integration: string) {
         amount_cents: 15000,
         paid_at: new Date().toISOString()
     });
+
+    if (paymentError) {
+        console.error("Simulation Error (Payment):", paymentError);
+        return { error: "Falha ao processar pagamento de teste." };
+    }
 
     return { success: true };
 }

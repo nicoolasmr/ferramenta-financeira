@@ -19,7 +19,11 @@ export function StepAha({ orgId, integration, onFinish }: StepAhaProps) {
     const handleSimulate = async () => {
         setIsSimulating(true);
         try {
-            await simulateAhaEvent(orgId, integration);
+            const result = await simulateAhaEvent(orgId, integration);
+            if (result?.error) {
+                toast.error(result.error);
+                return;
+            }
             setStatus("received");
             setTimeout(() => setStatus("celebrating"), 1500);
         } catch (error) {

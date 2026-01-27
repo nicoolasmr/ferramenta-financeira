@@ -137,3 +137,96 @@ export async function deleteProject(id: string) {
 
     revalidatePath("/app/projects");
 }
+
+export async function getProjectProducts(projectId: string) {
+    const supabase = await createClient();
+
+    // 1. Fetch products linked directly to the project
+    const { data: directProducts } = await supabase
+        .from("products")
+        .select("*")
+        .eq("project_id", projectId);
+
+    // 2. Fetch products linked via orders (legacy/sales based)
+    const { data: orders } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("project_id", projectId);
+
+    let salesProducts: any[] = [];
+    if (orders && orders.length > 0) {
+        const orderIds = orders.map(o => o.id);
+        const { data } = await supabase
+            .from("order_items")
+            .select("product:products(*)")
+            .in("order_id", orderIds);
+
+        salesProducts = (data || []).map(item => item.product as any);
+    }
+
+    // Combine and deduplicate
+    const allProducts = [...(directProducts || []), ...salesProducts].filter(p => p !== null);
+    const uniqueProducts = allProducts.filter((p, index, self) =>
+        self.findIndex(s => s.id === p.id) === index
+    );
+
+    return uniqueProducts;
+}
+
+export async function createProduct(formData: {
+    org_id: string;
+    project_id?: string;
+    name: string;
+    description?: string;
+    type: string;
+    price_cents: number;
+}) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from("products")
+        .insert({
+            org_id: formData.org_id,
+            project_id: formData.project_id || null,
+            name: formData.name,
+            description: formData.description || null,
+            type: formData.type || "standard",
+            price_cents: formData.price_cents,
+            active: true
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Error creating product:", error);
+        throw new Error("Failed to create product");
+    }
+
+    revalidatePath("/app/projects");
+    if (formData.project_id) {
+        revalidatePath(`/app/projects/${formData.project_id}`);
+    }
+    return data;
+}
+
+export async function getProjectBuyers(projectId: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from("orders")
+        .select("customer:customers(*)")
+        .eq("project_id", projectId);
+
+    if (error) {
+        console.error("Error fetching project buyers:", error);
+        throw new Error("Failed to fetch project buyers");
+    }
+
+    // Deduplicate customers
+    const customers = (data || [])
+        .map(item => item.customer as any)
+        .filter((c, index, self) => c && self.findIndex(s => s?.id === c.id) === index);
+
+    return customers;
+}
+

@@ -56,7 +56,8 @@ export async function getCustomers(orgId: string, filters?: CustomerFilters): Pr
 
     // Apply tags filter
     if (filters?.tags && filters.tags.length > 0) {
-        query = query.overlaps("tags", filters.tags);
+        // Since tags is JSONB, we use contains.
+        query = query.contains("tags", filters.tags);
     }
 
     // Apply source filter
@@ -102,9 +103,27 @@ export async function createCustomer(formData: {
     document?: string;
     org_id: string;
 }) {
-    const supabase = await createClient();
+    const { getAdminClient } = await import("@/lib/supabase/admin");
+    const adminClient = getAdminClient();
 
-    const { data, error } = await supabase
+    if (!adminClient) {
+        throw new Error("System configuration error: Missing Service Role Key");
+    }
+
+    if (formData.email) {
+        const { data: existingCustomer } = await adminClient
+            .from("customers")
+            .select("*")
+            .eq("org_id", formData.org_id)
+            .eq("email", formData.email)
+            .maybeSingle();
+
+        if (existingCustomer) {
+            return existingCustomer;
+        }
+    }
+
+    const { data, error } = await adminClient
         .from("customers")
         .insert({
             name: formData.name,

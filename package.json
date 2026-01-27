@@ -6,7 +6,7 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src",
     "test": "vitest run"
   },
   "dependencies": {
@@ -58,6 +58,7 @@
     "papaparse": "^5.5.3",
     "qrcode": "^1.5.4",
     "react": "^19",
+    "react-currency-input-field": "^4.0.3",
     "react-day-picker": "^9.13.0",
     "react-dom": "^19",
     "react-hook-form": "^7.71.1",

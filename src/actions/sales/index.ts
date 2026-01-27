@@ -137,6 +137,23 @@ export async function createManualSale(formData: FormData) {
     const installmentsStr = formData.get("installments") as string;
     const method = formData.get("method") as string;
 
+    // New CRM Metadata
+    const niche = formData.get("niche") as string;
+    const status = formData.get("status") as string;
+    const cycleStart = formData.get("cycleStart") as string;
+    const cycleEnd = formData.get("cycleEnd") as string;
+    const cycleDuration = formData.get("cycleDuration") as string;
+    const situation = formData.get("situation") as string;
+    const phone = formData.get("phone") as string;
+    const address = formData.get("address") as string;
+
+    const initialDiagnosis = formData.get("initialDiagnosis") as string;
+    const meeting1 = formData.get("meeting1") as string;
+    const contractSigned = formData.get("contractSigned") as string;
+    const followup = formData.get("followup") as string;
+    const mentoredFolder = formData.get("mentoredFolder") as string;
+    const paymentDetails = formData.get("paymentDetails") as string;
+
     const amountCents = Math.round(parseFloat(amountStr.replace("R$", "").replace(/\./g, "").replace(",", ".")) * 100);
     const installments = parseInt(installmentsStr) || 1;
 
@@ -144,13 +161,34 @@ export async function createManualSale(formData: FormData) {
     let customerId;
     const { data: existingCustomer } = await supabase
         .from("customers")
-        .select("id")
+        .select("id, metadata")
         .eq("org_id", orgId)
         .eq("email", customerEmail)
-        .single();
+        .maybeSingle();
+
+    const customerMetadata = {
+        niche,
+        status,
+        cycle_start: cycleStart,
+        cycle_end: cycleEnd,
+        cycle_duration: cycleDuration,
+        situation,
+        address
+    };
 
     if (existingCustomer) {
         customerId = existingCustomer.id;
+        // Update customer metadata (MERGE with existing)
+        const currentMeta = existingCustomer.metadata || {};
+        const mergedMeta = { ...currentMeta, ...customerMetadata };
+
+        await supabase
+            .from("customers")
+            .update({
+                phone: phone || undefined,
+                metadata: mergedMeta
+            })
+            .eq("id", customerId);
     } else {
         const { data: newCustomer, error: customerError } = await supabase
             .from("customers")
@@ -158,34 +196,52 @@ export async function createManualSale(formData: FormData) {
                 org_id: orgId,
                 name: customerName,
                 email: customerEmail,
-                source: "manual"
+                phone: phone || null,
+                source: "manual",
+                metadata: customerMetadata
             })
             .select("id")
             .single();
 
-        if (customerError) return { error: `Erro ao criar cliente: ${customerError.message}` };
+        if (customerError) {
+            console.error("[createManualSale] Customer creation error:", customerError);
+            return { error: `Erro ao criar cliente: ${customerError.message}` };
+        }
         customerId = newCustomer.id;
     }
 
     // 2. Create Order
+    const orderMetadata = {
+        initial_diagnosis: initialDiagnosis,
+        meeting_1: meeting1,
+        contract_signed: contractSigned,
+        followup: followup,
+        mentored_folder: mentoredFolder,
+        payment_details: paymentDetails
+    };
+
     const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
             org_id: orgId,
-            project_id: projectId, // This is key for the AI requirement!
+            project_id: projectId,
             customer_id: customerId,
-            status: "paid", // Manual sales are usually reported as "done"
+            status: "paid",
             source: "manual",
             gross_amount_cents: amountCents,
-            net_amount_cents: amountCents, // Simplified
-            purchase_datetime: new Date().toISOString()
+            net_amount_cents: amountCents,
+            purchase_datetime: new Date().toISOString(),
+            metadata: orderMetadata
         })
         .select("id")
         .single();
 
-    if (orderError) return { error: `Erro ao criar pedido: ${orderError.message}` };
+    if (orderError) {
+        console.error("[createManualSale] Order creation error:", orderError);
+        return { error: `Erro ao criar pedido: ${orderError.message}` };
+    }
 
-    // 3. Create Payment (Triggers Receivables Explosion)
+    // 3. Create Payment
     const { error: paymentError } = await supabase
         .from("payments")
         .insert({
@@ -193,15 +249,19 @@ export async function createManualSale(formData: FormData) {
             order_id: order.id,
             method: method,
             gateway: "manual",
-            status: "paid", // First installment or overall status
+            status: "paid",
             installments: installments,
             amount_cents: amountCents,
             paid_at: new Date().toISOString()
         });
 
-    if (paymentError) return { error: `Erro ao criar pagamento: ${paymentError.message}` };
+    if (paymentError) {
+        console.error("[createManualSale] Payment creation error:", paymentError);
+        return { error: `Erro ao criar pagamento: ${paymentError.message}` };
+    }
 
     revalidatePath("/app/sales");
     revalidatePath("/app/dashboard");
+    revalidatePath("/app/customers");
     return { success: true };
 }

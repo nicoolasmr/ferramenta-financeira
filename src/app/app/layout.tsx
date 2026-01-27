@@ -7,10 +7,13 @@ import { CommandBar } from "@/components/shared/CommandBar";
 
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { WhyProvider } from "@/components/consistency/WhyProvider";
+import { getActiveOrganization } from "@/actions/organization";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+    const initialOrg = await getActiveOrganization();
+
     return (
-        <OrganizationProvider>
+        <OrganizationProvider initialOrganization={initialOrg}>
             <LanguageProvider>
                 <WhyProvider>
                     <div className="min-h-screen bg-background text-foreground">

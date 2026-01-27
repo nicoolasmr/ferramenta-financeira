@@ -65,7 +65,10 @@ export class KiwifyConnector extends BaseConnectorV2 {
         // chargedback: order_chargedback
 
         if (status === 'paid') {
-            const amount = body.Commission?.charge_amount || body.order_total_value_cents / 100 || 0; // Check real payload structure
+            const amountCents = body.order_total_value_cents ||
+                (body.commission_total_value ? Math.round(body.commission_total_value * 100) : 0) ||
+                (body.Commission?.charge_amount ? Math.round(body.Commission.charge_amount * 100) : 0);
+
             events.push({
                 provider_key: this.providerKey,
                 project_id: ctx.project_id,
@@ -77,25 +80,28 @@ export class KiwifyConnector extends BaseConnectorV2 {
                 canonical_type: 'sales.order.paid',
                 payload: body,
                 money: {
-                    amount_cents: body.order_total_value_cents || Math.round(amount * 100),
+                    amount_cents: amountCents,
                     currency: 'BRL'
                 },
                 external_refs: [{ kind: 'order', external_id: body.order_id }]
             });
         }
         else if (status === 'refunded') {
+            const amountCents = body.order_total_value_cents ||
+                (body.commission_total_value ? Math.round(body.commission_total_value * 100) : 0);
+
             events.push({
                 provider_key: this.providerKey,
                 project_id: ctx.project_id,
                 org_id: ctx.org_id,
                 trace_id: ctx.trace_id,
-                external_event_id: body.order_id, // Or refund_id if available?
+                external_event_id: body.order_id,
                 occurred_at: new Date().toISOString(),
                 canonical_module: 'disputes',
                 canonical_type: 'refunds.created',
                 payload: body,
                 money: {
-                    amount_cents: body.order_total_value_cents, // Full refund usually?
+                    amount_cents: amountCents,
                     currency: 'BRL'
                 },
                 external_refs: [{ kind: 'order', external_id: body.order_id }]

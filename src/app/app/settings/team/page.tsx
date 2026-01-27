@@ -117,7 +117,13 @@ export default function TeamPage() {
                     description="Send an invitation to join your organization"
                     fields={[
                         { name: "email", label: "Email Address", type: "email", required: true },
-                        { name: "role", label: "Role (owner/admin/member)", type: "text", required: true },
+                        {
+                            name: "role", label: "Role", type: "select", required: true, options: [
+                                { value: "owner", label: "Dono (Owner)" },
+                                { value: "admin", label: "Administrador (Admin)" },
+                                { value: "member", label: "Membro (Member)" },
+                            ]
+                        },
                     ]}
                     onSubmit={handleInvite}
                     triggerLabel="Invite Member"

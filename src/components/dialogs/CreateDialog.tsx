@@ -15,13 +15,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface Field {
     name: string;
     label: string;
-    type: "text" | "email" | "number" | "textarea";
+    type: "text" | "email" | "number" | "textarea" | "select";
     placeholder?: string;
     required?: boolean;
+    options?: { value: string; label: string }[];
     validation?: (value: string) => string | null;
 }
 
@@ -125,6 +133,22 @@ export function CreateDialog({
                                         onChange={(e) => handleFieldChange(field.name, e.target.value)}
                                         className={errors[field.name] ? "border-red-500" : ""}
                                     />
+                                ) : field.type === "select" ? (
+                                    <Select
+                                        value={formData[field.name] || ""}
+                                        onValueChange={(value) => handleFieldChange(field.name, value)}
+                                    >
+                                        <SelectTrigger className={errors[field.name] ? "border-red-500" : ""}>
+                                            <SelectValue placeholder={field.placeholder || "Select an option"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {field.options?.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 ) : (
                                     <Input
                                         id={field.name}
