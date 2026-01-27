@@ -101,6 +101,9 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
 
         const totalPaid = sumCents(paidMonth);
         const totalPaidLastMonth = sumCents(lastMonthPaid);
+
+        const pendingNext7Days = sumCents(pending7d);
+        const totalOverdue = sumCents(overdue);
         // ... existing code ...
 
         const currentRevenue = sumEvents(currentMonthEvents);
