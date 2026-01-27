@@ -112,6 +112,22 @@ export async function getDashboardMetrics(orgId: string): Promise<DashboardMetri
         const currentOrdersCount = (currentMonthEvents || []).length;
         const lastOrdersCount = (lastMonthEvents || []).length;
 
+        // Daily breakdown for chart (Revenue)
+        const dailyMap = new Map<string, number>();
+        for (let d = new Date(startOfMonth); d <= now; d.setDate(d.getDate() + 1)) {
+            dailyMap.set(d.getDate().toString(), 0);
+        }
+
+        (currentMonthEvents || []).forEach(evt => {
+            const d = new Date(evt.created_at).getDate().toString();
+            const amt = (evt.money_amount_cents || 0) / 100;
+            dailyMap.set(d, (dailyMap.get(d) || 0) + amt);
+        });
+
+        const chartData = Array.from(dailyMap.entries()).map(([name, total]) => ({
+            name,
+            total
+        }));
         // ... existing code ...
 
         return {
