@@ -23,7 +23,8 @@ The engineering team maintains a strict **Source of Truth**. Please consult thes
 
 ## ✨ Core Features
 - **Unified Ledger**: All your sales (Stripe, Kiwify, Asaas) in one place.
-- **Manual Sales**: Launch non-integrated revenue via `/app/sales/new`.
+- **Product Management**: Create and manage products directly within Projects (`/app/projects`).
+- **Enhanced Manual Sales**: Launch revenue manually with rich CRM data (Niche, Cycle, Status).
 - **Receivables Engine**: Automatic "Installment Explosion" for future cashflow projection.
 - **AI Copilot**: 12-month revenue forecasting and anomaly detection.
 

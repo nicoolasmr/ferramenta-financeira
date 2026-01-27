@@ -1,10 +1,10 @@
 
 # RevenueOS Master Documentation (v1.0.1-SSOT)
 
-**Date**: 2026-06-01
+**Date**: 2026-06-05
 **Classification**: ENGINEERING MASTER RECORD
 **Repo**: `antigravity-ferramenta-financeira`
-**Version**: v1.0.1
+**Version**: v1.0.2
 
 ---
 
@@ -107,6 +107,10 @@ The `IdentityResolution` module (future) uses this vector to merge profiles.
 ---
 
 ## 🗄️ 5. Database Schema (Source of Truth)
+
+### 5.0 Core Entities (Updated v1.0.2)
+- **Products**: Linked to Projects via `project_id`.
+- **Customers**: Supports unstructured CRM data via `metadata` JSONB column (Deep Merged on updates).
 
 ### 5.1 Core Ledger (`payments`, `orders`)
 ```sql
